@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Motor;
 use App\Models\MotorCategory;
@@ -38,7 +39,8 @@ class AdminControllerSatu extends Controller
     // --- MOTOR ---
     public function adminMotor()
     {
-        return view('pages.admin.motorDataTables'); // ganti sesuai struktur blade kamu
+        $categories = MotorCategory::all();
+        return view('pages.admin.motorDataTables', compact('categories'));
     }
 
     public function getMotorData()
@@ -107,6 +109,7 @@ class AdminControllerSatu extends Controller
             'name' => 'required',
             'price' => 'required|numeric',
             'category_id' => 'required|exists:motor_categories,id',
+            'color' => 'required|string',
         ]);
 
         Motor::create($data);
@@ -881,14 +884,14 @@ class AdminControllerSatu extends Controller
     }
 
     public function getBannerData(Request $request)
-{
-    $banners = Banner::select(['id', 'title', 'status', 'position', 'image_path'])
-        ->orderBy('id', 'desc');
+    {
+        $banners = Banner::select(['id', 'title', 'status', 'order', 'image_path'])
+            ->orderBy('id', 'desc');
 
-    return datatables()->of($banners)
-        ->addIndexColumn()
-        ->make(true);
-}
+        return datatables()->of($banners)
+            ->addIndexColumn()
+            ->make(true);
+    }
 
     // Store banner baru
     public function storeBanners(Request $request)

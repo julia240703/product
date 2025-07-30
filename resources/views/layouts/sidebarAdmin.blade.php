@@ -68,7 +68,7 @@
             <ul id="ddmenu_motor" class="dropdown-nav collapse">
         @endif
             <li class="nav-item">
-                <a href="{{ route('admin.manager') }}" class="@if(request()->routeIs('admin.manager')) active @endif">Kelola Motor</a>
+                <a href="{{ route('admin.motor') }}" class="@if(request()->routeIs('admin.motor')) active @endif">Kelola Motor</a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('admin.motor-color.index') }}" class="@if(request()->routeIs('admin.motor-color.index')) active @endif">Kelola Warna</a>
@@ -82,29 +82,35 @@
         </ul>
     </li>
 
-    {{-- Kelola Aksesoris --}}
-    <li class="nav-item @if(request()->routeIs('manage.exam')) active @endif">
-        <a href="{{ route('manage.exam') }}">
-            <span class="icon"><i class="fa-solid fa-rectangle-list"></i></span>
-            <span class="text">Kelola Aksesoris</span>
-        </a>
-    </li>
-
-    {{-- Kelola Parts --}}
-    <li class="nav-item @if(request()->routeIs('admin.parts.store')) active @endif">
-        <a href="{{ route('admin.parts.store') }}">
-            <span class="icon"><i class="fa-solid fa-gears"></i></span>
-            <span class="text">Kelola Parts</span>
-        </a>
-    </li>
-
-    {{-- Kelola Apparel --}}
-    <li class="nav-item @if(request()->routeIs('admin.apparels.store')) active @endif">
-        <a href="{{ route('admin.apparels.store') }}">
-            <span class="icon"><i class="fa-solid fa-shirt"></i></span>
-            <span class="text">Kelola Apparel</span>
-        </a>
-    </li>
+    {{-- Produk Tambahan --}}
+<li class="nav-item nav-item-has-children">
+    <a class="collapsed" href="#0" data-bs-toggle="collapse" data-bs-target="#ddmenu_produk_tambahan"
+       aria-controls="ddmenu_produk_tambahan" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+        <span class="text">Tambahan</span>
+    </a>
+    @if(request()->routeIs('manage.exam') || request()->routeIs('admin.parts.store') || request()->routeIs('admin.apparels.store'))
+        <ul id="ddmenu_produk_tambahan" class="dropdown-nav collapse show">
+    @else
+        <ul id="ddmenu_produk_tambahan" class="dropdown-nav collapse">
+    @endif
+        <li class="nav-item">
+            <a href="{{ route('manage.exam') }}" class="@if(request()->routeIs('manage.exam')) active @endif">
+                <span class="text">Kelola Aksesoris</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('admin.parts.store') }}" class="@if(request()->routeIs('admin.parts.store')) active @endif">
+                <span class="text">Kelola Parts</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('admin.apparels.store') }}" class="@if(request()->routeIs('admin.apparels.store')) active @endif">
+                <span class="text">Kelola Apparel</span>
+            </a>
+        </li>
+    </ul>
+</li>
 
     {{-- Kelola Cabang / Dealer --}}
     <li class="nav-item @if(request()->routeIs('admin.branch')) active @endif">

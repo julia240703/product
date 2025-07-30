@@ -260,14 +260,14 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
 
     // Motors
     Route::get('/motor', [AdminControllerSatu::class, 'adminMotor'])->name('motor');
-    Route::get('/motor/data', [AdminControllerSatu::class, 'getMotorData'])->name('motorData');
-    Route::get('/motor/{motor}', [AdminControllerSatu::class, 'showMotor'])->name('motor.show');
-    Route::post('/motor/add-motor', [AdminControllerSatu::class, 'addMotor'])->name('addMotor');
-    Route::post('/motor/update', [AdminControllerSatu::class, 'updateMotor'])->name('updateMotor');
-    Route::post('/motor/reset-data', [AdminControllerSatu::class, 'resetMotorData'])->name('resetMotorData');
-    Route::delete('/motor/delete-motor', [AdminControllerSatu::class, 'deleteMotor'])->name('deleteMotor');
+    Route::get('/motor/data', [AdminControllerSatu::class, 'getMotorData'])->name('motor.data');
+    Route::get('/motors', [AdminControllerSatu::class, 'motorsIndex'])->name('motors.index');
+    Route::get('/motors/create', [AdminControllerSatu::class, 'motorsCreate'])->name('motors.create');
+    Route::post('/motors/store', [AdminControllerSatu::class, 'motorsStore'])->name('motors.store');
+    Route::get('/motors/edit/{id}', [AdminControllerSatu::class, 'motorsEdit'])->name('motors.edit');
+    Route::post('/motors/update', [AdminControllerSatu::class, 'updateMotor'])->name('motors.update');
+    Route::post('/motors/delete', [AdminControllerSatu::class, 'deleteMotor'])->name('motors.delete');
     Route::get('/motor/colors', [AdminControllerSatu::class, 'colorsIndex'])->name('motor-color.index');
-
 
     // Features
     Route::get('/features', [AdminControllerSatu::class, 'featuresIndex'])->name('features.index');
