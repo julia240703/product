@@ -314,19 +314,22 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::put('/branches/{id}', [AdminControllerSatu::class, 'branchesUpdate'])->name('branches.update');
     Route::delete('/branches/{id}', [AdminControllerSatu::class, 'branchesDelete'])->name('branches.delete');
 
-    // Banner Template Routes
-    Route::get('/banner/templates', [AdminControllerSatu::class, 'manageBannerTemplates'])->name('banner.templates');
-    Route::get('/banner/template/{id?}', [AdminControllerSatu::class, 'manageBannerTemplate'])->name('banner.template.manage');
-    Route::post('/banner/template/store', [AdminControllerSatu::class, 'storeBannerTemplate'])->name('banner.template.store');
-    Route::put('/banner/template/edit', [AdminControllerSatu::class, 'editBannerTemplate'])->name('banner.template.edit');
-    Route::delete('/banner/template/delete', [AdminControllerSatu::class, 'deleteBannerTemplate'])->name('banner.template.delete');
-
-    // Banner Routes
-    Route::get('/banner/data', [AdminControllerSatu::class, 'getBannerData'])->name('banner.data');
-    Route::post('/banner/store', [AdminControllerSatu::class, 'storeBanners'])->name('banner.store');
-    Route::put('/banner/edit', [AdminControllerSatu::class, 'editBanner'])->name('banner.edit');
-    Route::delete('/banner/delete', [AdminControllerSatu::class, 'deleteBanner'])->name('banner.delete');
-    Route::post('/banner/update-order', [AdminControllerSatu::class, 'updateBannerOrder'])->name('banner.update.order');
+    // Banner Template Management Routes
+    Route::get('/banner', [AdminControllerSatu::class, 'adminbanner'])->name('banner');
+    
+    // Template CRUD - untuk AJAX requests
+    Route::get('/template/manage', [AdminControllerSatu::class, 'manageBannerTemplate'])->name('template.manage');
+    Route::get('/template/manage/{id}', [AdminControllerSatu::class, 'manageBannerTemplate'])->name('template.show');
+    Route::post('/template/store', [AdminControllerSatu::class, 'storeBannerTemplate'])->name('template.store');
+    Route::post('/template/edit', [AdminControllerSatu::class, 'editBannerTemplate'])->name('template.edit');
+    Route::post('/template/delete', [AdminControllerSatu::class, 'deleteBannerTemplate'])->name('template.delete');
+    
+    // Banner CRUD - terpisah dari template
+    Route::get('/manage/{templateId?}', [AdminControllerSatu::class, 'manageBanner'])->name('manage');
+    Route::post('/store', [AdminControllerSatu::class, 'storeBanner'])->name('store');
+    Route::post('/edit', [AdminControllerSatu::class, 'editBanner'])->name('edit');
+    Route::post('/delete', [AdminControllerSatu::class, 'deleteBanner'])->name('delete');
+    Route::post('/update-order', [AdminControllerSatu::class, 'updateBannerOrder'])->name('updateOrder');
 
     // Test Ride Requests
     Route::get('/test-rides', [AdminControllerSatu::class, 'testRidesIndex'])->name('test-rides.index');
