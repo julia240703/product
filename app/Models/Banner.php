@@ -17,8 +17,21 @@ class Banner extends Model
         'order'
     ];
 
-    public function template()
+    // Relationship dengan BannerTemplate
+    public function bannerTemplate()
     {
         return $this->belongsTo(BannerTemplate::class, 'banner_template_id');
+    }
+
+    // Scope untuk status aktif
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    // Scope untuk order berdasarkan urutan
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('order', 'asc');
     }
 }

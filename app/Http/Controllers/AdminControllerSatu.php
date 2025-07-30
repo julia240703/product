@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Yajra\DataTables\Facades\DataTables;
 use App\Models\Motor;
-use App\Models\MotorCategory;
-use App\Models\MotorFeature;
-use App\Models\MotorColor;
-use App\Models\MotorSpecification;
-use App\Models\MotorAccessory;
-use App\Models\AccessoryCategory;
-use App\Models\MotorPart;
-use App\Models\Apparel;
-use App\Models\ApparelCategory;
-use App\Models\BranchSatu;
-use App\Models\BranchService;
 use App\Models\Banner;
+use App\Models\Branch;
+use App\Models\Apparel;
 use App\Models\Position;
 use App\Models\TestRide;
-use App\Models\CreditSimulation;
+use App\Models\MotorPart;
+use App\Models\BranchSatu;
+use App\Models\MotorColor;
 use Illuminate\Support\Str;
+use App\Models\MotorFeature;
+use App\Models\PartCategory;
+use Illuminate\Http\Request;
+use App\Models\BranchService;
+use App\Models\MotorCategory;
+use App\Models\BannerTemplate;
+use App\Models\MotorAccessory;
+use App\Models\ApparelCategory;
+use App\Models\CreditSimulation;
+use App\Models\AccessoryCategory;
+use App\Models\MotorSpecification;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
@@ -30,11 +32,12 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Yajra\DataTables\Facades\DataTables;
 
 
 class AdminControllerSatu extends Controller
 {
-    
+
     // --- MOTOR ---
     public function adminMotor()
     {
@@ -56,17 +59,17 @@ class AdminControllerSatu extends Controller
             ->addColumn('action', function ($row) {
                 return '
                     <button class="btn btn-sm btn-primary editBtn" 
-                            data-id="'.$row->id.'" 
-                            data-name="'.$row->name.'" 
-                            data-category="'.$row->category.'" 
-                            data-price="'.$row->price.'" 
-                            data-color="'.$row->color.'">
+                            data-id="' . $row->id . '" 
+                            data-name="' . $row->name . '" 
+                            data-category="' . $row->category . '" 
+                            data-price="' . $row->price . '" 
+                            data-color="' . $row->color . '">
                         <i class="fas fa-pen"></i>
                     </button>
 
                     <button class="btn btn-sm btn-danger deleteBtn" 
-                            data-id="'.$row->id.'" 
-                            data-name="'.$row->name.'">
+                            data-id="' . $row->id . '" 
+                            data-name="' . $row->name . '">
                         <i class="fas fa-trash"></i>
                     </button>
                 ';
@@ -81,10 +84,10 @@ class AdminControllerSatu extends Controller
             $data = Motor::with('category')->latest()->get();
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('category', function($row){
+                ->addColumn('category', function ($row) {
                     return $row->category->name ?? '-';
                 })
-                ->addColumn('action', function($row){
+                ->addColumn('action', function ($row) {
                     $btn = '<a href="' . route("admin.motors.edit", $row->id) . '" class="btn btn-sm btn-primary">Edit</a>';
                     return $btn;
                 })
@@ -95,13 +98,13 @@ class AdminControllerSatu extends Controller
         return view('admin.motors.index');
     }
 
-    public function motorsCreate() 
+    public function motorsCreate()
     {
         $categories = MotorCategory::all();
         return view('admin.motors.create', compact('categories'));
     }
 
-    public function motorsStore(Request $request) 
+    public function motorsStore(Request $request)
     {
         $data = $request->validate([
             'name' => 'required',
@@ -113,7 +116,7 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Motor created.');
     }
 
-    public function motorsEdit($id) 
+    public function motorsEdit($id)
     {
         $motor = Motor::findOrFail($id);
         $categories = MotorCategory::all();
@@ -151,33 +154,33 @@ class AdminControllerSatu extends Controller
     }
 
     public function motorCategoryIndex()
-{
-    return view('pages.admin.manageMotorCategories');
-}
+    {
+        return view('pages.admin.manageMotorCategories');
+    }
 
     public function getMotorCategories(Request $request)
-{
-    if ($request->ajax()) {
-        $data = MotorCategory::select(['id', 'name']);
-        return datatables()->of($data)
-            ->addIndexColumn()
-            ->addColumn('nama_kategori', function($row) {
-                return $row->name;
-            })
-            ->addColumn('action', function($row){
-                return '
-                    <button class="btn btn-sm btn-primary editBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+    {
+        if ($request->ajax()) {
+            $data = MotorCategory::select(['id', 'name']);
+            return datatables()->of($data)
+                ->addIndexColumn()
+                ->addColumn('nama_kategori', function ($row) {
+                    return $row->name;
+                })
+                ->addColumn('action', function ($row) {
+                    return '
+                    <button class="btn btn-sm btn-primary editBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 ';
-            })
-            ->rawColumns(['action']) // biar tombol HTML-nya dirender
-            ->make(true);
+                })
+                ->rawColumns(['action']) // biar tombol HTML-nya dirender
+                ->make(true);
+        }
     }
-}
 
     // Simpan kategori baru
     public function storeMotorCategory(Request $request)
@@ -222,33 +225,33 @@ class AdminControllerSatu extends Controller
     }
 
     public function accessoriesCategoryIndex()
-{
-    return view('pages.admin.manageAccessoriesCategories');
-}
+    {
+        return view('pages.admin.manageAccessoriesCategories');
+    }
 
     public function getAccessoriesCategories(Request $request)
-{
-    if ($request->ajax()) {
-        $data = AccessoryCategory::select(['id', 'name']);
-        return datatables()->of($data)
-            ->addIndexColumn()
-            ->addColumn('nama_kategori', function($row) {
-                return $row->name;
-            })
-            ->addColumn('action', function($row){
-                return '
-                    <button class="btn btn-sm btn-primary editBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+    {
+        if ($request->ajax()) {
+            $data = AccessoryCategory::select(['id', 'name']);
+            return datatables()->of($data)
+                ->addIndexColumn()
+                ->addColumn('nama_kategori', function ($row) {
+                    return $row->name;
+                })
+                ->addColumn('action', function ($row) {
+                    return '
+                    <button class="btn btn-sm btn-primary editBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 ';
-            })
-            ->rawColumns(['action']) // biar tombol HTML-nya dirender
-            ->make(true);
+                })
+                ->rawColumns(['action']) // biar tombol HTML-nya dirender
+                ->make(true);
+        }
     }
-}
 
     // Simpan kategori baru
     public function storeAccessoriesCategory(Request $request)
@@ -297,21 +300,21 @@ class AdminControllerSatu extends Controller
         return view('pages.admin.manageApparelCategories');
     }
 
-        public function getApparelCategories(Request $request)
+    public function getApparelCategories(Request $request)
     {
         if ($request->ajax()) {
             $data = ApparelCategory::select(['id', 'name']);
             return datatables()->of($data)
                 ->addIndexColumn()
-                ->addColumn('nama_kategori', function($row) {
+                ->addColumn('nama_kategori', function ($row) {
                     return $row->name;
                 })
-                ->addColumn('action', function($row){
+                ->addColumn('action', function ($row) {
                     return '
-                        <button class="btn btn-sm btn-primary editBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+                        <button class="btn btn-sm btn-primary editBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+                        <button class="btn btn-sm btn-danger deleteBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     ';
@@ -368,21 +371,21 @@ class AdminControllerSatu extends Controller
         return view('pages.admin.managePartsCategories');
     }
 
-        public function getPartsCategories(Request $request)
+    public function getPartsCategories(Request $request)
     {
         if ($request->ajax()) {
             $data = PartCategory::select(['id', 'name']);
             return datatables()->of($data)
                 ->addIndexColumn()
-                ->addColumn('nama_kategori', function($row) {
+                ->addColumn('nama_kategori', function ($row) {
                     return $row->name;
                 })
-                ->addColumn('action', function($row){
+                ->addColumn('action', function ($row) {
                     return '
-                        <button class="btn btn-sm btn-primary editBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+                        <button class="btn btn-sm btn-primary editBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'" data-name="'.$row->name.'">
+                        <button class="btn btn-sm btn-danger deleteBtn" data-id="' . $row->id . '" data-name="' . $row->name . '">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     ';
@@ -435,7 +438,7 @@ class AdminControllerSatu extends Controller
     }
 
     // --- MOTOR FEATURE ---
-    public function featuresStore(Request $request) 
+    public function featuresStore(Request $request)
     {
         $data = $request->validate([
             'motor_id' => 'required|exists:motors,id',
@@ -451,14 +454,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Feature added.');
     }
 
-    public function featuresEdit($id) 
+    public function featuresEdit($id)
     {
         $feature = MotorFeature::findOrFail($id);
         $motors = Motor::all();
         return view('admin.features.edit', compact('feature', 'motors'));
     }
 
-    public function featuresUpdate(Request $request, $id) 
+    public function featuresUpdate(Request $request, $id)
     {
         $feature = MotorFeature::findOrFail($id);
         $data = $request->validate([
@@ -471,21 +474,21 @@ class AdminControllerSatu extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-        $data['image_url'] = $this->uploadImage($request, 'image', 'features');
-    }
+            $data['image_url'] = $this->uploadImage($request, 'image', 'features');
+        }
 
         $feature->update($data);
         return back()->with('success', 'Feature updated.');
     }
 
-    public function featuresDelete($id) 
+    public function featuresDelete($id)
     {
         MotorFeature::findOrFail($id)->delete();
         return back()->with('success', 'Feature deleted.');
     }
 
     // --- MOTOR COLOR ---
-    public function colorsStore(Request $request) 
+    public function colorsStore(Request $request)
     {
         $data = $request->validate([
             'motor_id' => 'required|exists:motors,id',
@@ -499,14 +502,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Color added.');
     }
 
-    public function colorsEdit($id) 
+    public function colorsEdit($id)
     {
         $color = MotorColor::findOrFail($id);
         $motors = Motor::all();
         return view('admin.colors.edit', compact('color', 'motors'));
     }
 
-    public function colorsUpdate(Request $request, $id) 
+    public function colorsUpdate(Request $request, $id)
     {
         $color = MotorColor::findOrFail($id);
         $data = $request->validate([
@@ -517,22 +520,22 @@ class AdminControllerSatu extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-        $data['image_url'] = $this->uploadImage($request, 'image', 'colors');
-    }
+            $data['image_url'] = $this->uploadImage($request, 'image', 'colors');
+        }
 
         $color->update($data);
 
         return back()->with('success', 'Color updated.');
     }
 
-    public function colorsDelete($id) 
+    public function colorsDelete($id)
     {
         MotorColor::findOrFail($id)->delete();
         return back()->with('success', 'Color deleted.');
     }
 
     // --- MOTOR SPECIFICATION ---
-    public function specsStore(Request $request) 
+    public function specsStore(Request $request)
     {
         $data = $request->validate([
             'motor_id' => 'required|exists:motors,id',
@@ -545,14 +548,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Specification added.');
     }
 
-    public function specsEdit($id) 
+    public function specsEdit($id)
     {
         $spec = MotorSpecification::findOrFail($id);
         $motors = Motor::all();
         return view('admin.specs.edit', compact('spec', 'motors'));
     }
 
-    public function specsUpdate(Request $request, $id) 
+    public function specsUpdate(Request $request, $id)
     {
         $spec = MotorSpecification::findOrFail($id);
         $data = $request->validate([
@@ -566,14 +569,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Specification updated.');
     }
 
-    public function specsDelete($id) 
+    public function specsDelete($id)
     {
         MotorSpecification::findOrFail($id)->delete();
         return back()->with('success', 'Specification deleted.');
     }
 
     // --- MOTOR ACCESSORY ---
-    public function accessoriesStore(Request $request) 
+    public function accessoriesStore(Request $request)
     {
         $data = $request->validate([
             'category_id' => 'required|exists:accessory_categories,id',
@@ -592,14 +595,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Accessory added.');
     }
 
-    public function accessoriesEdit($id) 
+    public function accessoriesEdit($id)
     {
         $accessory = MotorAccessory::findOrFail($id);
         $categories = AccessoryCategory::all();
         return view('admin.accessories.edit', compact('accessory', 'categories'));
     }
 
-    public function accessoriesUpdate(Request $request, $id) 
+    public function accessoriesUpdate(Request $request, $id)
     {
         $accessory = MotorAccessory::findOrFail($id);
         $data = $request->validate([
@@ -622,14 +625,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Accessory updated.');
     }
 
-    public function accessoriesDelete($id) 
+    public function accessoriesDelete($id)
     {
         MotorAccessory::findOrFail($id)->delete();
         return back()->with('success', 'Accessory deleted.');
     }
 
     // --- MOTOR PART ---
-    public function partsStore(Request $request) 
+    public function partsStore(Request $request)
     {
         $data = $request->validate([
             'motor_id' => 'required|exists:motors,id',
@@ -644,14 +647,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Part added.');
     }
 
-    public function partsEdit($id) 
+    public function partsEdit($id)
     {
         $part = MotorPart::findOrFail($id);
         $motors = Motor::all();
         return view('admin.parts.edit', compact('part', 'motors'));
     }
 
-    public function partsUpdate(Request $request, $id) 
+    public function partsUpdate(Request $request, $id)
     {
         $part = MotorPart::findOrFail($id);
         $data = $request->validate([
@@ -670,14 +673,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Part updated.');
     }
 
-    public function partsDelete($id) 
+    public function partsDelete($id)
     {
         MotorPart::findOrFail($id)->delete();
         return back()->with('success', 'Part deleted.');
     }
 
     // --- APPAREL ---
-    public function apparelsStore(Request $request) 
+    public function apparelsStore(Request $request)
     {
         $data = $request->validate([
             'category_id' => 'required|exists:apparel_categories,id',
@@ -694,14 +697,14 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Apparel added.');
     }
 
-    public function apparelsEdit($id) 
+    public function apparelsEdit($id)
     {
         $apparel = Apparel::findOrFail($id);
         $categories = ApparelCategory::all();
         return view('admin.apparels.edit', compact('apparel', 'categories'));
     }
 
-    public function apparelsUpdate(Request $request, $id) 
+    public function apparelsUpdate(Request $request, $id)
     {
         $apparel = Apparel::findOrFail($id);
         $data = $request->validate([
@@ -715,22 +718,22 @@ class AdminControllerSatu extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-        $data['image_url'] = $this->uploadImage($request, 'image', 'apparels');
-    }
+            $data['image_url'] = $this->uploadImage($request, 'image', 'apparels');
+        }
 
         $apparel->update($data);
 
         return back()->with('success', 'Apparel updated.');
     }
 
-    public function apparelsDelete($id) 
+    public function apparelsDelete($id)
     {
         Apparel::findOrFail($id)->delete();
         return back()->with('success', 'Apparel deleted.');
     }
 
     // --- BRANCH ---
-    public function branchesStore(Request $request) 
+    public function branchesStore(Request $request)
     {
         $data = $request->validate([
             'area' => 'required',
@@ -751,13 +754,13 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Branch added.');
     }
 
-    public function branchesEdit($id) 
+    public function branchesEdit($id)
     {
         $branch = Branch::with('services')->findOrFail($id);
         return view('admin.branches.edit', compact('branch'));
     }
 
-    public function branchesUpdate(Request $request, $id) 
+    public function branchesUpdate(Request $request, $id)
     {
         $branch = Branch::findOrFail($id);
         $data = $request->validate([
@@ -780,7 +783,7 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Branch updated.');
     }
 
-    public function branchesDelete($id) 
+    public function branchesDelete($id)
     {
         $branch = Branch::findOrFail($id);
         $branch->services()->delete();
@@ -788,29 +791,30 @@ class AdminControllerSatu extends Controller
         return back()->with('success', 'Branch deleted.');
     }
 
+
     // === BANNER ===
-    // Halaman utama template banner
-    public function manageBannerTemplates()
+    /*------------------------------------------
+    --------------------------------------------
+    Banner Template Management
+    --------------------------------------------*/
+
+    // Halaman utama banner
+    public function adminbanner()
     {
-        return view('pages.admin.manageBanner');
+        return view('pages.admin.managebanner');
     }
 
-    // Get data templates untuk display dan AJAX
+    // Get data banner templates untuk display dan AJAX
     public function manageBannerTemplate(Request $request, $id = null)
     {
         if ($id) {
-            // Get specific template with banners for edit
-            $template = BannerTemplate::with(['banners' => function ($query) {
-                $query->orderBy('order', 'asc');
-            }])->findOrFail($id);
-
+            // Get specific template for edit
+            $template = BannerTemplate::findOrFail($id);
             return response()->json($template);
         }
 
-        // Get all templates with banners for display
-        $templates = BannerTemplate::with(['banners' => function ($query) {
-            $query->orderBy('order', 'asc');
-        }])->orderBy('name', 'asc')->get();
+        // Get all templates with banners count
+        $templates = BannerTemplate::withCount('banners')->orderBy('name', 'asc')->get();
 
         if ($request->ajax()) {
             return response()->json($templates);
@@ -819,46 +823,80 @@ class AdminControllerSatu extends Controller
         return $templates;
     }
 
-    // Store template baru
+    // Store template baru (HANYA TEMPLATE, BUKAN BANNER)
     public function storeBannerTemplate(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:banner_templates,name',
         ]);
 
-        DB::beginTransaction();
         try {
-            BannerTemplate::create([
+            $template = BannerTemplate::create([
                 'name' => $request->name,
             ]);
 
-            DB::commit();
-            return redirect()->back()->with('success', 'Template banner berhasil ditambahkan!');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Template berhasil ditambahkan!',
+                    'data' => $template
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Template berhasil ditambahkan!');
         } catch (\Exception $e) {
-            DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan template: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Gagal menambahkan template: ' . $e->getMessage());
         }
     }
 
-    // Edit template (jika perlu, saat ini hanya hapus dan tambah)
+    // Edit template name
     public function editBannerTemplate(Request $request)
     {
         $request->validate([
             'template_id' => 'required|exists:banner_templates,id',
-            'name' => 'required|string|max:255|unique:banner_templates,name,' . $request->template_id,
+            'name' => 'required|string|max:255',
         ]);
 
-        DB::beginTransaction();
         try {
             $template = BannerTemplate::findOrFail($request->template_id);
+
+            // Check if name is unique (except current template)
+            $existingTemplate = BannerTemplate::where('name', $request->name)
+                ->where('id', '!=', $template->id)
+                ->first();
+
+            if ($existingTemplate) {
+                return redirect()->back()->with('error', 'Nama template sudah digunakan.');
+            }
+
             $template->update([
                 'name' => $request->name,
             ]);
 
-            DB::commit();
-            return redirect()->back()->with('success', 'Template banner berhasil diperbarui!');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Template berhasil diperbarui!',
+                    'data' => $template
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Template berhasil diperbarui!');
         } catch (\Exception $e) {
-            DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui template: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Gagal memperbarui template: ' . $e->getMessage());
         }
     }
@@ -866,64 +904,105 @@ class AdminControllerSatu extends Controller
     // Hapus template
     public function deleteBannerTemplate(Request $request)
     {
-        $request->validate(['id' => 'required|exists:banner_templates,id']);
-
-        $template = BannerTemplate::findOrFail($request->id);
-
-        // Check if template is being used (banners exist)
-        if ($template->banners()->count() > 0) {
-            return redirect()->back()->with('error', 'Template tidak dapat dihapus karena memiliki banner.');
-        }
-
-        $template->delete();
-
-        return redirect()->back()->with('success', 'Template banner berhasil dihapus!');
-    }
-
-    public function getBannerData(Request $request)
-{
-    $banners = Banner::select(['id', 'title', 'status', 'position', 'image_path'])
-        ->orderBy('id', 'desc');
-
-    return datatables()->of($banners)
-        ->addIndexColumn()
-        ->make(true);
-}
-
-    // Store banner baru
-    public function storeBanners(Request $request)
-    {
-        Log::info('Request data:', $request->all());
-        Log::info('Files:', $request->allFiles());
-
         $request->validate([
-            'banner_template_id' => 'required|exists:banner_templates,id',
-            'title' => 'nullable|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:10240',
-            'status' => 'required|in:active,inactive',
+            'id' => 'required|exists:banner_templates,id'
         ]);
 
         DB::beginTransaction();
         try {
-            $maxOrder = Banner::where('banner_template_id', $request->banner_template_id)->max('order') ?? 0;
-            $imagePath = null;
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('banners', 'public');
+            $template = BannerTemplate::findOrFail($request->id);
+
+            // Check if template has banners
+            if ($template->banners()->count() > 0) {
+                return redirect()->back()->with('error', 'Template tidak dapat dihapus karena masih memiliki banner.');
             }
 
-            Banner::create([
+            $template->delete();
+
+            DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Template berhasil dihapus!'
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Template berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus template: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Gagal menghapus template: ' . $e->getMessage());
+        }
+    }
+
+    /*------------------------------------------
+    --------------------------------------------
+    Banner CRUD Management
+    --------------------------------------------*/
+
+    // Store banner baru
+    public function storeBanner(Request $request)
+    {
+        $request->validate([
+            'banner_template_id' => 'required|exists:banner_templates,id',
+            'title' => 'nullable|string|max:255',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB
+            'status' => 'required|in:active,inactive',
+            // Hapus validasi order
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $imagePath = null;
+
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('public/banners', $imageName);
+                $imagePath = '/storage/banners/' . $imageName;
+            }
+
+            // Get next order number untuk template ini
+            $nextOrder = Banner::where('banner_template_id', $request->banner_template_id)->max('order') + 1;
+
+            $banner = Banner::create([
                 'banner_template_id' => $request->banner_template_id,
                 'title' => $request->title,
                 'image_path' => $imagePath,
                 'status' => $request->status,
-                'order' => $maxOrder + 1,
+                'order' => $nextOrder, // Auto increment order
             ]);
 
             DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Banner berhasil ditambahkan!',
+                    'data' => $banner
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Banner berhasil ditambahkan!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Banner upload error: ' . $e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menambahkan banner: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Gagal menambahkan banner: ' . $e->getMessage());
         }
     }
@@ -931,80 +1010,208 @@ class AdminControllerSatu extends Controller
     // Edit banner
     public function editBanner(Request $request)
     {
-        $banner = Banner::findOrFail($request->id);
-
         $request->validate([
+            'id' => 'required|exists:banners,id',
+            'banner_template_id' => 'required|exists:banner_templates,id',
             'title' => 'nullable|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'status' => 'required|in:active,inactive',
+            // Hapus validasi order
         ]);
 
         DB::beginTransaction();
         try {
+            $banner = Banner::findOrFail($request->id);
+
             $updateData = [
+                'banner_template_id' => $request->banner_template_id,
                 'title' => $request->title,
                 'status' => $request->status,
+                // Hapus order dari update data
             ];
 
+            // Handle image upload if new image provided
             if ($request->hasFile('image')) {
+                // Delete old image
                 if ($banner->image_path) {
-                    Storage::disk('public')->delete($banner->image_path);
+                    $oldImagePath = str_replace('/storage/', 'public/', $banner->image_path);
+                    if (Storage::exists($oldImagePath)) {
+                        Storage::delete($oldImagePath);
+                    }
                 }
-                $updateData['image_path'] = $request->file('image')->store('banners', 'public');
+
+                // Upload new image
+                $image = $request->file('image');
+                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('public/banners', $imageName);
+                $updateData['image_path'] = '/storage/banners/' . $imageName;
             }
 
             $banner->update($updateData);
 
             DB::commit();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Banner berhasil diperbarui!',
+                    'data' => $banner
+                ]);
+            }
+
             return redirect()->back()->with('success', 'Banner berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Banner update error: ' . $e->getMessage());
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui banner: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Gagal memperbarui banner: ' . $e->getMessage());
         }
     }
 
-    // Hapus banner
+    // Delete banner
     public function deleteBanner(Request $request)
     {
-        $banner = Banner::findOrFail($request->id);
-
-        DB::beginTransaction();
-        try {
-            if ($banner->image_path) {
-                Storage::disk('public')->delete($banner->image_path);
-            }
-            $banner->delete();
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Banner berhasil dihapus!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Banner delete error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal menghapus banner: ' . $e->getMessage());
-        }
-    }
-
-    // Update order banner via drag-and-drop
-    public function updateBannerOrder(Request $request)
-    {
         $request->validate([
-            'order' => 'required|array',
-            'order.*.id' => 'required|exists:banners,id',
-            'order.*.banner_template_id' => 'required|exists:banner_templates,id',
+            'id' => 'required|exists:banners,id'
         ]);
 
         DB::beginTransaction();
         try {
-            foreach ($request->order as $index => $item) {
-                Banner::where('id', $item['id'])->update(['order' => $index + 1]);
+            $banner = Banner::findOrFail($request->id);
+            $templateId = $banner->banner_template_id;
+            $deletedOrder = $banner->order;
+
+            // Delete image file
+            if ($banner->image_path) {
+                $imagePath = str_replace('/storage/', 'public/', $banner->image_path);
+                if (Storage::exists($imagePath)) {
+                    Storage::delete($imagePath);
+                }
             }
 
+            $banner->delete();
+
+            // Reorder banners setelah yang dihapus
+            Banner::where('banner_template_id', $templateId)
+                ->where('order', '>', $deletedOrder)
+                ->decrement('order');
+
             DB::commit();
-            return response()->json(['message' => 'Urutan banner berhasil diperbarui']);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Banner berhasil dihapus!'
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Banner berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Gagal memperbarui urutan: ' . $e->getMessage()], 500);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus banner: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Gagal menghapus banner: ' . $e->getMessage());
+        }
+    }
+    public function updateBannerOrder(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:banners,id',
+            'order' => 'required|integer|min:1',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $banner = Banner::findOrFail($request->id);
+            $templateId = $banner->banner_template_id;
+            $currentOrder = $banner->order;
+            $newOrder = $request->order;
+
+            // Jika order sama, tidak perlu update
+            if ($currentOrder == $newOrder) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order tidak berubah'
+                ]);
+            }
+
+            // Get max order untuk template ini
+            $maxOrder = Banner::where('banner_template_id', $templateId)->max('order');
+
+            // Jika new order lebih besar dari max order, set ke max order + 1
+            if ($newOrder > $maxOrder) {
+                $newOrder = $maxOrder;
+            }
+
+            if ($currentOrder < $newOrder) {
+                // Moving down: geser yang di antara current dan new order ke atas
+                Banner::where('banner_template_id', $templateId)
+                    ->where('order', '>', $currentOrder)
+                    ->where('order', '<=', $newOrder)
+                    ->decrement('order');
+            } else {
+                // Moving up: geser yang di antara new dan current order ke bawah
+                Banner::where('banner_template_id', $templateId)
+                    ->where('order', '>=', $newOrder)
+                    ->where('order', '<', $currentOrder)
+                    ->increment('order');
+            }
+
+            // Update banner yang dipindah
+            $banner->update(['order' => $newOrder]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Urutan berhasil diubah!'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah urutan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    /*------------------------------------------
+    --------------------------------------------
+    Banner Data Table Management
+    --------------------------------------------*/
+    public function manageBanner(Request $request, $templateId = null)
+    {
+        if ($request->ajax()) {
+            $query = Banner::with('bannerTemplate')
+                ->select(['banners.*'])
+                ->join('banner_templates', 'banners.banner_template_id', '=', 'banner_templates.id')
+                ->addSelect('banner_templates.name as template_name');
+
+            // Filter by template if specified and not 'all'
+            if ($templateId && $templateId !== 'all') {
+                $query->where('banners.banner_template_id', $templateId);
+            }
+
+            $query->orderBy('banner_templates.name')
+                ->orderBy('banners.order');
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('template_name', function ($row) {
+                    return $row->template_name;
+                })
+                ->make(true);
         }
     }
 
@@ -1018,7 +1225,7 @@ class AdminControllerSatu extends Controller
     }
 
     // --- TEST RIDE ---
-    public function testRidesIndex() 
+    public function testRidesIndex()
     {
         $rides = TestRide::latest()->paginate(10);
         return view('admin.test_rides.index', compact('rides'));
@@ -1037,7 +1244,7 @@ class AdminControllerSatu extends Controller
     }
 
     // --- SIMULASI KREDIT ---
-    public function creditsIndex() 
+    public function creditsIndex()
     {
         $simulations = CreditSimulation::latest()->paginate(10);
         return view('admin.credits.index', compact('simulations'));

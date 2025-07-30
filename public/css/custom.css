@@ -165,3 +165,61 @@
         z-index: 9999; /* Set a high z-index value */
     }
 }
+.order-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.order-number {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.btn-xs {
+    padding: 2px 6px;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.btn-group-vertical .btn {
+    border-radius: 0;
+}
+
+.btn-group-vertical .btn:first-child {
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+}
+
+.btn-group-vertical .btn:last-child {
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}
+.template-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.template-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.template-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+    margin: 0;
+}
+
+.template-header .btn {
+    padding: 4px 8px;
+}

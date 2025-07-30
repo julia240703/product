@@ -13,8 +13,8 @@
 </li>
 
     {{-- Kelola Banner --}}
-    <li class="nav-item @if(request()->routeIs('admin.banner.templates')) active @endif">
-        <a href="{{ route('admin.banner.templates') }}">
+    <li class="nav-item @if(request()->routeIs('admin.banner')) active @endif">
+        <a href="{{ route('admin.banner') }}">
             <span class="icon"><i class="fa-solid fa-image"></i></span>
             <span class="text">Kelola Banner</span>
         </a>

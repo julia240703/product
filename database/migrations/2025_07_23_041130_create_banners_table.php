@@ -17,8 +17,7 @@ return new class extends Migration
             $table->string('title')->nullable(); // Judul banner
             $table->string('image_path')->nullable(); // Path gambar
             $table->string('status')->default('active'); // Status (active/inactive)
-            $table->integer('order')->unsigned()->default(1); // Urutan
-            $table->unique(['banner_template_id', 'order']);
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }
