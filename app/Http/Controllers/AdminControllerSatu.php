@@ -1125,67 +1125,72 @@ class AdminControllerSatu extends Controller
             return redirect()->back()->with('error', 'Gagal menghapus banner: ' . $e->getMessage());
         }
     }
-    public function updateBannerOrder(Request $request)
-    {
-        $request->validate([
-            'id' => 'required|exists:banners,id',
-            'order' => 'required|integer|min:1',
-        ]);
+public function updateBannerOrder(Request $request)
+{
+    $request->validate([
+        'id' => 'required|exists:banners,id',
+        'order' => 'required|integer|min:1',
+    ]);
 
-        DB::beginTransaction();
-        try {
-            $banner = Banner::findOrFail($request->id);
-            $templateId = $banner->banner_template_id;
-            $currentOrder = $banner->order;
-            $newOrder = $request->order;
+    DB::beginTransaction();
+    try {
+        $banner = Banner::findOrFail($request->id);
+        $templateId = $banner->banner_template_id;
+        $currentOrder = $banner->order;
+        $newOrder = $request->order;
 
-            // Jika order sama, tidak perlu update
-            if ($currentOrder == $newOrder) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Order tidak berubah'
-                ]);
-            }
-
-            // Get max order untuk template ini
-            $maxOrder = Banner::where('banner_template_id', $templateId)->max('order');
-
-            // Jika new order lebih besar dari max order, set ke max order + 1
-            if ($newOrder > $maxOrder) {
-                $newOrder = $maxOrder;
-            }
-
-            if ($currentOrder < $newOrder) {
-                // Moving down: geser yang di antara current dan new order ke atas
-                Banner::where('banner_template_id', $templateId)
-                    ->where('order', '>', $currentOrder)
-                    ->where('order', '<=', $newOrder)
-                    ->decrement('order');
-            } else {
-                // Moving up: geser yang di antara new dan current order ke bawah
-                Banner::where('banner_template_id', $templateId)
-                    ->where('order', '>=', $newOrder)
-                    ->where('order', '<', $currentOrder)
-                    ->increment('order');
-            }
-
-            // Update banner yang dipindah
-            $banner->update(['order' => $newOrder]);
-
-            DB::commit();
-
+        // Jika order sama, tidak perlu update
+        if ($currentOrder == $newOrder) {
             return response()->json([
                 'success' => true,
-                'message' => 'Urutan berhasil diubah!'
+                'message' => 'Order tidak berubah'
             ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengubah urutan: ' . $e->getMessage()
-            ], 500);
         }
+
+        // Get max order untuk template ini
+        $maxOrder = Banner::where('banner_template_id', $templateId)->max('order');
+
+        // Jika new order lebih besar dari max order, batasi ke max order
+        if ($newOrder > $maxOrder) {
+            $newOrder = $maxOrder;
+        }
+
+        // Sementara set order banner yang dipindah ke 0 untuk menghindari konflik
+        $banner->update(['order' => 0]);
+
+        if ($currentOrder < $newOrder) {
+            // Moving down (dari order kecil ke besar): 
+            // geser semua banner yang ordernya antara currentOrder+1 sampai newOrder ke atas (kurangi 1)
+            Banner::where('banner_template_id', $templateId)
+                ->where('order', '>', $currentOrder)
+                ->where('order', '<=', $newOrder)
+                ->decrement('order');
+        } else {
+            // Moving up (dari order besar ke kecil):
+            // geser semua banner yang ordernya antara newOrder sampai currentOrder-1 ke bawah (tambah 1)
+            Banner::where('banner_template_id', $templateId)
+                ->where('order', '>=', $newOrder)
+                ->where('order', '<', $currentOrder)
+                ->increment('order');
+        }
+
+        // Set order banner yang dipindah ke posisi baru
+        $banner->update(['order' => $newOrder]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Urutan berhasil diubah!'
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengubah urutan: ' . $e->getMessage()
+        ], 500);
     }
+}
     /*------------------------------------------
     --------------------------------------------
     Banner Data Table Management

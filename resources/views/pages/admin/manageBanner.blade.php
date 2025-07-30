@@ -484,6 +484,7 @@
                     },
                     success: function(response) {
                         if (response.success) {
+                            showMessage(response.message);
                             dataTable.ajax.reload(null, false);
                             loadTemplates();
                         } else {
@@ -491,7 +492,12 @@
                         }
                     },
                     error: function(xhr) {
-                        showMessage('Terjadi kesalahan saat mengubah urutan', 'error');
+                        let errorMessage = 'Terjadi kesalahan saat mengubah urutan';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        showMessage(errorMessage, 'error');
+                        console.error('Error:', xhr);
                     }
                 });
             }
@@ -629,7 +635,7 @@
                     if (fileSizeMB > 10) {
                         alert(
                             `Ukuran file terlalu besar! Maksimal 10MB. Ukuran file Anda: ${fileSizeMB.toFixed(2)}MB`
-                            );
+                        );
                         this.value = '';
                         return false;
                     }
