@@ -13,6 +13,7 @@ class Motor extends Model
         'name',
         'price',
         'category_id',
+        'color',
     ];
 
     public function category()

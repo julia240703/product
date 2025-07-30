@@ -10,8 +10,15 @@ class Banner extends Model
     use HasFactory;
 
     protected $fillable = [
+        'banner_template_id',
         'title',
-        'image_url',
-        'is_active',
+        'image_path',
+        'status',
+        'order'
     ];
+
+    public function template()
+    {
+        return $this->belongsTo(BannerTemplate::class, 'banner_template_id');
+    }
 }

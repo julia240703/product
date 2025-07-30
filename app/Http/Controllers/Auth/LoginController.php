@@ -52,7 +52,7 @@ class LoginController extends Controller
         $user = Auth::user();
 
         if ($user->type === 1) {
-            return redirect()->intended('/admin/home');
+            return redirect()->intended('/admin/branch');
         }
 
         Auth::logout(); // Logout jika bukan admin

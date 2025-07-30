@@ -11,18 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motor_categories', function (Blueprint $table) {
+        Schema::create('banner_templates', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique(); // Misalnya "Home", "Produk"
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('motor_categories');
+        Schema::dropIfExists('banner_templates');
     }
 };

@@ -1,5 +1,5 @@
 @extends('layouts.appAdmin')
-<title>Hasil Psikotes Peserta</title>
+<title>Apparel</title>
  
 @section('content')
  <!-- ========== section start ========== -->
@@ -9,7 +9,7 @@
             <div class="row align-items-center">
               <div class="col-md-6">
                 <div class="title mb-30">
-                  <h2>Hasil Psikotes</h2>
+                  <h2>Kelola Apparel</h2>
                 </div>
               </div>
               <!-- end col -->
@@ -21,7 +21,7 @@
                         <a href="#0">Admin</a>
                       </li>
                       <li class="breadcrumb-item active" aria-current="page">
-                      Results
+                      Apparels
                       </li>
                     </ol>
                   </nav>

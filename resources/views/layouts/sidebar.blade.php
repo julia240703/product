@@ -26,7 +26,7 @@
               <span class="icon">
                 <img src="{{ asset('images/icon/contract.png') }}" alt="..."  style="width: 22px; height: 22px;" >
               </span>
-            <span class="text">{{ __('Hasil Psikotes') }}</span>
+            <span class="text">{{ __('Kelola') }}</span>
         </a>
     </li>
 

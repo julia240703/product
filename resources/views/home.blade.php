@@ -44,7 +44,7 @@
                 @foreach($motors as $motor)
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-sm">
-                            <img src="{{ asset('storage/' . $motor->colors->first()->image_url ?? 'default.jpg') }}" class="card-img-top" alt="{{ $motor->name }}">
+                            <img src="{{ asset($motor->colors->first()?->image_url ? 'storage/' . $motor->colors->first()->image_url : 'images/default.jpg') }}" class="card-img-top" alt="{{ $motor->name }}">
                             <div class="card-body">
                                 <h5 class="card-title">{{ $motor->name }}</h5>
                                 <p class="card-text">Rp {{ number_format($motor->price, 0, ',', '.') }}</p>

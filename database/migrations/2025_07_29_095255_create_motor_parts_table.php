@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motor_categories', function (Blueprint $table) {
+        Schema::create('motor_parts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('motor_id')->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->bigInteger('price');
+            $table->string('image_url')->nullable();
+            $table->text('compatibility_notes')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('motor_categories');
+        Schema::dropIfExists('motor_parts');
     }
 };

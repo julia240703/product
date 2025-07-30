@@ -10,7 +10,7 @@
             <div class="row align-items-center">
               <div class="col-md-6">
                 <div class="title mb-30">
-                  <h2>Kelola Soal Psikotes</h2>
+                  <h2>Kelola Aksesoris</h2>
                 </div>
               </div>
               <!-- end col -->
@@ -22,7 +22,7 @@
                         <a href="#0">Admin</a>
                       </li>
                       <li class="breadcrumb-item active" aria-current="page">
-                        Manage-exam-question
+                        Accessories
                       </li>
                     </ol>
                   </nav>

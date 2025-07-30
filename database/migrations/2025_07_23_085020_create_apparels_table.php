@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motor_categories', function (Blueprint $table) {
+        Schema::create('apparels', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('category_id')->constrained('apparel_categories')->onDelete('cascade');
             $table->string('name');
+            $table->bigInteger('price');
+            $table->string('size')->nullable();
+            $table->string('color')->nullable();
+            $table->string('material')->nullable();
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('motor_categories');
+        Schema::dropIfExists('apparels');
     }
 };

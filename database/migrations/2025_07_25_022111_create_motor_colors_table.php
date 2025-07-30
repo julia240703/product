@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motor_categories', function (Blueprint $table) {
+        Schema::create('motor_colors', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->foreignId('motor_id')->constrained()->onDelete('cascade');
+            $table->string('color_name');
+            $table->string('hex_color')->nullable(); // optional
+            $table->string('image_url'); // gambar warna motor
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('motor_categories');
+        Schema::dropIfExists('motor_colors');
     }
 };

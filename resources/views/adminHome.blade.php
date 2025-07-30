@@ -50,7 +50,7 @@
 
           <div class="row">
             <div class="col-xl-3 col-lg-4 col-sm-6">
-              <a href="{{ route('admin.users') }}" class="icon-card mb-30 custom-hover">
+            <a href="{{ route('admin.users') }}" class="icon-card mb-30 custom-hover">
                 <div class="icon success">
                   <i class="lni lni-users"></i>
                 </div>

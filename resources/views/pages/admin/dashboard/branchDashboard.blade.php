@@ -9,7 +9,7 @@
             <div class="row align-items-center">
               <div class="col-md-6">
                 <div class="title">
-                  <h2>Dashboard Cabang</h2>
+                  <h2>Dashboard Utama</h2>
                 </div>
               </div>
               <!-- end col -->
@@ -58,95 +58,44 @@
           <!-- end row -->
       </div>
 
-          <!-- ========== title-wrapper end ========== -->
+  
           <div class="row">
-            <div class="col-xl-4 col-lg-6 col-sm-12">
-              <a href="{{ route('admin.jktbranch') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon success">
-                  <i class="fa-solid fa-building"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Jakarta</h6>
-                  <h3 class="text-bold mb-10">{{$userCountJakarta}}</h3>
-                  <!-- <p class="text-sm text-success">
-                    <i class="lni lni-arrow-up"></i> +2.00%
-                  </p> -->
-                </div>
-              </a>
-            <!-- End Icon Cart -->
-            </div>
+  <div class="col-xl-4 col-lg-6 col-sm-12">
+    <a href="{{ route('manage.branch') }}" class="icon-card mb-30 custom-hover">
+      <div class="icon orange">
+        <i class="fa-solid fa-city"></i>
+      </div>
+      <div class="content text-end ms-auto">
+        <h6 class="mb-10">Jumlah Cabang</h6>
+        <h3 class="text-bold mb-10">{{$branchCount}}</h3>
+      </div>
+    </a>
+  </div>
 
-            <!-- End Col -->
-            <div class="col-xl-4 col-lg-6 col-sm-12">
-              <a href="{{ route('admin.tgrbranch') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon primary">
-                  <i class="fa-solid fa-building"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Tangerang</h6>
-                  <h3 class="text-bold mb-10">{{$userCountTangerang}}</h3>
-                  <!-- <p class="text-sm text-success">
-                    <i class="lni lni-arrow-up"></i> +5.45%
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
-            <div class="col-xl-4 col-lg-6 col-sm-12">
-              <a href="{{ route('admin.othersbranch') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon orange">
-                  <i class="fa-solid fa-building"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Luar Kota</h6>
-                  <h3 class="text-bold mb-10">{{$userCountLuarKota}}</h3>
-                  <!-- <p class="text-sm text-danger">
-                    <i class="lni lni-arrow-down"></i> -2.00%
-                    <span class="text-gray">Expense</span>
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
+  <div class="col-xl-4 col-lg-6 col-sm-12">
+    <a href="{{ route('job.position') }}" class="icon-card mb-30 custom-hover">
+      <div class="icon purple">
+        <i class="fa-solid fa-briefcase"></i>
+      </div>
+      <div class="content text-end ms-auto">
+        <h6 class="mb-10">Jumlah Test Ride</h6>
+        <h3 class="text-bold mb-10">{{$jobPositionCount}}</h3>
+      </div>
+    </a>
+  </div>
 
-            <div class="col-xl-6 col-lg-6 col-sm-12">
-              <a href=" {{ route('manage.branch') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon orange">
-                  <i class="fa-solid fa-city"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Jumlah Cabang</h6>
-                  <h3 class="text-bold mb-10">{{$branchCount}}</h3>
-                  <!-- <p class="text-sm text-danger">
-                    <i class="lni lni-arrow-down"></i> -2.00%
-                    <span class="text-gray">Expense</span>
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
-
-            <div class="col-xl-6 col-lg-6 col-sm-12">
-              <a href=" {{ route('job.position') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon purple">
-                  <i class="fa-solid fa-briefcase"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Jumlah Posisi Pekerjaan</h6>
-                  <h3 class="text-bold mb-10">{{$jobPositionCount}}</h3>
-                  <!-- <p class="text-sm text-danger">
-                    <i class="lni lni-arrow-down"></i> -2.00%
-                    <span class="text-gray">Expense</span>
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
-          </div>
+  <div class="col-xl-4 col-lg-6 col-sm-12">
+    <a href="{{ route('job.position') }}" class="icon-card mb-30 custom-hover">
+      <div class="icon purple">
+        <i class="fa-solid fa-briefcase"></i>
+      </div>
+      <div class="content text-end ms-auto">
+        <h6 class="mb-10">Simulasi Kredit</h6>
+        <h3 class="text-bold mb-10">{{$jobPositionCount}}</h3>
+      </div>
+    </a>
+  </div>
+</div>
 
           <div class="row">
             <div class="col-md-7 d-flex">

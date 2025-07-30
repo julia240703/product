@@ -2,149 +2,74 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
+use Yajra\DataTables\DataTables;
 use Illuminate\Http\Request;
-use App\Models\Motor;
-use App\Models\MotorCategory;
-use App\Models\MotorColor;
-use App\Models\MotorFeature;
-use App\Models\MotorSpecification;
-use App\Models\MotorAccessory;
-use App\Models\AccessoryCategory;
-use App\Models\MotorPart;
-use App\Models\Apparel;
-use App\Models\ApparelCategory;
-use App\Models\Branch;
-use App\Models\Banner;
-use App\Models\TestRide;
-use App\Models\CreditSimulation;
+use App\Models\User;
+use App\Models\Profile;
+use App\Models\Quiz;
+use App\Models\Result;
 
 class PublicController extends Controller
 {
-    // --- HOME / LANDING ---
-    public function home()
+
+    public function userResults(Request $request)
     {
-        $banners = Banner::where('is_active', true)->get();
-        $motors = Motor::with(['category', 'colors', 'features'])->get();
-        $categories = MotorCategory::all();
-
-        return view('home', compact('banners', 'motors', 'categories'));
+        $users = User::where('type', 0)->with(['results.quiz', 'profile'])->get();
+        $totalQuizzes = Quiz::count();
+    
+        if ($request->ajax()) {
+            $data = Result::selectRaw('users.id AS id, users.name AS name, profiles.branch_location AS branch_location, profiles.education AS education, ROUND(AVG(results.score), 2) AS average_score, COUNT(DISTINCT results.quiz_id) AS quizzes_taken, profiles.applied_position AS applied_position')
+                ->join('users', 'users.id', '=', 'results.user_id')
+                ->join('profiles', 'profiles.user_id', '=', 'users.id')
+                ->groupBy('users.id', 'users.name', 'profiles.branch_location', 'profiles.education', 'profiles.applied_position')
+                ->get();
+    
+            // Remove commas from education field
+            $data->transform(function ($item) {
+                $item->education = str_replace(',', '', $item->education);
+                return $item;
+            });
+    
+            return DataTables::of($data)
+                ->addColumn('row_number', function ($row) use ($data) {
+                    return $data->search($row) + 1;
+                })
+                ->addColumn('action', function ($row) {})
+                ->addColumn('progress', function ($row) use ($totalQuizzes) {
+                    $progress = round($row->quizzes_taken / $totalQuizzes * 100, 2);
+                    return $progress . '%';
+                })
+                ->rawColumns(['action', 'progress'])
+                ->make(true);
+        }
+    
+        return view('/pages/public/result', compact('users'));
     }
-
-    // --- MOTOR DETAIL ---
-    public function motorDetail($id)
+    
+    
+    public function userResultsDetail(User $user)
     {
-        $motor = Motor::with([
-            'category',
-            'colors',
-            'features',
-            'specifications',
-            'parts',
-        ])->findOrFail($id);
+        $user->load('results.quiz');
 
-        return view('public.motor-detail', compact('motor'));
+        $profile = Profile::join('users', 'users.id', '=', 'profiles.user_id')
+            ->select('*')
+            ->where('users.id', $user->id)
+            ->first();
+
+        if ($profile) {
+            $profile->education = str_replace(',', '', $profile->education);
+        }
+
+        // Prepare data for the line chart
+        $labels = $user->results->map(function ($result) {
+            $words = explode(' ', $result->quiz->name, 3);
+            return implode(' ', array_slice($words, 0, 2));
+        })->toArray();
+        
+        $scores = $user->results->pluck('score')->toArray();
+    
+        return view('/pages/public/resultDetail', compact('user', 'profile', 'labels', 'scores'));
     }
-
-    // --- MOTOR PER CATEGORY ---
-    public function motorsByCategory($slug)
-    {
-        $category = MotorCategory::where('slug', $slug)->firstOrFail();
-        $motors = Motor::with('category')->where('category_id', $category->id)->get();
-
-        return view('public.motors-category', compact('motors', 'category'));
-    }
-
-    // --- BANDINKAN MOTOR (MAX 5) ---
-    public function compare(Request $request)
-    {
-        $motorIds = $request->input('motor_ids', []);
-        $motors = Motor::with(['specifications', 'category'])->whereIn('id', $motorIds)->get();
-
-        if (count($motorIds) > 5) {
-        return back()->with('error', 'Maksimal 5 motor bisa dibandingkan.');
-    }
-
-        return view('public.compare', compact('motors'));
-    }
-
-    // --- AKSESORIS MOTOR ---
-    public function accessories()
-    {
-        $categories = AccessoryCategory::with('accessories')->get();
-        return view('public.accessories', compact('categories'));
-    }
-
-    // --- APPAREL ---
-    public function apparels()
-    {
-        $categories = ApparelCategory::with('apparels')->get();
-        return view('public.apparels', compact('categories'));
-    }
-
-    // --- CABANG / DEALER ---
-    public function branches()
-    {
-        $branches = Branch::with('services')->get();
-        return view('public.branches', compact('branches'));
-    }
-
-    // --- PRICE LIST ---
-    public function priceList()
-    {
-        $categories = MotorCategory::with('motors')->get();
-        return view('public.price-list', compact('categories'));
-    }
-
-    // --- FORM TEST RIDE ---
-    public function showTestRideForm()
-    {
-        $categories = MotorCategory::all();
-        $branches = Branch::all();
-        return view('public.test-ride-form', compact('categories', 'branches'));
-    }
-
-    public function submitTestRide(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            'city' => 'required|string',
-            'branch_id' => 'required|exists:branches,id',
-            'schedule_date' => 'required|date',
-            'schedule_time' => 'required|date_format:H:i',
-            'motor_category_id' => 'required|exists:motor_categories,id',
-            'motor_id' => 'required|exists:motors,id',
-        ]);
-
-        TestRide::create($data);
-        return back()->with('success', 'Form test ride berhasil dikirim.');
-    }
-
-    // --- FORM SIMULASI KREDIT ---
-    public function showCreditForm()
-    {
-        $categories = MotorCategory::with('motors')->get();
-        return view('public.credit-form', compact('categories'));
-    }
-
-    public function submitCreditSimulation(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'phone' => 'required|string',
-            'address' => 'required|string',
-            'province' => 'required|string',
-            'city' => 'required|string',
-            'motor_category_id' => 'required|exists:motor_categories,id',
-            'motor_type' => 'required|string',
-            'motor_variant' => 'required|string',
-            'otr_price' => 'required|numeric',
-            'down_payment' => 'required|numeric',
-            'tenor' => 'required|numeric',
-        ]);
-
-        CreditSimulation::create($data);
-        return back()->with('success', 'Simulasi kredit berhasil dikirim.');
-    }
+    
 }

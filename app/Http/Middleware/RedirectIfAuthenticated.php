@@ -26,7 +26,7 @@ class RedirectIfAuthenticated
             $user = Auth::user();
 
             if ($user->type === 'admin') {
-                return redirect()->route('admin.home');
+                return redirect()->route('admin.branch');
             }
 
             // Jika bukan admin, logout & redirect ke login

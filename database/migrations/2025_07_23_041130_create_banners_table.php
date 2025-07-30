@@ -13,9 +13,12 @@ return new class extends Migration
     {
         Schema::create('banners', function (Blueprint $table) {
             $table->id();
-            $table->string('title')->nullable();
-            $table->string('image_url');
-            $table->boolean('is_active')->default(true);
+            $table->foreignId('banner_template_id')->constrained('banner_templates')->onDelete('cascade');
+            $table->string('title')->nullable(); // Judul banner
+            $table->string('image_path')->nullable(); // Path gambar
+            $table->string('status')->default('active'); // Status (active/inactive)
+            $table->integer('order')->unsigned()->default(1); // Urutan
+            $table->unique(['banner_template_id', 'order']);
             $table->timestamps();
         });
     }
