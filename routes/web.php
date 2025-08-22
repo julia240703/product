@@ -225,7 +225,7 @@ Route::middleware(['auth', 'user-access:manager'])->group(function () {
 
 Route::get('/', [PublicControllerSatu::class, 'home'])->name('home');
 Route::get('/motor/{id}', [PublicControllerSatu::class, 'motorDetail'])->name('motor.detail');
-Route::get('/motors/category/{slug}', [PublicControllerSatu::class, 'motorsByCategory'])->name('motors.category');
+Route::get('/motors/category/{name}', [PublicControllerSatu::class, 'motorsByCategory'])->name('motors.by.category');
 Route::get('/compare', [PublicControllerSatu::class, 'compare'])->name('motors.compare');
 Route::get('/accessories', [PublicControllerSatu::class, 'accessories'])->name('accessories.index');
 Route::get('/apparels', [PublicControllerSatu::class, 'apparels'])->name('apparels.index');
@@ -258,61 +258,65 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     // Dashboard
     Route::get('/home', [AdminController::class, 'adminHome'])->name('home');
 
-    // Motors
-    Route::get('/motor', [AdminControllerSatu::class, 'adminMotor'])->name('motor');
-    Route::get('/motor/data', [AdminControllerSatu::class, 'getMotorData'])->name('motor.data');
+    // Motor base
     Route::get('/motors', [AdminControllerSatu::class, 'motorsIndex'])->name('motors.index');
-    Route::get('/motors/create', [AdminControllerSatu::class, 'motorsCreate'])->name('motors.create');
+    Route::get('/motors/published', [AdminControllerSatu::class, 'motorsPublished'])->name('motors.published');
+    Route::get('/motors/unpublished', [AdminControllerSatu::class, 'motorsUnpublished'])->name('motors.unpublished');
     Route::post('/motors/store', [AdminControllerSatu::class, 'motorsStore'])->name('motors.store');
-    Route::get('/motors/edit/{id}', [AdminControllerSatu::class, 'motorsEdit'])->name('motors.edit');
-    Route::post('/motors/update', [AdminControllerSatu::class, 'updateMotor'])->name('motors.update');
-    Route::post('/motors/delete', [AdminControllerSatu::class, 'deleteMotor'])->name('motors.delete');
-    Route::get('/motor/colors', [AdminControllerSatu::class, 'colorsIndex'])->name('motor-color.index');
+    Route::put('/motors/{id}', [AdminControllerSatu::class, 'updateMotor'])->name('motors.update');
+    Route::delete('/motors/{id}', [AdminControllerSatu::class, 'deleteMotor'])->name('motors.delete');
+    Route::get('/get-types/{category_id}', [AdminControllerSatu::class, 'getTypesByCategory'])->name('motors.getTypes');
 
-    // Features
-    Route::get('/features', [AdminControllerSatu::class, 'featuresIndex'])->name('features.index');
-    Route::post('/features', [AdminControllerSatu::class, 'featuresStore'])->name('features.store');
-    Route::get('/features/{id}/edit', [AdminControllerSatu::class, 'featuresEdit'])->name('features.edit');
-    Route::put('/features/{id}', [AdminControllerSatu::class, 'featuresUpdate'])->name('features.update');
-    Route::delete('/features/{id}', [AdminControllerSatu::class, 'featuresDelete'])->name('features.delete');
-
-    // Colors
-    Route::post('/colors', [AdminControllerSatu::class, 'colorsStore'])->name('colors.store');
-    Route::get('/colors/{id}/edit', [AdminControllerSatu::class, 'colorsEdit'])->name('colors.edit');
-    Route::put('/colors/{id}', [AdminControllerSatu::class, 'colorsUpdate'])->name('colors.update');
-    Route::delete('/colors/{id}', [AdminControllerSatu::class, 'colorsDelete'])->name('colors.delete');
-
-    // Specifications
-    Route::get('/specs', [AdminControllerSatu::class, 'specsIndex'])->name('specs.index');
-    Route::post('/specs', [AdminControllerSatu::class, 'specsStore'])->name('specs.store');
-    Route::get('/specs/{id}/edit', [AdminControllerSatu::class, 'specsEdit'])->name('specs.edit');
-    Route::put('/specs/{id}', [AdminControllerSatu::class, 'specsUpdate'])->name('specs.update');
-    Route::delete('/specs/{id}', [AdminControllerSatu::class, 'specsDelete'])->name('specs.delete');
+    // Warna (per motor)
+    Route::get('/{motor}/colors', [AdminControllerSatu::class, 'colorsIndex'])->name('colors.index');
+    Route::post('/{motor}/colors', [AdminControllerSatu::class, 'colorsStore'])->name('colors.store');
+    Route::get('/{motor}/colors/{id}/edit', [AdminControllerSatu::class, 'colorsEdit'])->name('colors.edit');
+    Route::put('/{motor}/colors/{id}', [AdminControllerSatu::class, 'colorsUpdate'])->name('colors.update');
+    Route::delete('/{motor}/colors/{id}', [AdminControllerSatu::class, 'colorsDelete'])->name('colors.delete');
 
     // Accessories
-    Route::post('/accessories', [AdminControllerSatu::class, 'accessoriesStore'])->name('accessories.store');
-    Route::get('/accessories/{id}/edit', [AdminControllerSatu::class, 'accessoriesEdit'])->name('accessories.edit');
-    Route::put('/accessories/{id}', [AdminControllerSatu::class, 'accessoriesUpdate'])->name('accessories.update');
-    Route::delete('/accessories/{id}', [AdminControllerSatu::class, 'accessoriesDelete'])->name('accessories.delete');
+    Route::get('/{motor}/accessories', [AdminControllerSatu::class, 'accessoriesIndex'])->name('accessories.index');
+    Route::post('/{motor}/accessories', [AdminControllerSatu::class, 'accessoriesStore'])->name('accessories.store');
+    Route::get('/{motor}/accessories/{id}/edit', [AdminControllerSatu::class, 'accessoriesEdit'])->name('accessories.edit');
+    Route::put('/{motor}/accessories/{id}', [AdminControllerSatu::class, 'accessoriesUpdate'])->name('accessories.update');
+    Route::delete('/{motor}/accessories/{id}', [AdminControllerSatu::class, 'accessoriesDelete'])->name('accessories.delete');
 
-    // Parts
-    Route::post('/parts', [AdminControllerSatu::class, 'partsStore'])->name('parts.store');
-    Route::get('/parts/{id}/edit', [AdminControllerSatu::class, 'partsEdit'])->name('parts.edit');
-    Route::put('/parts/{id}', [AdminControllerSatu::class, 'partsUpdate'])->name('parts.update');
-    Route::delete('/parts/{id}', [AdminControllerSatu::class, 'partsDelete'])->name('parts.delete');
+    // Spareparts
+    Route::get('/{motor}/spareparts', [AdminControllerSatu::class, 'sparepartsIndex'])->name('spareparts.index');
+    Route::post('/{motor}/spareparts', [AdminControllerSatu::class, 'sparepartsStore'])->name('spareparts.store');
+    Route::get('/{motor}/spareparts/{id}/edit', [AdminControllerSatu::class, 'sparepartsEdit'])->name('spareparts.edit');
+    Route::put('/{motor}/spareparts/{id}', [AdminControllerSatu::class, 'sparepartsUpdate'])->name('spareparts.update');
+    Route::delete('/{motor}/spareparts/{id}', [AdminControllerSatu::class, 'sparepartsDelete'])->name('spareparts.delete');
+
+    // Spesifikasi
+    Route::get('/{motor}/specifications', [AdminControllerSatu::class, 'specificationsIndex'])->name('specifications.index');
+    Route::post('/{motor}/specifications', [AdminControllerSatu::class, 'specificationsStore'])->name('specifications.store');
+    Route::get('/{motor}/specifications/{id}/edit', [AdminControllerSatu::class, 'specificationsEdit'])->name('specifications.edit');
+    Route::put('/{motor}/specifications/{id}', [AdminControllerSatu::class, 'specificationsUpdate'])->name('specifications.update');
+    Route::delete('/{motor}/specifications/{id}', [AdminControllerSatu::class, 'specificationsDelete'])->name('specifications.delete');
+
+    // Features
+    Route::get('/{motor}/features', [AdminControllerSatu::class, 'featuresIndex'])->name('features.index');
+    Route::post('/{motor}/features', [AdminControllerSatu::class, 'featuresStore'])->name('features.store');
+    Route::put('/{motor}/features/{id}', [AdminControllerSatu::class, 'featuresUpdate'])->name('features.update');
+    Route::delete('/{motor}/features/{id}', [AdminControllerSatu::class, 'featuresDelete'])->name('features.delete');
 
     // Apparels
+    Route::get('apparels', [AdminControllerSatu::class, 'apparelsIndex'])->name('apparels.index');
     Route::post('/apparels', [AdminControllerSatu::class, 'apparelsStore'])->name('apparels.store');
     Route::get('/apparels/{id}/edit', [AdminControllerSatu::class, 'apparelsEdit'])->name('apparels.edit');
-    Route::put('/apparels/{id}', [AdminControllerSatu::class, 'apparelsUpdate'])->name('apparels.update');
-    Route::delete('/apparels/{id}', [AdminControllerSatu::class, 'apparelsDelete'])->name('apparels.delete');
-    Route::get('/apparel-categories', [AdminControllerSatu::class, 'apparelCategoriesIndex'])->name('apparel-category.index');
+    Route::put('/apparels/{id}/update', [AdminControllerSatu::class, 'apparelsUpdate'])->name('apparels.update');
+    Route::delete('/apparels/delete/{id}', [AdminControllerSatu::class, 'apparelsDelete'])->name('apparels.delete');
+    Route::get('/apparels/data', [AdminControllerSatu::class, 'apparelsData'])->name('apparels.data');
 
     // Branches
-    Route::post('/branches', [AdminControllerSatu::class, 'branchesStore'])->name('branches.store');
+    Route::get('branches', [AdminControllerSatu::class, 'branchesIndex'])->name('branches.index');
+    Route::post('/branches/store', [AdminControllerSatu::class, 'branchesStore'])->name('branches.store');
     Route::get('/branches/{id}/edit', [AdminControllerSatu::class, 'branchesEdit'])->name('branches.edit');
-    Route::put('/branches/{id}', [AdminControllerSatu::class, 'branchesUpdate'])->name('branches.update');
-    Route::delete('/branches/{id}', [AdminControllerSatu::class, 'branchesDelete'])->name('branches.delete');
+    Route::put('/branches/{id}/update', [AdminControllerSatu::class, 'branchesUpdate'])->name('branches.update');
+    Route::delete('/branches/delete/{id}', [AdminControllerSatu::class, 'branchesDelete'])->name('branches.delete');
+    Route::get('/branches/data', [AdminControllerSatu::class, 'getBranchesData'])->name('admin.branches.data');
+    Route::post('/branches/update-order', [AdminControllerSatu::class, 'updateBranchOrder'])->name('branches.updateOrder');
 
     // Banner Template Management Routes
     Route::get('/banner', [AdminControllerSatu::class, 'adminbanner'])->name('banner');
@@ -341,27 +345,56 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::get('/credits/{id}', [AdminControllerSatu::class, 'creditsShow'])->name('credits.show');
     Route::delete('/credits/{id}', [AdminControllerSatu::class, 'creditsDelete'])->name('credits.delete');
 
-    Route::get('motor-categories', [AdminControllerSatu::class, 'motorCategoryIndex'])->name('motor-categories.index');
-    Route::post('motor-categories/store', [AdminControllerSatu::class, 'storeMotorCategory'])->name('motor-categories.store');
-    Route::post('motor-categories/update', [AdminControllerSatu::class, 'updateMotorCategory'])->name('motor-categories.update');
-    Route::delete('motor-categories/delete', [AdminControllerSatu::class, 'destroyMotorCategory'])->name('motor-categories.destroy');
-    Route::get('motor-categories/data', [AdminControllerSatu::class, 'getMotorCategories'])->name('motor-categories.data');
+    // Motor Type
+    Route::get('motor-type', [AdminControllerSatu::class, 'motorTypeIndex'])->name('motor-type.index');
+    Route::post('motor-type/store', [AdminControllerSatu::class, 'storeMotorType'])->name('motor-type.store');
+    Route::post('motor-type/update', [AdminControllerSatu::class, 'updateMotorType'])->name('motor-type.update');
+    Route::delete('motor-type/delete', [AdminControllerSatu::class, 'deleteMotorType'])->name('motor-type.delete');
+    Route::get('motor-type/data', [AdminControllerSatu::class, 'getMotorType'])->name('motor-type.data');
 
-    Route::get('accessories-categories', [AdminControllerSatu::class, 'accessoriesCategoryIndex'])->name('accessories-categories.index');
-    Route::post('accessories-categories/store', [AdminControllerSatu::class, 'storeAccessoriesCategory'])->name('accessories-categories.store');
-    Route::post('accessories-categories/update', [AdminControllerSatu::class, 'updateAccessoriesCategory'])->name('accessories-categories.update');
-    Route::delete('accessories-categories/delete', [AdminControllerSatu::class, 'destroyAccessoriesCategory'])->name('accessories-categories.destroy');
-    Route::get('accessories-categories/data', [AdminControllerSatu::class, 'getAccessoriesCategories'])->name('accessories-categories.data');
-
+    // Apparel Category
     Route::get('apparel-categories', [AdminControllerSatu::class, 'apparelCategoryIndex'])->name('apparel-categories.index');
     Route::post('apparel-categories/store', [AdminControllerSatu::class, 'storeApparelCategory'])->name('apparel-categories.store');
     Route::post('apparel-categories/update', [AdminControllerSatu::class, 'updateApparelCategory'])->name('apparel-categories.update');
-    Route::delete('apparel-categories/delete', [AdminControllerSatu::class, 'destroyApparelCategory'])->name('apparel-categories.destroy');
+    Route::delete('apparel-categories/delete', [AdminControllerSatu::class, 'deleteApparelCategory'])->name('apparel-categories.delete');
     Route::get('apparel-categories/data', [AdminControllerSatu::class, 'getApparelCategories'])->name('apparel-categories.data');
 
-    Route::get('parts-categories', [AdminControllerSatu::class, 'partsCategoryIndex'])->name('parts-categories.index');
-    Route::post('parts-categories/store', [AdminControllerSatu::class, 'storePartsCategory'])->name('parts-categories.store');
-    Route::post('parts-categories/update', [AdminControllerSatu::class, 'updatePartsCategory'])->name('parts-categories.update');
-    Route::delete('parts-categories/delete', [AdminControllerSatu::class, 'destroyPartsCategory'])->name('parts-categories.destroy');
-    Route::get('parts-categories/data', [AdminControllerSatu::class, 'getPartsCategories'])->name('parts-categories.data');
+    // Area Cabang
+    Route::get('/branch-areas', [AdminControllerSatu::class, 'branchAreaIndex'])->name('branch-areas.index');
+    Route::get('/branch-areas/data', [AdminControllerSatu::class, 'getBranchAreaData'])->name('branch-areas.data');
+    Route::post('/branch-areas/store', [AdminControllerSatu::class, 'storeBranchArea'])->name('branch-areas.store');
+    Route::post('/branch-areas/update', [AdminControllerSatu::class, 'updateBranchArea'])->name('branch-areas.update');
+    Route::delete('/branch-areas/delete', [AdminControllerSatu::class, 'deleteBranchArea'])->name('branch-areas.delete');
+
+    // Kota Cabang
+    Route::get('/branch-cities', [AdminControllerSatu::class, 'branchCityIndex'])->name('branch-cities.index');
+    Route::get('/branch-cities/data', [AdminControllerSatu::class, 'getBranchCityData'])->name('branch-cities.data');
+    Route::post('/branch-cities/store', [AdminControllerSatu::class, 'storeBranchCity'])->name('branch-cities.store');
+    Route::post('/branch-cities/update', [AdminControllerSatu::class, 'updateBranchCity'])->name('branch-cities.update');
+    Route::delete('/branch-cities/delete', [AdminControllerSatu::class, 'deleteBranchCity'])->name('branch-cities.delete');
+
+    // Kategori
+    Route::get('/categories/{type}/data', [AdminControllerSatu::class, 'categoryData'])->name('categories.data');
+    Route::get('/categories/{type}', [AdminControllerSatu::class, 'categoryIndex'])->name('categories.index');
+    Route::post('/categories/store', [AdminControllerSatu::class, 'storeCategory'])->name('categories.store');
+    Route::post('/categories/update', [AdminControllerSatu::class, 'updateCategory'])->name('categories.update');
+    Route::delete('/categories/delete', [AdminControllerSatu::class, 'deleteCategory'])->name('categories.delete');
+
+    // Credit Simulations
+    Route::get('/credit-simulations', [AdminControllerSatu::class, 'creditSimulationIndex'])->name('credit_simulations.index');
+    Route::post('/credit-simulations', [AdminControllerSatu::class, 'creditSimulationStore'])->name('credit_simulations.store');
+    Route::put('/credit-simulations/{id}', [AdminControllerSatu::class, 'creditSimulationUpdate'])->name('credit_simulations.update');
+    Route::delete('/credit-simulations/{id}', [AdminControllerSatu::class, 'creditSimulationDelete'])->name('credit_simulations.delete');
+
+    // Credit Simulations
+    Route::get('/price-lists', [AdminControllerSatu::class, 'priceListIndex'])->name('price_list.index');
+    Route::post('/price-lists', [AdminControllerSatu::class, 'priceListStore'])->name('price_list.store');
+    Route::put('/price-lists/{id}', [AdminControllerSatu::class, 'priceListUpdate'])->name('price_list.update');
+    Route::delete('/price-lists/{id}', [AdminControllerSatu::class, 'priceListDelete'])->name('price_list.delete');
+
+    // Price List 
+    Route::get('/price-lists', [AdminControllerSatu::class, 'priceListIndex'])->name('price_list.index');
+    Route::post('/price-lists', [AdminControllerSatu::class, 'priceListStore'])->name('price_list.store');
+    Route::put('/price-lists/{id}', [AdminControllerSatu::class, 'priceListUpdate'])->name('price_list.update');
+    Route::delete('/price-lists/{id}', [AdminControllerSatu::class, 'priceListDelete'])->name('price_list.delete');
 });

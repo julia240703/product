@@ -11,13 +11,14 @@ class MotorSpecification extends Model
 
     public function motor()
     {
-        return $this->belongsTo(Motor::class);
+        return $this->belongsTo(Motor::class, 'motor_id');
     }
 
     protected $fillable = [
         'motor_id',
         'category',
-        'name',
-        'value',
+        'atribut',
+        'detail',
+        'order',
     ];
 }

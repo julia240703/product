@@ -8,27 +8,23 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('branches', function (Blueprint $table) {
+        Schema::create('price_lists', function (Blueprint $table) {
             $table->id();
-            $table->string('city');
-            $table->string('location')->unique();
-            $table->string('initials');
+            $table->string('motorcycle_name', 255);
+            $table->string('motor_type', 255);
+            $table->decimal('price', 15, 2);
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('branches');
+        Schema::dropIfExists('price_lists');
     }
 };

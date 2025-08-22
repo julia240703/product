@@ -9,18 +9,24 @@ class Apparel extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'name_apparel',
+        'image',
+        'category_id',
+        'description',
+        'dimensions',
+        'weight',
+        'color',
+        'size',
+        'part_number',
+    ];
+
+    /**
+    * Relationship to ApparelCategory
+    * An apparel belongs to one category
+    */
     public function category()
     {
-        return $this->belongsTo(ApparelCategory::class);
+        return $this->belongsTo(ApparelCategory::class, 'category_id');
     }
-
-    protected $fillable = [
-        'category_id',
-        'name',
-        'price',
-        'size',
-        'color',
-        'material',
-        'image_url',
-    ];
 }

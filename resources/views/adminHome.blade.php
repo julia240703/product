@@ -49,84 +49,13 @@
           <!-- ========== title-wrapper end ========== -->
 
           <div class="row">
-            <div class="col-xl-3 col-lg-4 col-sm-6">
-            <a href="{{ route('admin.users') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon success">
-                  <i class="lni lni-users"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Jumlah Peserta</h6>
-                  <h3 class="text-bold mb-10">{{ $totalUserCount }}</h3>
-                  <!-- <p class="text-sm text-success">
-                    <i class="lni lni-arrow-up"></i> +2.00%
-                  </p> -->
-                </div>
-              </a>
-            <!-- End Icon Cart -->
-            </div>
-
-            <!-- End Col -->
-            <div class="col-xl-3 col-lg-4 col-sm-6">
-              <a href="{{ route('followed.user') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon primary">
-                  <i class="lni lni-user"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Telah direspons</h6>
-                  <h3 class="text-bold mb-10">{{ $followingCount }}</h3>
-                  <!-- <p class="text-sm text-success">
-                    <i class="lni lni-arrow-up"></i> +5.45%
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
-            <div class="col-xl-3 col-lg-4 col-sm-6">
-              <a href="{{ route('user.followingCount') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon orange">
-                  <i class="lni lni-user"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Anda respons</h6>
-                  <h3 class="text-bold mb-10">{{ $userFollowingCount }}</h3>
-                  <!-- <p class="text-sm text-danger">
-                    <i class="lni lni-arrow-down"></i> -2.00%
-                    <span class="text-gray">Expense</span>
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
-            <div class="col-xl-3 col-lg-4 col-sm-6">
-              <a href="{{ route('user.candidate') }}" class="icon-card mb-30 custom-hover">
-                <div class="icon purple">
-                  <i class="lni lni-user"></i>
-                </div>
-                <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Calon Kandidat</h6>
-                  <h3 class="text-bold mb-10">{{ $passedNotFollowingCount }}</h3>
-                  <!-- <p class="text-sm text-danger">
-                    <i class="lni lni-arrow-down"></i> -25.00%
-                    <span class="text-gray"> Earning</span>
-                  </p> -->
-                </div>
-              </a>
-              <!-- End Icon Cart -->
-            </div>
-            <!-- End Col -->
-          </div>
-          <!-- End Row -->
-
-          <div class="row">
             <div class="col-xl-6 col-lg-8 col-sm-12">
               <a href="{{ route('manage.exam') }}" class="icon-card mb-30 custom-hover">
                 <div class="icon">
                   <i class="fas fa-clipboard-list"></i>
                 </div>
                 <div class="content text-end ms-auto">
-                  <h6 class="mb-10">Jumlah Subtes</h6>
+                  <h6 class="mb-10">Jumlah Test Ride</h6>
                   <h3 class="text-bold mb-10">{{ $quizCount }}</h3>
                   <!-- <p class="text-sm text-success">
                     <i class="lni lni-arrow-up"></i> +2.00%
@@ -138,7 +67,7 @@
             <div class="col-xl-6 col-lg-8 col-sm-12">
               <a href="{{ route('manage.examQuestion') }}" class="icon-card mb-30 custom-hover">
               <div class="content text-start me-auto">
-                  <h6 class="mb-10">Jumlah Pertanyaan</h6>
+                  <h6 class="mb-10">Jumlah Simulasi Kredit</h6>
                   <h3 class="text-bold mb-10">{{ $questionCount }}</h3>
                   <!-- <p class="text-sm text-success">
                     <i class="lni lni-arrow-up"></i> +2.00%

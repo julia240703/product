@@ -9,20 +9,26 @@ class MotorAccessory extends Model
 {
     use HasFactory;
 
+    public function motor()
+    {
+        return $this->belongsTo(Motor::class);
+    }
+
     public function category()
     {
-        return $this->belongsTo(AccessoryCategory::class, 'category_id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     protected $fillable = [
-        'category_id',
         'name',
-        'function',
-        'color',
-        'material',
+        'image',
         'part_number',
+        'dimension',
+        'weight',
+        'motor_id',
         'price',
-        'image_url',
         'description',
+        'material',
+        'category_id',
     ];
 }

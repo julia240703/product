@@ -221,7 +221,6 @@ class AdminController extends Controller
         return view('/pages/admin/adminProfile');
     }
 
-
     public function adminUsers(Request $request)
     {
         $selectedOption = $request->input('duration', 'all');

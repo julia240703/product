@@ -9,18 +9,25 @@ class CreditSimulation extends Model
 {
     use HasFactory;
 
+    protected $table = 'credit_simulations';
+
     protected $fillable = [
-        'name',
-        'email',
-        'phone',
-        'address',
-        'province',
-        'city',
-        'motor_category',
-        'motor_type',
-        'motor_variant',
+        'category_id',
+        'motor_type_id',
+        'motorcycle_variant',
         'otr_price',
-        'dp_amount',
-        'tenor_months',
+        'minimum_dp',
+        'loan_term',
+        'interest_rate',
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function motorType()
+    {
+        return $this->belongsTo(MotorType::class, 'motor_type_id');
+    }
 }

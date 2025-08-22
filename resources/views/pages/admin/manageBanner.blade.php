@@ -107,16 +107,14 @@
                                 <label class="form-label">Judul Banner</label>
                                 <input type="text" class="form-control" id="banner_title" name="title">
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label">Gambar<span class="text-danger"
                                         id="image-required">*</span></label>
                                 <input type="file" class="form-control" id="banner_image" name="image"
                                     accept="image/*">
-                                <small class="text-muted">Format: JPG, PNG, GIF. Maksimal 10MB</small>
+                                
                                 <div id="current-image" class="mt-2"></div>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label">Status<span class="text-danger">*</span></label>
                                 <select class="form-select" id="banner_status" name="status" required>

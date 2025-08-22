@@ -11,14 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motor_features', function (Blueprint $table) {
+        Schema::create('motor_parts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('motor_id')->constrained()->onDelete('cascade');
-            $table->string('title');
+            $table->string('name');
+            $table->string('image')->nullable();
+            $table->enum('category', ['electric', 'engine', 'frame']);
+            $table->decimal('price', 10, 2);
             $table->text('description')->nullable();
-            $table->string('image_url')->nullable();
-            $table->float('position_x')->nullable(); // titik X pada gambar motor
-            $table->float('position_y')->nullable(); // titik Y
+            $table->string('dimension');
+            $table->integer('weight');
+            $table->string('part_number');
             $table->timestamps();
         });
     }
@@ -28,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('motor_features');
+        Schema::dropIfExists('motor_parts');
     }
 };

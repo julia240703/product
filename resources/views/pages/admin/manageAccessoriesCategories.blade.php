@@ -80,7 +80,7 @@
 
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
-                    <form method="POST" action="{{ route('admin.accessories-categories.destroy') }}">
+                    <form method="POST" action="{{ route('admin.accessories-categories.delete') }}">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="id" id="delete_category_id">

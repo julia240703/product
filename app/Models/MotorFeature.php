@@ -16,10 +16,10 @@ class MotorFeature extends Model
 
     protected $fillable = [
         'motor_id',
-        'title',
+        'name',
+        'image',
         'description',
-        'image_url',
-        'position_x',
-        'position_y',
+        'x_position',
+        'y_position',
     ];
 }

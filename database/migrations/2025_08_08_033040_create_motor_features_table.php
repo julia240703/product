@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('accessory_categories', function (Blueprint $table) {
+        Schema::create('motor_features', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Matic, Sport, dll
+            $table->foreignId('motor_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('image')->nullable();
+            $table->text('description')->nullable();
+            $table->integer('x_position');
+            $table->integer('y_position');
             $table->timestamps();
         });
     }
@@ -23,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('accessory_categories');
+        Schema::dropIfExists('motor_features');
     }
 };

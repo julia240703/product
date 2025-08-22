@@ -1,5 +1,5 @@
     @extends('layouts.appAdmin')
-    <title>Kelola Kategori Motor</title>
+    <title>Kelola Kategori Apparel</title>
 
     @section('content')
         <div class="container-fluid">
@@ -7,7 +7,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <div class="title mb-30">
-                            <h2>Data Kategori Motor</h2>
+                            <h2>Data Kategori Apparel</h2>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -18,7 +18,7 @@
                                         <a href="#0">Admin</a>
                                     </li>
                                     <li class="breadcrumb-item active" aria-current="page">
-                                        Motor Category
+                                        Apparels Category
                                     </li>
                                 </ol>
                             </nav>
@@ -34,11 +34,11 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="addUserModalLabel">Tambah Kategori Motor</h5>
+                            <h5 class="modal-title" id="addUserModalLabel">Tambah Kategori Apparel</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form id="addCategoryForm" method="POST" action="{{ route('admin.motor-categories.store') }}">
+                            <form id="addCategoryForm" method="POST" action="{{ route('admin.apparel-categories.store') }}">
                                 @csrf
                                 <div class="mb-3">
                                     <label for="kategori" class="form-label">Nama Kategori <span class="text-red">*</span></label>
@@ -80,7 +80,7 @@
 
             <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
-                    <form method="POST" action="{{ route('admin.motor-categories.destroy') }}">
+                    <form method="POST" action="{{ route('admin.apparel-categories.delete') }}">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="id" id="delete_category_id">
@@ -123,7 +123,7 @@
                         responsive: true,
                         processing: true,
                         serverSide: true,
-                        ajax: "{{ route('admin.motor-categories.data') }}",
+                        ajax: "{{ route('admin.apparel-categories.data') }}",
                         columns: [
                             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                             { data: 'nama_kategori', name: 'nama_kategori' },
@@ -155,7 +155,7 @@
 
                     $('#updateBtn').on('click', function() {
                         $.ajax({
-                            url: "{{ route('admin.motor-categories.update') }}",
+                            url: "{{ route('admin.apparel-categories.update') }}",
                             method: "POST",
                             data: {
                                 _token: '{{ csrf_token() }}',

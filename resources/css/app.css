@@ -1,0 +1,85 @@
+/* Wrapper utama */
+.layout-wrapper {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}
+
+/* Sidebar kiri */
+.sidebar {
+    width: 200px;
+    min-width: 200px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+}
+
+/* Konten utama */
+.main-content {
+    flex: 1;
+    background: #f8f9fa;
+    overflow-y: auto;
+}
+
+/* Carousel bullets */
+#bannerCarousel .carousel-indicators [data-bs-target] {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #dc3545;
+}
+#bannerCarousel .carousel-indicators .active {
+    background-color: #000;
+}
+
+/* Button kategori */
+.custom-category-btn {
+    background-color: #fff;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 20px;
+    min-width: 120px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.custom-category-btn:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 20px;
+    min-width: 120px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+/* ================== RESPONSIVE ================== */
+
+/* Layar sempit (mobile / portrait 1080x1920) */
+@media (max-width: 992px) {
+    .layout-wrapper {
+        flex-direction: column; /* sidebar ke atas */
+    }
+    .sidebar {
+        width: 100%;
+        min-width: unset;
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        flex-direction: row;
+        justify-content: center;
+    }
+    .main-content {
+        flex: 1;
+        width: 100%;
+    }
+}

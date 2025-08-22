@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('apparels', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')->constrained('apparel_categories')->onDelete('cascade');
-            $table->string('name');
-            $table->bigInteger('price');
-            $table->string('size')->nullable();
+            $table->string('name_apparel'); // Changed from name
+            $table->string('image')->nullable();
+            $table->text('description')->nullable();
+            $table->string('dimensions')->nullable();
+            $table->string('weight')->nullable();
             $table->string('color')->nullable();
-            $table->string('material')->nullable();
-            $table->string('image_url')->nullable();
+            $table->string('size')->nullable();
+            $table->string('part_number')->nullable();
             $table->timestamps();
         });
     }

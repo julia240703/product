@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Motor;
-use App\Models\MotorCategory;
+use App\Models\Category;
 use App\Models\MotorColor;
 use App\Models\MotorFeature;
 use App\Models\MotorSpecification;
@@ -23,9 +23,15 @@ class PublicControllerSatu extends Controller
     // --- HOME / LANDING ---
     public function home()
     {
-        $banners = Banner::where('is_active', true)->get();
+        // Ambil hanya banner untuk template 'Home', status active, urutkan berdasarkan 'order'
+        $banners = Banner::where('status', 'active')
+                        ->whereHas('bannerTemplate', function ($query) {
+                            $query->where('name', 'Home');
+                        })
+                        ->orderBy('order')
+                        ->get();
         $motors = Motor::with(['category', 'colors', 'features'])->get();
-        $categories = MotorCategory::all();
+        $categories = Category::all();
 
         return view('home', compact('banners', 'motors', 'categories'));
     }
@@ -45,15 +51,15 @@ class PublicControllerSatu extends Controller
     }
 
     // --- MOTOR PER CATEGORY ---
-    public function motorsByCategory($slug)
+    public function motorsByCategory($name)
     {
-        $category = MotorCategory::where('slug', $slug)->firstOrFail();
+        $category = Category::where('name', $name)->firstOrFail(); // Menggunakan tabel 'categories'
         $motors = Motor::with('category')->where('category_id', $category->id)->get();
 
         return view('public.motors-category', compact('motors', 'category'));
     }
 
-    // --- BANDINKAN MOTOR (MAX 5) ---
+    // --- BANDINGKAN MOTOR (MAX 5) ---
     public function compare(Request $request)
     {
         $motorIds = $request->input('motor_ids', []);

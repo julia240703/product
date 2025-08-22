@@ -5,16 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AccessoryCategory extends Model
+class PriceList extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-    ];
+    protected $table = 'price_lists';
 
-    public function accessories()
-    {
-        return $this->hasMany(MotorAccessory::class, 'category_id');
-    }
+    protected $fillable = [
+        'motorcycle_name',
+        'motor_type',
+        'price',
+    ];
 }

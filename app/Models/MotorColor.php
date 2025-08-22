@@ -16,8 +16,7 @@ class MotorColor extends Model
     
     protected $fillable = [
         'motor_id',
-        'color_name',
-        'hex_color',
-        'image_url',
+        'color_code',
+        'image',
     ];
 }

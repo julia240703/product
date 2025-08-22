@@ -17,8 +17,12 @@ class MotorPart extends Model
     protected $fillable = [
         'motor_id',
         'name',
+        'image',
+        'category',
         'price',
-        'image_url',
-        'compatibility_notes',
+        'description',
+        'dimension',
+        'weight',
+        'part_number',
     ];
 }

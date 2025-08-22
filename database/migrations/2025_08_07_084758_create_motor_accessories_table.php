@@ -13,15 +13,16 @@ return new class extends Migration
     {
         Schema::create('motor_accessories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained('accessory_categories')->onDelete('cascade');
             $table->string('name');
-            $table->string('function')->nullable();
-            $table->string('color')->nullable();
-            $table->string('material')->nullable();
+            $table->string('image')->nullable();
             $table->string('part_number')->nullable();
-            $table->bigInteger('price')->nullable();
-            $table->string('image_url')->nullable();
+            $table->string('dimension')->nullable();
+            $table->decimal('weight', 8, 2)->nullable(); // gram
+            $table->foreignId('motor_id')->constrained('motors')->onDelete('cascade');
+            $table->decimal('price', 15, 2)->nullable();
             $table->text('description')->nullable();
+            $table->string('material')->nullable();
+            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->timestamps();
         });
     }
