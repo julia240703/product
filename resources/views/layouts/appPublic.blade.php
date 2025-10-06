@@ -1,72 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-    <!-- ========== All CSS files linkup ========= -->
-    <link rel="icon" href="{{ asset('favicon2.png') }}">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/lineicons.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/main.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="icon" href="{{ asset('favicon2.png') }}">
+  <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}" />
+  <link rel="stylesheet" href="{{ asset('css/lineicons.css') }}" />
+  <link rel="stylesheet" href="{{ asset('css/main.css') }}" />
+  <link rel="stylesheet" href="{{ asset('css/public.css') }}" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  @stack('styles')
 </head>
-<body>
+<body class="bg-light">
 
-<!-- ======== main-wrapper start =========== -->
-<main class="main-wrapper bg-light">
+  {{-- TOGGLE GLOBAL (mengapung kiri-atas saat sidebar ditutup) --}}
+  <button class="sidebar-toggle sidebar-toggle--floating js-sidebar-toggle"
+          type="button" aria-label="Toggle menu" aria-expanded="true">
+    <span class="ico"></span><span class="lbl">Menu</span>
+  </button>
 
-    <!-- ========== section start ========== -->
-    <section class="section bg-light">
-        <div class="container-fluid">
-            
-            <!-- Error Handler -->
-            @if ($errors->any())
-                <div id="error-message" class="alert alert-danger position-fixed top-0 end-0 m-3" style="max-width: 300px; z-index: 1050;">
-                    <ul>
-                        @foreach($errors->all() as $error)
-                            <li>{{$error}}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+  {{-- SHELL UTAMA: Sidebar + Konten --}}
+  <div class="d-flex flex-row min-vh-100 app-shell">
+    {{-- Sidebar satu file --}}
+    @include('layouts.sidebarPublic')
 
-            @if (\Session::has('success'))
-                <div id="success-message" class="alert alert-success position-fixed top-0 end-0 m-3" style="max-width: 300px; z-index: 1050;">
-                    <p class="mb-0">{{ \Session::get('success') }}</p>
-                </div>
-            @endif
+    {{-- Konten halaman --}}
+    <main class="main-wrapper flex-fill p-4 overflow-auto" id="scroll">
+      @yield('content')
+    </main>
+  </div>
 
-            @if (\Session::has('error'))
-                <div id="error-message" class="alert alert-danger position-fixed top-0 end-0 m-3" style="max-width: 300px; z-index: 1050;">
-                    <p class="mb-0">{{ \Session::get('error') }}</p>
-                </div>
-            @endif
-            <!-- Error Handler -->
+  {{-- Footer --}}
+  <footer class="footer">
+    <p>© 2025 PT WAHANAARTHA RITELINDO</p>
+  </footer>
 
-            <!-- Content -->
-            @yield('content')
-            <!-- Content -->
+  <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ asset('js/main.js') }}"></script>
 
-        </div>
-    </section>
-    <!-- ========== section end ========== -->
+  <script>
+    /* === Sidebar Toggle + Persist (localStorage) — berlaku untuk SEMUA tombol === */
+    (function(){
+      const KEY  = 'sidebar-collapsed';
+      const btns = Array.from(document.querySelectorAll('.js-sidebar-toggle'));
 
-</main>
-<!-- ======== main-wrapper end =========== -->
+      function applyState(collapsed){
+        document.body.classList.toggle('sidebar-collapsed', collapsed);
+        btns.forEach(b => b.setAttribute('aria-expanded', (!collapsed).toString()));
+      }
 
-<!-- ========= All Javascript files linkup ======== -->
-<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('js/Chart.min.js') }}"></script>
-<script src="{{ asset('js/moment.min.js') }}"></script>
-<script src="{{ asset('js/main.js') }}"></script>
-<script src="{{ asset('js/custom.js') }}"></script>
+      // initial
+      const saved = localStorage.getItem(KEY);
+      const collapsed = saved === '1';
+      applyState(collapsed);
+
+      // bind all toggles
+      btns.forEach(b => b.addEventListener('click', () => {
+        const now = !document.body.classList.contains('sidebar-collapsed');
+        applyState(now);
+        localStorage.setItem(KEY, now ? '1' : '0');
+      }));
+
+      // keep on resize/orientation
+      ['resize','orientationchange'].forEach(ev =>
+        window.addEventListener(ev, () =>
+          applyState(document.body.classList.contains('sidebar-collapsed'))
+        )
+      );
+    })();
+  </script>
+
+  {{-- === Flag 1920×1080 @ 100% scale → tambahkan class .is-1920-100 ke <html> === --}}
+  <script>
+    (function () {
+      function set1920Flag() {
+        const ok =
+          window.screen.width === 1920 &&
+          window.screen.height === 1080 &&
+          Math.abs(window.devicePixelRatio - 1) < 0.01 &&
+          window.matchMedia('(orientation: landscape)').matches;
+
+        document.documentElement.classList.toggle('is-1920-100', ok);
+      }
+      set1920Flag();
+      window.addEventListener('resize', set1920Flag);
+      window.matchMedia('(orientation: landscape)').addEventListener?.('change', set1920Flag);
+    })();
+  </script>
+
+  <script src="{{ asset('js/custom.js') }}"></script>
+
+  {{-- Tempat script halaman --}}
+  @stack('scripts')
 </body>
 </html>

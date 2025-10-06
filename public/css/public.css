@@ -1,0 +1,5034 @@
+  /* =========================
+    GLOBAL LAYOUT
+  ========================= */
+
+  /* Sidebar */
+  .sidebar {
+    width: 270px !important;
+    flex: 0 0 270px !important;
+    max-width: 270px;
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    border-right: 1px solid #ffffff;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .sidebar img{
+  max-width: 140px;
+  margin: 14px 0 1px;   /* top 14px, right/left 0, bottom 1px */
+}
+  /* Geser garis merah turun tanpa mengubah layout menu */
+.sidebar .divider{
+  width: 100%;
+  border-top: 2px solid #b91c1c;
+
+  /* jangan pakai margin-top supaya menu gak ikut turun */
+  margin: 0 0 20px;
+
+  /* PILIH SALAH SATU cara gesernya: */
+  /* Cara 1 (recommended): */
+  transform: translateY(14px);
+
+  /* atau Cara 2 (setara): */
+  /* position: relative; top: 14px; */
+}
+
+  /* Link Sidebar */
+  .sidebar .nav-link {
+    display: flex; align-items: center;
+    padding: 24px 18px; font-size: 18px; font-weight: 500;
+    color: #333; text-decoration: none; border-bottom: 1px solid #a5a5a5;
+    transition: color 0.3s ease;
+  }
+  .sidebar .nav-link i { margin-right: 16px; font-size: 20px; color: #b91c1c; }
+  .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #b91c1c; background: transparent; }
+  .sidebar .nav-link:hover i, .sidebar .nav-link.active i { color: #b91c1c; }
+
+  /* Supaya konten geser ke kanan (ikut sidebar) */
+  .main-wrapper { margin-left: 500px; }
+
+  /* Background */
+  body { background-color: #fff; }
+
+  /* Konten Utama — PENTING: bikin panel scroll sendiri */
+  main{
+    flex: 1;
+    min-width: 0;
+    padding: 4px;
+    height: 100vh;       /* <— kunci 1: tingginya setara viewport */
+    overflow-y: auto;    /* <— kunci 2: hanya area ini yang scroll */
+  }
+
+  .content-wrapper{
+    background-color: #fff;
+    flex-grow: 1;
+    min-height: calc(100vh - 60px);
+  }
+
+  /* FOOTER */
+.footer{
+  background:#000;
+  color:#fff;
+  font-size:14px;
+  font-weight:500;
+  position:fixed;
+  bottom:0; left:0; width:100%;
+  z-index:1200;
+
+  /* << ubahan */
+  height: 65px;              /* atur tinggi sampai nempel ke garis Dealer */
+  display:flex;              /* biar teks ketengah vertikal */
+  align-items:center;
+  padding: 0 0 0 35px;       /* kiri tetap 35px, hilangkan padding atas/bawah */
+}
+.footer p{ margin:0; }
+.footer a{ color:#dc3545; text-decoration:none; font-weight:500; }
+.footer a:hover{ text-decoration:underline; }
+
+  /* =========================
+    RESPONSIVE
+  ========================= */
+  @media (max-width: 768px) {
+      .sidebar {
+          width: 500px !important; 
+          height: auto;
+          position: relative;
+          box-shadow: none;
+      }
+      .main-wrapper {
+          margin-left: 0; 
+      }
+      .footer {
+          padding: 14px;
+      }
+      .carousel-item img {
+          height: 250px;
+      }
+      .card-img-top {
+          height: 150px;
+      }
+  }
+
+  /* Untuk layar tinggi (portrait tablet) */
+  @media (min-height: 1080px) and (orientation: portrait) {
+      .carousel-item img {
+          height: 600px;
+      }
+      .card-img-top {
+          height: 300px;
+      }
+  }
+
+  /* Untuk layar besar (desktop wide) */
+  @media (min-width: 1920px) and (orientation: landscape) {
+      .sidebar {
+          width: 500px !important; 
+      }
+      .main-wrapper {
+          margin-left: 500px;
+      }
+      .carousel-item img {
+          height: 500px;
+      }
+      .card-img-top {
+          height: 250px;
+      }
+  }
+
+  /* =========================
+    KOMPONEN LAIN
+  ========================= */
+
+  /* Banner */
+  #bannerCarousel .carousel-indicators [data-bs-target] {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #dc3545;
+  }
+
+  #bannerCarousel .carousel-indicators .active {
+      background-color: #000;
+  }
+
+  /* Category Button */
+  .category-container .btn {
+      padding: 8px 20px;
+      border-radius: 20px;
+      min-width: 100px;
+      text-align: center;
+      transition: all 0.3s ease;
+      margin: 8px 9px;
+  }
+
+  .custom-category-btn {
+      background-color: #fff;
+      border: 2px solid #dc3545;
+      color: #dc3545;
+  }
+
+  .custom-category-btn:hover {
+      background-color: #dc3545;
+      color: #fff;
+  }
+
+  /* Card */
+  .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .card-img-top {
+      object-fit: cover;
+      height: 200px;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+  }
+
+  .card-body {
+      padding: 15px;
+  }
+
+  /* Button Variants */
+  .btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+      color: #fff;
+  }
+  .btn-danger:hover {
+      background-color: #c82333;
+      border-color: #c82333;
+  }
+  .btn-outline-danger {
+      border: 2px solid #dc3545;
+      color: #dc3545;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+  }
+  .btn-outline-danger:hover {
+      background: #dc3545;
+      color: #fff;
+  }
+  .btn-dark {
+      background: #000;
+      border: none;
+      color: #fff;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+  }
+  .btn-dark:hover {
+      opacity: 0.85;
+  }
+
+  /* =========================
+    PRODUCT CARD (Horizontal)
+  ========================= */
+  .product-card {
+      border: 1.5px solid #dc3545;
+      border-radius: 12px;
+      padding: 20px 30px;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      width: 100%;
+      min-height: 220px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.2);
+  }
+
+  /* Gambar kiri */
+  .product-image-left {
+      flex: 0 0 40%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+  .product-image-left img {
+      max-width: 100%;
+      max-height: 160px;
+      object-fit: contain;
+  }
+
+  /* Konten kanan — TENGAH */
+  .product-info-right {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;   /* vertikal */
+      align-items: center;       /* horizontal */
+      text-align: center;        /* teks tengah */
+      gap: 12px;                 /* jarak antar elemen */
+  }
+
+  /* Tombol di tengah */
+  .product-info-right .buttons {
+      display: flex;
+      gap: 13px;
+      margin-top: 10px;
+      justify-content: center;
+  }
+
+  .product-info-right .btn {
+      padding: 6px 14px;
+  }
+
+  /* Tipografi */
+  .product-title {
+      font-size: 23px;
+      font-weight: 700;
+      margin: 0;
+  }
+  .product-subtitle {
+      font-size: 14px;
+      color: #555;
+      margin: 0;
+      font-style: italic;
+  }
+  .product-price {
+      font-size: 18px;
+      color: #000;
+      font-weight: 700;
+      margin: 0;
+  }
+
+  /* =========================
+    CATEGORY HEADING
+  ========================= */
+  .category-heading {
+      font-size: 1.3rem;
+      font-weight: 500; /* tidak terlalu bold */
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 5px;
+      color: #111; /* lebih pekat dari #333 */
+  }
+
+  .category-divider {
+      width: 100%;
+      height: 2px;
+      background-color: #000000 !important; /* Hitam pekat absolut */
+      margin: 0 0 25px 0;
+      box-sizing: border-box;
+  }
+
+  .see-more-wrapper {
+      position: relative;   /* Ikut alur konten */
+      margin-top: 5px;     /* Jarak dari produk terakhir */
+      text-align: center;   /* Tombol tetap di tengah */
+      padding-bottom: 20px; /* Jarak tambahan dari footer */
+  }
+
+  .btn-see-more {
+      background-color: #dc3545;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      padding: 14px 50px;
+      border-radius: 30px;   /* biar pill shape */
+      transition: background 0.3s ease;
+  }
+
+  .btn-see-more:hover {
+      background-color: #b02a37;
+      color: #fff;
+  }
+
+  /* =========================
+    MOTOR DETAIL SECTIONS
+  ========================= */
+
+  /* Section Titles */
+  .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #111;
+  }
+
+  /* Motor Banner */
+  .motor-banner {
+      position: relative;
+  }
+
+  /* ===== VARIAN WARNA — PERSIS GAYA YAMAHA ===== */
+  .motor-colors {
+    text-align: center;
+    margin-bottom: 42px;
+    position: relative;
+  }
+  .motor-banner {
+    margin-bottom: 16px !important; /* judul lebih dekat banner */
+  }
+  .section-title {
+    margin: 6px 0 16px !important;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #111;
+  }
+
+  /* Panggung (viewport) */
+  .motor-colors .variant-viewport {
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    padding-bottom: 30px; /* Jarak tambahan agar gambar tidak menempel tulisan */
+  }
+
+  /* Rel slider */
+  .motor-colors .variant-track {
+    display: flex;
+    align-items: center;
+    gap: 30px; /* Sesuaikan gap seperti Yamaha */
+    transition: transform 0.5s ease-out; /* Transisi lebih halus seperti Yamaha */
+    will-change: transform;
+    padding: 0 15px; /* Padding kecil untuk ruang di ujung */
+  }
+
+  /* Layout tepi (2 slot terlihat) – kanan/kiri full tampak & pudar */
+  .motor-colors .variant-viewport.layout-2 .variant-item.active {
+    flex: 0 0 60%;
+    max-width: 60%;
+  }
+  .motor-colors .variant-viewport.layout-2 .variant-item.is-right,
+  .motor-colors .variant-viewport.layout-2 .variant-item.is-left {
+    flex: 0 0 35%;
+    max-width: 35%;
+    opacity: 0.4;
+  }
+
+  /* Layout tengah (3 slot terlihat) – tengah dominan */
+  .motor-colors .variant-viewport.layout-3 .variant-item {
+    flex: 0 0 28%;
+    max-width: 28%;
+    opacity: 0.4;
+  }
+  .motor-colors .variant-viewport.layout-3 .variant-item.active {
+    flex: 0 0 42%;
+    max-width: 42%;
+    opacity: 1;
+  }
+
+  /* Kartu item */
+  .motor-colors .variant-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: center;
+    transition: opacity 0.3s ease, transform 0.4s ease, flex-basis 0.4s ease;
+    will-change: transform, opacity, flex-basis;
+    z-index: 1;
+  }
+  .motor-colors .variant-item.active {
+    z-index: 2;
+    transform: scale(1.05); /* Efek zoom ringan seperti Yamaha */
+  }
+
+  /* Skala kecil untuk tetangga */
+  .motor-colors .variant-item.is-right .variant-img,
+  .motor-colors .variant-item.is-left .variant-img {
+    transform: scale(0.85);
+  }
+  .motor-colors .variant-item.is-right .variant-img {
+    transform-origin: left center;
+  }
+  .motor-colors .variant-item.is-left .variant-img {
+    transform-origin: right center;
+  }
+
+  /* Gambar */
+  .motor-colors .variant-img {
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: 520px; /* Sesuaikan dengan tinggi gambar aslimu */
+    object-fit: contain;
+    border-radius: 8px; /* Sudut lembut seperti Yamaha */
+  }
+
+  /* Nama warna */
+  .motor-colors .variant-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 15px;
+    letter-spacing: 1.5px;
+    color: #777;
+    text-transform: uppercase; /* Sesuai gaya Yamaha */
+  }
+  .motor-colors .variant-item.active .variant-name {
+    color: #000;
+    font-size: 1.2rem;
+  }
+
+  /* === COLOR DOTS — full fill sesuai warna back office === */
+  .motor-colors .color-selector{
+    display:flex; align-items:center; justify-content:center;
+    gap:20px; margin-top:25px;
+  }
+
+  .motor-colors .color-dot{
+    width:44px; height:44px; border-radius:50%;
+    /* isi penuh dari DB */
+    background: var(--clr, #ddd);
+    /* tanpa border supaya tidak ada putih di tengah */
+    border:none;
+    /* bayangan lembut seperti desain */
+    box-shadow: 0 8px 16px rgba(0,0,0,.18);
+    cursor:pointer;
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+  }
+
+  /* hover: sedikit membesar */
+  .motor-colors .color-dot:hover{
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 12px 22px rgba(0,0,0,.22);
+  }
+
+  /* active: lebih “angkat”, TIDAK menambah border */
+  .motor-colors .color-dot.active{
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 14px 26px rgba(0,0,0,.26);
+  }
+
+  /* Responsivitas */
+  @media (max-width: 1200px) {
+    .motor-colors .variant-img {
+      max-height: 450px;
+    }
+    .motor-colors .variant-viewport {
+      padding-bottom: 25px;
+    }
+  }
+  @media (max-width: 992px) {
+    .motor-colors .variant-img {
+      max-height: 400px;
+    }
+    .motor-colors .variant-viewport.layout-2 .variant-item.active {
+      flex: 0 0 65%;
+      max-width: 65%;
+    }
+    .motor-colors .variant-viewport.layout-2 .variant-item.is-right,
+    .motor-colors .variant-viewport.layout-2 .variant-item.is-left {
+      flex: 0 0 30%;
+      max-width: 30%;
+    }
+  }
+  @media (max-width: 768px) {
+    .motor-colors .variant-img {
+      max-height: 320px;
+    }
+    .motor-colors .variant-viewport.layout-3 .variant-item {
+      flex: 0 0 30%;
+      max-width: 30%;
+    }
+    .motor-colors .variant-viewport.layout-3 .variant-item.active {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+  }
+
+  /* =========================
+    MOTOR SPECS ACCORDION — FINAL
+  ========================= */
+
+  /* Header kategori (TERTUTUP = putih) */
+  .motor-specs .accordion-button{
+    background-color:#fff !important;   /* putih saat tertutup */
+    color:#000;
+    font-weight:500;
+    box-shadow:none !important;
+    padding:16px 28px;                  /* spacing nyaman */
+    min-height:56px;
+    border-bottom:2px solid #dc3545;    /* garis merah di bawah judul */
+  }
+
+  /* Header kategori (TERBUKA = merah, teks putih) */
+  .motor-specs .accordion-button:not(.collapsed){
+    background-color:#dc3545 !important;
+    color:#fff !important;
+  }
+  .motor-specs .accordion-button:not(.collapsed):hover,
+  .motor-specs .accordion-button:not(.collapsed):focus{
+    background-color:#dc3545 !important;
+    color:#fff !important;
+    box-shadow:none !important;
+  }
+
+  /* Icon + / – di kanan */
+  .motor-specs .accordion-button::after{
+    content:'+';
+    background-image:none !important;   /* matikan caret default */
+    transform:none !important;
+    width:auto; height:auto;
+    margin-left:auto;                   /* dorong ke kanan */
+    margin-right:6px;                   /* jarak dari tepi kanan */
+    padding-left:14px;                  /* jarak dari teks */
+    font-size:1.4rem; line-height:1;
+    color:inherit;
+  }
+  .motor-specs .accordion-button:not(.collapsed)::after{
+    content:'–';
+    color:#fff;                         /* minus putih saat header merah */
+  }
+
+  /* Hover/focus PUTIH khusus saat TERTUTUP */
+  .motor-specs .accordion-button.collapsed:hover,
+  .motor-specs .accordion-button.collapsed:focus{
+    background-color:#fff !important;
+    color:#000 !important;
+    box-shadow:none !important;
+  }
+
+  /* Garis merah pemisah di bawah panel */
+  .motor-specs .accordion-collapse{
+    border-bottom:2px solid #dc3545;
+    background:#fff;                    /* isi panel putih */
+  }
+
+  /* Pastikan area sekitar juga putih */
+  .motor-specs .accordion-item,
+  .motor-specs .accordion-header,
+  .motor-specs .spec-body{
+    background:#fff;
+  }
+
+  /* ==== TABEL SPESIFIKASI ==== */
+
+  /* Biarkan striped area full lebar */
+  .motor-specs .spec-body{
+    padding:0 !important;
+  }
+
+  /* Tinggi baris & penyelarasan teks dengan header */
+  .motor-specs .spec-table td{
+    padding:14px 0;
+  }
+  .motor-specs .spec-table td:first-child{   /* kolom atribut */
+    padding-left:28px;                       /* sejajar header */
+  }
+  .motor-specs .spec-table td:last-child{    /* kolom detail */
+    padding-right:28px;
+  }
+
+  /* Samakan tinggi baris paling bawah (kompensasi border 2px) */
+  .motor-specs .spec-table tr:last-child td{
+    padding-bottom:calc(14px + 2px);
+  }
+
+  /* Responsif */
+  @media (max-width:768px){
+    .motor-specs .accordion-button{ padding:14px 20px; }
+    .motor-specs .spec-table td:first-child{ padding-left:20px; }
+    .motor-specs .spec-table td:last-child{  padding-right:20px; }
+  }
+
+  /* ===== ACCORDION FLUSH / FLAT (nyatu dengan background) ===== */
+  .motor-specs .accordion{
+    background: transparent;
+    border: 0 !important;
+    box-shadow: none !important;
+
+    /* override var Bootstrap */
+    --bs-accordion-border-color: transparent;
+    --bs-accordion-border-radius: 0;
+    --bs-accordion-inner-border-radius: 0;
+  }
+
+  .motor-specs .accordion-item{
+    background: transparent;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* hilangkan border top default antar item */
+  .motor-specs .accordion-item:not(:first-of-type){
+    border-top: 0 !important;
+  }
+
+  /* pastikan tidak ada rounded di header & panel terakhir */
+  .motor-specs .accordion-button,
+  .motor-specs .accordion-item:first-of-type .accordion-button,
+  .motor-specs .accordion-item:last-of-type .accordion-button,
+  .motor-specs .accordion-item:last-of-type .accordion-collapse{
+    border-radius: 0 !important;
+  }
+
+  /* ===== FEATURE CARD – RESPONSIVE, TANPA Gambar Kepotong ===== */
+  :root{
+    --card-w: 600px;      /* max lebar card desktop */
+    --thumb-w: 300px;     /* batas MAX lebar thumbnail desktop */
+    --thumb-h: 200px;     /* batas MAX tinggi thumbnail desktop */
+    --thumb-w-sm: 160px;  /* batas MAX lebar thumbnail mobile */
+    --thumb-h-sm: 120px;  /* batas MAX tinggi thumbnail mobile */
+  }
+
+  .motor-features{
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .motor-features .hotspot-stage{
+    position: relative;
+    display: inline-block;
+    max-width: 1400px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .motor-features .hotspot-stage > img{
+    display: block;
+    margin: 0 auto;
+    width: 100%;
+    height: auto;
+    max-height: 720px;
+    object-fit: contain;
+    border-radius: 12px;
+  }
+
+  /* Titik */
+  .motor-features .hotspot{
+    position: absolute;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background:#dc3545;
+    border:3px solid #fff;
+    box-shadow:0 2px 10px rgba(0,0,0,.35);
+    cursor:pointer; z-index:4;
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  .motor-features .hotspot:hover{ transform: scale(1.15); }
+  .motor-features .hotspot::after{
+    content:""; position:absolute; inset:-8px; border-radius:50%;
+    border:2px solid rgba(220,53,69,.45); animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{ from{transform:scale(1);opacity:1} to{transform:scale(1.8);opacity:0} }
+
+  /* ===== Card ===== */
+  .motor-features .feature-card{
+    position: absolute;
+    display: none !important;
+    width: clamp(320px, 92vw, var(--card-w)); /* fleksibel tapi ada batas */
+    padding: 16px;
+    background: #fff;
+    color:#111;
+    border-radius: 14px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    z-index: 5;
+    text-align: left;
+    overflow: hidden;
+    white-space: normal;
+  }
+
+  /* TAMPIL → kolom kiri mengikuti ukuran gambar (auto), bukan fixed */
+  .motor-features .feature-card.show{
+    display: grid !important;
+    grid-template-columns: auto 1fr; /* <— ini kuncinya */
+    gap: 16px;
+    align-items: start;
+  }
+
+  /* matikan flex bootstrap di dalam card */
+  .motor-features .feature-card .d-flex{ display: contents !important; }
+
+  /* Thumbnail: fit, TANPA crop. Kecil ikut gambar, besar dibatasi MAX. */
+  .motor-features .fc-img{
+    display: block;
+    width: auto;                /* biar bisa sekecil gambar aslinya */
+    height: auto;
+    max-width: var(--thumb-w);  /* tapi jangan lebih lebar dari ini */
+    max-height: var(--thumb-h); /* dan jangan lebih tinggi dari ini */
+    object-fit: contain;        /* no crop, letterbox kalau perlu */
+    border-radius: 10px;
+    align-self: start;
+  }
+
+  /* Teks */
+  .motor-features .feature-card h5{
+    margin: 0 0 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+  .motor-features .feature-card p{
+    margin: 0;
+    font-size: .95rem;
+    color: #555;
+    line-height: 1.55;
+  }
+
+  /* ===== Mobile ===== */
+  @media (max-width:768px){
+    .motor-features .feature-card{
+      left: 50% !important;
+      transform: translate(-50%, 12px) !important;
+      padding: 14px;
+    }
+    .motor-features .feature-card.show{
+      grid-template-columns: auto 1fr; /* tetap auto */
+      gap: 12px;
+    }
+    .motor-features .fc-img{
+      max-width: var(--thumb-w-sm);
+      max-height: var(--thumb-h-sm);
+      border-radius: 8px;
+    }
+  }
+
+  /* ===== Pill hint — persis desain (datar, teks normal) ===== */
+  .feature-hint-wrap{
+    display:flex;
+    justify-content:center;
+    margin-top:12px;
+  }
+  .feature-hint{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;                 /* jarak ikon–teks sesuai desain */
+    padding:12px 20px;        /* tinggi/isi pill */
+    background:#DEDEDE;       /* abu-abu datar seperti mockup */
+    border:0;                 /* TANPA border */
+    border-radius:12px;       /* sudut membulat sedang */
+    box-shadow:none;          /* TANPA bayangan */
+    width:max-content;
+  }
+  /* teks tidak bold */
+  .feature-hint .hint-text{
+    font-size:18px;
+    line-height:1.35;
+    font-weight:400;          /* normal (tidak bold) */
+    color:#111;               /* hitam lembut */
+    white-space:nowrap;
+  }
+
+  /* === MAGNIFIER (ikon) – tetap seperti sebelumnya === */
+  .feature-hint .hint-ico{
+    --size:22px; --ring:2px; --handle-l:10px; --handle-t:2px; --tilt:-35deg;
+    position:relative;
+    flex:0 0 calc(var(--size) + 4px);
+    width:calc(var(--size) + 4px);
+    height:var(--size);
+    background:transparent;
+    border:0;
+    box-shadow:none;
+  }
+  .feature-hint .hint-ico .lens{
+    position:absolute; inset:0 auto auto 0;
+    width:var(--size); height:var(--size);
+    border-radius:50%;
+    background:#E11D2B;
+    border:var(--ring) solid #2F3841;
+    box-shadow:0 0 0 1px rgba(0,0,0,.06);
+  }
+  .feature-hint .hint-ico .lens::before{
+    content:""; position:absolute;
+    width:46%; height:46%;
+    left:18%; top:14%;
+    border-radius:50%;
+    border:2px solid transparent;
+    border-top-color:#fff;
+    transform:rotate(-12deg);
+  }
+  .feature-hint .hint-ico .lens::after{
+    content:""; position:absolute;
+    width:var(--handle-l); height:var(--handle-t);
+    background:#2F3841; border-radius:2px;
+    left:-2px; bottom:-2px;
+    transform:rotate(var(--tilt));
+    transform-origin:left center;
+    box-shadow:0 1px 0 rgba(0,0,0,.05);
+  }
+  .feature-hint .hint-ico .dot{ display:none !important; }
+
+  /* skala di HP */
+  @media (max-width:768px){
+    .feature-hint{ padding:10px 14px; gap:8px; }
+    .feature-hint .hint-text{ font-size:16px; }
+    .feature-hint .hint-ico{ --size:20px; --handle-l:9px; }
+  }
+
+  /* =========================
+    AKSESORIS — Card persis mockup (ramping & gambar besar)
+  ========================= */
+
+  /* Track & centering tetap */
+  .motor-accessories { 
+    text-align: center; 
+  }
+
+  .motor-accessories .section-title{ 
+    margin-bottom:18px !important; 
+  }
+  .acc-wrap{ 
+    position:relative; 
+    max-width:1200px; 
+    margin:0 auto 18px; 
+    padding:0 72px; 
+  }
+
+  .acc-viewport{ 
+    overflow:auto; 
+    scroll-behavior:smooth; 
+    scrollbar-width:none; 
+  }
+
+  .acc-viewport::-webkit-scrollbar{ 
+    display:none; 
+  }
+
+  .acc-track{ 
+    display:flex; 
+    gap:22px; 
+    padding:2px; 
+  }
+
+  .acc-track.acc-center{ 
+    justify-content:center; 
+  }
+
+  /* === CARD: ramping seperti desain === */
+  .acc-card{
+    flex:0 0 320px;                 /* 320px biar lebih ramping */
+    max-width:320px;
+    background:#fff;
+    border:1.5px solid #dc3545;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+    overflow:hidden;
+    text-align:left;
+  }
+
+  /* === AREA GAMBAR: tanpa background abu, margin dalam fix === */
+  .acc-img{
+    width:100%;
+    height:auto;
+    padding:0;                      /* hilangkan padding kontainer */
+    background:transparent;         /* hilangkan abu-abu */
+    border:none;
+    display:block;
+  }
+
+  /* === GAMBAR: ukuran besar, rasio rapi, sudut membulat ===
+    - Lebar gambar = lebar kartu dikurangi margin-dalam 64px (32px kiri/kanan)
+    - Tinggi gambar tetap (240px) agar konsisten antar kartu
+  */
+  .acc-img img{
+    display:block;
+    width: calc(100% - 64px);       /* margin dalam kiri/kanan 32px */
+    height: 240px;                  /* tinggi besar seperti mockup */
+    margin: 32px auto 0;            /* jarak atas 32px, kiri/kanan otomatis */
+    object-fit: cover;              /* tampil penuh, komposisi bagus */
+    border-radius: 12px;            /* sudut gambar bulat seperti desain */
+  }
+
+  /* === BODY: tipografi & jarak mengikuti desain === */
+  .acc-body{ padding:16px 24px 18px; }
+  .acc-title{
+    font-size:24px;                 /* heading besar seperti mockup */
+    font-weight:800;
+    line-height:1.2;
+    margin: 14px 0 10px;
+    color:#111;
+  }
+  .acc-price span{ display:block; font-size:14px; color:#666; line-height:1; }
+  .acc-price strong{ display:block; font-size:22px; font-weight:800; margin:8px 0 16px; color:#000; }
+
+  /* === CTA: teks kiri hitam & chevron kanan hitam, border merah === */
+  .acc-cta{
+    display:flex; align-items:center; justify-content:space-between;
+    width:100%; height:48px;
+    padding:0 16px;
+    border:1.5px solid #dc3545;
+    border-radius:10px;
+    background:#fff;
+    color:#111; text-decoration:none; font-weight:700; font-size:18px;
+  }
+  .acc-cta i{ color:#111; }
+  .acc-cta:hover{ background:#fafafa; }
+
+  /* === Panah navigasi === */
+  .acc-nav{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:56px; height:56px; border-radius:50%;
+    border:0; background:#EFEFEF; color:#333;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,.15);
+    cursor:pointer; z-index:5;
+  }
+  .acc-prev{ left:0; } .acc-next{ right:0; }
+  .acc-nav i{ font-size:18px; }
+  .acc-nav:hover{ filter:brightness(.95); }
+
+  /* === Tombol aksi bawah === */
+  .acc-actions{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr); /* tadinya 5 */
+    gap:16px;
+    max-width:1200px;
+    margin:40px auto 0; /* tambah jarak dari kartu aksesoris */
+  }
+
+  .acc-action-btn{
+    display:block; text-align:center; background:#EFEFEF;
+    padding:14px 10px; border-radius:12px; color:#111; text-decoration:none;
+    font-weight:500; border:1px solid #ddd;
+  }
+  .acc-action-btn:hover{ background:#e6e6e6; }
+
+  /* === Responsif === */
+  @media (max-width:1200px){
+    .acc-card{ flex-basis:300px; max-width:300px; }
+    .acc-img img{ width: calc(100% - 56px); height: 220px; margin-top:28px; }
+    .acc-title{ font-size:22px; }
+    .acc-price strong{ font-size:20px; }
+  }
+  @media (max-width:768px){
+    .acc-wrap{ padding:0 54px; }
+    .acc-card{ flex-basis:86vw; max-width:86vw; }
+    .acc-img img{ width: calc(100% - 48px); height: 200px; margin-top:24px; }
+    .acc-actions{ grid-template-columns:1fr; }
+  }
+
+  /* === Aksesori: Panah putih, ikon hitam (override) === */
+  .acc-nav{
+    background:#fff !important;          /* bulat putih */
+    color:#000 !important;               /* warna default hitam */
+    border:1px solid #E6E6E6;            /* ring tipis */
+    width:64px;                          /* sedikit lebih besar biar mantap */
+    height:64px;
+    border-radius:50%;
+    box-shadow:0 8px 24px rgba(0,0,0,.12);  /* soft shadow seperti mockup */
+  }
+
+  .acc-nav i{
+    color:#000 !important;               /* chevron hitam */
+    font-size:22px;                      /* proporsional dengan 64px */
+    line-height:1;
+  }
+
+  .acc-nav:hover{
+    background:#fff !important;          /* tetap putih saat hover */
+    filter:none !important;
+    box-shadow:0 10px 28px rgba(0,0,0,.16);
+  }
+
+  /* (opsional) naikkan z-index kalau ketutup elemen lain */
+  .acc-nav{ z-index: 6; }
+
+  /* === Banner Home: panah bulat putih ala Aksesori === */
+  #bannerCarousel .carousel-control-prev,
+  #bannerCarousel .carousel-control-next{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: auto; right: auto;
+    width: auto;                  /* jangan full height */
+    opacity: 1 !important;        /* nontransparan */
+    background: transparent !important;  /* hilangkan overlay gelap Bootstrap */
+    z-index: 3;
+  }
+  #bannerCarousel .carousel-control-prev{ left: 18px; }
+  #bannerCarousel .carousel-control-next{ right: 18px; }
+
+  /* Ikon = lingkaran putih + chevron hitam di tengah (seperti .acc-nav) */
+  #bannerCarousel .carousel-control-prev-icon,
+  #bannerCarousel .carousel-control-next-icon{
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50%;
+    background-color: #fff !important;        /* bulat putih */
+    border: 1px solid #E6E6E6;                /* ring tipis */
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);   /* bayangan halus */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 22px 22px;               /* ukuran chevron */
+    filter: none !important;                   /* matikan invert Bootstrap */
+  }
+
+  /* Chevron kiri & kanan (hitam) */
+  #bannerCarousel .carousel-control-prev-icon{
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3E%3Cpath d='M11.354 1.646a.5.5 0 010 .708L6.707 7l4.647 4.646a.5.5 0 11-.708.708l-5-5a.5.5 0 010-.708l5-5a.5.5 0 01.708 0z'/%3E%3C/svg%3E") !important;
+  }
+  #bannerCarousel .carousel-control-next-icon{
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3E%3Cpath d='M4.646 1.646a.5.5 0 000 .708L9.293 7l-4.647 4.646a.5.5 0 10.708.708l5-5a.5.5 0 000-.708l-5-5a.5.5 0 00-.708 0z'/%3E%3C/svg%3E") !important;
+  }
+
+  /* Hover: naikkan bayangan, tetap putih */
+  #bannerCarousel .carousel-control-prev:hover .carousel-control-prev-icon,
+  #bannerCarousel .carousel-control-next:hover .carousel-control-next-icon{
+    box-shadow: 0 10px 28px rgba(0,0,0,.16);
+  }
+
+  /* Responsif: sedikit lebih kecil di mobile */
+  @media (max-width:768px){
+    #bannerCarousel .carousel-control-prev-icon,
+    #bannerCarousel .carousel-control-next-icon{
+      width:56px !important; height:56px !important; background-size:20px 20px;
+    }
+    #bannerCarousel .carousel-control-prev{ left:12px; }
+    #bannerCarousel .carousel-control-next{ right:12px; }
+  }
+
+  /* ===== Rekomendasi Varian (di bawah tombol aksi) ===== */
+  .rec-section{
+    max-width: 1200px;
+    margin: 42px auto 10px;
+  }
+  .rec-title{
+    font-size: 1.80rem;
+    font-weight: 500;
+    text-align: center;
+    margin: 0 0 22px;
+    color: #111;
+  }
+
+  .rec-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;   /* dua kartu seperti mockup */
+    gap: 24px;
+  }
+
+  @media (max-width: 992px){
+    .rec-grid{ grid-template-columns: 1fr; }
+  }
+
+  /* sedikit longgarkan jarak antara tombol aksi & section di atasnya */
+  .acc-actions{ margin: 40px auto 10px; }
+
+  /* Jarak kartu rekomendasi ke tombol "Lihat Selengkapnya" */
+  .rec-grid{ 
+    margin-bottom: 28px;    /* space di bawah grid kartu */
+  }
+
+  /* Tombol "Lihat Selengkapnya" agak turun & aman dari footer */
+  .see-more-wrapper{
+    margin-top: 24px;       /* tambahan jarak dari kartu */
+    padding-bottom: 36px;   /* ekstra ruang bila ada footer fixed */
+  }
+
+  /* (opsional) kalau masih terasa mepet karena footer fixed */
+  .rec-section{ 
+    padding-bottom: 20px; 
+  }
+
+  /* =========================
+    SIDEBAR TOGGLE (button)
+  ========================= */
+  .sidebar-toggle{
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 1201;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: #fff; border: 1px solid #E6E6E6; border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+    font-weight: 600; color:#111;
+  }
+  .sidebar-toggle .ico{
+    width: 18px; height: 2px; background:#111; position: relative; display: inline-block;
+  }
+  .sidebar-toggle .ico::before, .sidebar-toggle .ico::after{
+    content:""; position:absolute; left:0; right:0; height:2px; background:#111;
+  }
+  .sidebar-toggle .ico::before{ top:-6px; }
+  .sidebar-toggle .ico::after{ top:6px; }
+  body:not(.sidebar-collapsed) .sidebar-toggle .ico{
+    background: transparent;
+  }
+  body:not(.sidebar-collapsed) .sidebar-toggle .ico::before{
+    transform: rotate(45deg); top:0;
+  }
+  body:not(.sidebar-collapsed) .sidebar-toggle .ico::after{
+    transform: rotate(-45deg); top:0;
+  }
+  .sidebar-toggle .lbl{ font-size:14px; }
+  @media (max-width:768px){ .sidebar-toggle{ top:10px; left:10px; } }
+
+  /* =========================
+    SIDEBAR COLLAPSED STATE
+  ========================= */
+  body.sidebar-collapsed .sidebar{
+    flex: 0 0 0 !important;
+    width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+  }
+  body.sidebar-collapsed main{
+    width: 100% !important;
+  }
+
+  /* =========================
+    GRID PRODUK ADAPTIF
+  ========================= */
+  @media (min-width: 1920px) and (orientation: landscape){
+    body.sidebar-collapsed .product-grid .product-col{
+      flex: 0 0 33.333333% !important;
+      max-width: 33.333333% !important;
+    }
+  }
+
+  /* =========================
+    PENYESUAIAN DETAIL (opsional)
+  ========================= */
+  @media (min-width: 1920px) and (orientation: landscape){
+    body.sidebar-collapsed .motor-features .hotspot-stage > img{
+      max-height: 820px;
+    }
+    body.sidebar-collapsed .motor-colors .variant-viewport{
+      min-height: 680px;
+    }
+  }
+  @media (min-height: 1920px) and (orientation: portrait){
+    .motor-features .hotspot-stage > img{ max-height: 900px; }
+    .motor-colors .variant-viewport{ min-height: 720px; }
+  }
+
+  /* =========================
+    AKSESORIS — Kartu Motor (match mockup)
+  ========================= */
+  .acc-motor-card{
+    display: grid;
+    grid-template-columns: 44% 1fr;      /* gambar kiri besar, konten kanan */
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    min-height: 260px;
+    padding: 24px 28px;
+    background: #fff;
+    border: 1.5px solid #dc3545;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.15);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .acc-motor-card:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,.2);
+  }
+
+  .acc-motor-img{
+    display:flex; align-items:center; justify-content:flex-start;
+  }
+  .acc-motor-img img{
+    width: 100%;
+    max-width: 420px;                 /* biar proporsional */
+    max-height: 200px;                /* tinggi gambar seperti mockup */
+    object-fit: contain;
+  }
+
+  /* kanan: judul besar + tombol detail */
+  .acc-motor-info{
+    display:flex; flex-direction:column;
+    align-items:flex-start;           /* teks rata kiri (sesuai mockup) */
+    gap: 14px;
+  }
+  .acc-motor-title{
+    font-size: 24px;                  /* besar seperti mockup */
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    color: #111;
+  }
+
+  /* pakai acc-cta yang sudah ada, tambah ukuran agar sama persis */
+  .acc-motor-cta{
+    width: 260px;                     /* lebar tombol seperti contoh */
+    height: 48px;                     /* match tinggi yang sudah ada */
+    padding: 0 16px;                  /* biar teks & chevron pas */
+  }
+
+  /* responsif */
+  @media (max-width: 992px){
+    .acc-motor-card{
+      grid-template-columns: 1fr;     /* tumpuk di mobile */
+      min-height: 0;
+      gap: 16px;
+    }
+    .acc-motor-img{ justify-content:center; }
+    .acc-motor-title{ font-size: 24px; }
+  }
+
+  /* =========================
+    ACCESSORIES DETAIL (per motor) — FINAL
+  ========================= */
+
+  /* Back bar */
+  .accd-back{ margin-bottom:14px; }
+  .accd-back-link{ display:inline-flex; 
+    align-items:center; 
+    gap:12px; 
+    text-decoration:none; 
+    color:#111; 
+    font-weight:600; 
+    font-size:18px; 
+  }
+
+  .accd-back-ico{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;   /* perbesar lingkaran housing */
+    height: 56px;
+  }
+
+  .accd-back-ico svg{
+    display: block;
+    width: 44px;   /* perbesar icon di dalam */
+    height: 44px;
+  }
+
+  .accd-back-ico svg *{
+    stroke-width: 1.5px;  /* tebalkan biar proporsional */
+  }
+
+  /* garis hitam di bawah (sudah ada, aman) */
+  .accd-back-rule{
+    height:2px;
+    background:#111;
+    margin-top:10px;
+  }
+
+  /* Stage (gambar + hotspot) — NO vw */
+  .accd-stage { 
+    position:relative; 
+    text-align:center; 
+    margin:10px 0 20px; 
+  }
+
+  .accd-stage-img{
+    display:block; 
+    margin:0 auto;
+    width:100%; 
+    max-width:800px;
+    height:auto; 
+    object-fit:contain;
+  }
+
+  .accd-hotspot{
+    position:absolute; 
+    transform: translate(-50%, -50%);
+    width:18px; 
+    height:18px; 
+    border-radius:50%; 
+    background:#E11D2B; 
+    border:3px solid #fff;
+    box-shadow:0 2px 10px rgba(0,0,0,.35); 
+    cursor:pointer;
+  }
+
+  .accd-hotspot::after{ 
+    content:""; 
+    position:absolute; 
+    inset:-8px; 
+    border-radius:50%;
+    border:2px solid rgba(225,29,43,.45); 
+    animation:accdPulse 1.6s infinite; 
+  }
+
+  @keyframes accdPulse{ from{transform:scale(1);opacity:1} to{transform:scale(1.8);opacity:0} }
+
+  /* ===== Grid & Card (default desktop) ===== */
+  .accd-grid{
+    width:100%; 
+    max-width:100%; 
+    box-sizing:border-box;
+    margin:0; 
+    padding:0;
+    display:grid; 
+    grid-template-columns:1fr 1fr; 
+    gap:24px;
+  }
+
+  .accd-card{
+    border:1.5px solid #dc3545; 
+    border-radius:12px; 
+    background:#fff;
+    box-shadow:0 6px 18px rgba(0,0,0,.15);
+    display:flex; 
+    align-items:center; 
+    gap:28px; 
+    padding:24px 28px; 
+    min-height:240px;
+    transition:transform .2s ease, box-shadow .2s ease;
+    min-width:0;
+  }
+
+  .accd-card:hover{ 
+    transform:translateY(-4px); 
+    box-shadow:0 10px 24px rgba(0,0,0,.2); 
+  }
+
+  /* thumbnail kiri (ukuran seperti di Figma) */
+  .accd-thumb{ 
+    flex:0 0 37%; 
+    max-width:37%; 
+  }
+
+  .accd-thumb img{ 
+    display:block; 
+    width:100%; 
+    height:auto;
+    max-height:200px; 
+    object-fit:cover; 
+    border-radius:12px; 
+  }
+
+  /* konten kanan: RATA KIRI */
+  .accd-body{
+    flex:1; 
+    display:flex; 
+    flex-direction:column;
+    align-items:flex-start;              /* <— penting: rata kiri */
+    text-align:left;                     /* <— penting: rata kiri */
+    gap:16px; 
+    min-width:0;
+  }
+
+  /* tipografi sesuai mockup */
+  .accd-title{ 
+    font-size:24px; 
+    line-height:1.2; 
+    font-weight:800; 
+    color:#111; 
+    margin:0; 
+  }
+
+  .accd-price span{ 
+    display:block; 
+    font-size:16px; 
+    color:#666; 
+    line-height:1; 
+  }
+
+  .accd-price strong{ 
+    display:block; 
+    font-size:22px; 
+    font-weight:800; 
+    color:#000; 
+    margin-top:6px; 
+  }
+
+  /* tombol “Detail”: lebar tetap, rata kiri, ada chevron */
+  .accd-cta{
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between;
+    height:56px; 
+    width:360px; 
+    max-width:100%;
+    padding:0 18px;
+    border:1.5px solid #dc3545; 
+    border-radius:12px;
+    background:#fff; 
+    color:#111; 
+    font-weight:700; 
+    font-size:22px; 
+    text-decoration:none;
+  }
+
+  .accd-cta i{ color:#111; }
+  .accd-cta:hover{ background:#fafafa; }
+
+  /* ==== Responsive ==== */
+  @media (max-width:1200px){
+    .accd-title{ font-size:28px; }
+    .accd-price strong{ font-size:28px; }
+    .accd-cta{ height:52px; width:320px; font-size:20px; }
+  }
+
+  @media (max-width:992px){
+    .accd-grid{ grid-template-columns:1fr; }
+    .accd-card{ flex-direction:column; align-items:stretch; gap:18px; min-height:auto; }
+    .accd-thumb{ flex:0 0 auto; max-width:100%; }
+    .accd-thumb img{ max-height:220px; }
+    .accd-body{ align-items:flex-start; text-align:left; }
+    .accd-title{ font-size:26px; }
+    .accd-price span{ font-size:16px; }
+    .accd-price strong{ font-size:24px; }
+    .accd-cta{ width:280px; height:48px; font-size:18px; }
+  }
+
+  /* Portrait tinggi 1080×1920 (sidebar buka) → 2 kolom compact */
+  @media (max-width:1100px) and (min-height:1880px) and (orientation:portrait){
+    .accd-grid{ grid-template-columns:1fr 1fr; gap:18px; }
+    .accd-card{ padding:18px; gap:16px; }
+    .accd-thumb{ flex:0 0 34%; max-width:34%; }
+    .accd-thumb img{ max-height:180px; }
+    .accd-title{ font-size:24px; }
+    .accd-price span{ font-size:14px; }
+    .accd-price strong{ font-size:22px; }
+    .accd-cta{ width:260px; height:46px; font-size:17px; }
+  }
+
+
+  /* === Samakan PRODUCT CARD dengan ACCD-CARD (ukuran, padding, gambar, tata letak) === */
+  .product-card{
+    min-height:240px !important;      /* = .accd-card */
+    padding:24px 28px !important;     /* = .accd-card */
+    gap:28px !important;              /* = .accd-card */
+    border:1.5px solid #dc3545 !important;
+    border-radius:12px !important;
+    box-shadow:0 6px 18px rgba(0,0,0,.15) !important;
+  }
+
+  /* kiri: ukuran area gambar dibuat 37% seperti .accd-thumb */
+  .product-image-left{
+    flex:0 0 37% !important;
+    max-width:37% !important;
+    justify-content:flex-start !important;
+  }
+  .product-image-left img{
+    width:100% !important;
+    height:auto !important;
+    max-height:200px !important;      /* = .accd-thumb img */
+    object-fit:cover !important;       /* dari contain -> cover */
+    border-radius:12px !important;
+  }
+
+  /* kanan: rata kiri + jarak elemen seperti .accd-body */
+  .product-info-right{
+    align-items:flex-start !important;
+    text-align:left !important;
+    gap:16px !important;
+  }
+
+  /* tipografi agar konsisten dengan aksesoris */
+  .product-title{ font-size:24px !important; font-weight:800 !important; margin:0 !important; color:#111 !important; }
+  .product-subtitle{ font-size:16px !important; color:#666 !important; }
+  .product-price{ font-size:22px !important; font-weight:800 !important; color:#000 !important; margin:6px 0 0 !important; }
+
+  /* tombol: biarkan style yang ada, hanya jaga lebar opsional agar mirip */
+  .product-info-right .buttons{ width:auto !important; justify-content:flex-start !important; }
+
+  /* ==== Responsive sama seperti .accd-card ==== */
+  @media (max-width:992px){
+    .product-card{ flex-direction:column !important; align-items:stretch !important; gap:18px !important; min-height:auto !important; }
+    .product-image-left{ flex:0 0 auto !important; max-width:100% !important; }
+    .product-image-left img{ max-height:220px !important; }
+    .product-title{ font-size:26px !important; }
+    .product-price{ font-size:24px !important; }
+  } 
+
+  /* HOME + MENU PRODUK — PUSAT */
+  .product-card .product-image-left{
+    justify-content: center !important;
+  }
+  .product-card .product-info-right{
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+  }
+  .product-card .buttons{
+    justify-content: center !important;
+  }
+
+  /* ===== Accessory Detail – tipografi spesifikasi ===== */
+  .accd-spec-title{
+    font-size:22px;
+    font-weight:700;
+    color:#111;
+    margin-bottom:10px;   /* judul → isi lebih lega */
+    line-height:1.6;
+  }
+  .accd-spec-text{
+    font-size:20px;
+    color:#333;
+    line-height:1.8;      /* teks lebih renggang */
+  }
+  .accd-price-red{
+    font-size:20px;
+    font-weight:800;
+    color:#E11D2B;
+  }
+
+  /* Back icon */
+  .accd-back-ico{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:56px;
+    height:56px;
+  }
+  .accd-back-ico svg{ width:44px; height:44px; }
+  .accd-back-ico svg *{ stroke-width:1.5px; }
+  .accd-back-rule{ height:2px; background:#111; margin-top:10px; }
+
+  /* Stage gambar besar (versi lama—aman dibiarkan) */
+  .accd-stage{ position:relative; text-align:center; margin:6px 0 10px; }
+  .accd-stage-img{
+    display:block; margin:0 auto; width:100%; max-width:800px;
+    height:auto; object-fit:contain;
+  }
+
+  /* Grid kartu ‘Aksesoris Lainnya’ */
+  .acc-card{ flex:0 0 320px; max-width:100%; }
+  .acc-img img{
+    display:block; width:calc(100% - 64px); height:240px;
+    margin:32px auto 0; object-fit:cover; border-radius:12px;
+  }
+
+  /* === HERO: full image, no frame, rounded === */
+  
+  .accd-hero-img{ display:block; width:100%; height:auto; border-radius:16px; }
+
+  /* === THUMBS: gambar utuh === */
+  .accd-thumb{
+    appearance:none; background:transparent; padding:0;
+    border:2px solid transparent; border-radius:12px; cursor:pointer;
+    line-height:0; transition:transform .15s ease, border-color .15s ease;
+  }
+  .accd-thumb img{ display:block; height:120px; width:auto; border-radius:12px; }
+  .accd-thumb:hover{ transform:translateY(-2px); }
+  .accd-thumb.is-active{ border-color:#111; }
+
+  /* Responsif kecil (typografi & thumb) */
+  @media (max-width:992px){
+    .accd-spec-title{ font-size:20px; }
+    .accd-spec-text{ font-size:18px; }
+    .accd-price-red{ font-size:22px; }
+    .accd-thumb img{ height:96px; }
+  }
+  @media (max-width:576px){
+    .accd-thumb img{ height:84px; }
+  }
+
+  /* =========================
+    OVERRIDES — DETAIL AKSESORIS
+    ========================= */
+  
+  .accd-detail .accd-hero-img{ display:block; width:100%; height:auto; border-radius:16px; }
+  .accd-detail .accd-thumb{ appearance:none; background:transparent; padding:0;
+    border:2px solid transparent; border-radius:12px; cursor:pointer; line-height:0;
+    overflow:hidden; transition:transform .15s ease, border-color .15s ease;
+  }
+  .accd-detail .accd-thumb img{ display:block; height:120px; width:auto; border-radius:12px; }
+  @media (max-width:992px){ .accd-detail .accd-thumb img{ height:96px; } }
+  @media (max-width:576px){ .accd-detail .accd-thumb img{ height:84px; } }
+
+  /* 2) LIST/GRID AKSESORIS (kartu) */
+  .accd-card .accd-thumb{ flex:0 0 37%; max-width:37%; }
+  .accd-card .accd-thumb img{
+    display:block; width:100%; height:auto; max-height:200px;
+    object-fit:cover; border-radius:12px;
+  }
+
+  /* DETAIL AKSESORIS: pastikan tombol sekecil gambar (fallback) */
+  .accd-detail .accd-thumb{
+    display:inline-flex !important; align-items:center; justify-content:center;
+    padding:0; background:transparent; border:2px solid transparent;
+    border-radius:12px; line-height:0; overflow:hidden;
+    width:auto !important; height:auto !important; flex:0 0 auto !important;
+  }
+  .accd-detail .accd-thumb img{ max-width:none !important; }
+
+  /* ===== FIX: sejajarkan thumbnails kiri dengan tombol kanan ===== */
+  .accd-header{
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr); /* 2 kolom */
+    column-gap: 1.5rem;
+    align-items: stretch;   /* tinggi kedua kolom disamakan */
+  }
+
+  /* KIRI & KANAN jadi flex-column setinggi header */
+  .accd-left,
+  .accd-side{
+    display: flex !important;
+    flex-direction: column;
+    min-height: 100%;
+  }
+
+  /* --- KIRI: hero di atas, thumbnails di bawah --- */
+  .accd-hero{ margin: 0 0 8px !important; }
+
+  /* dorong thumbnails ke dasar kolom kiri (sejajar tombol) */
+  .accd-detail .accd-thumbs{
+    margin-top: auto !important;
+    gap: 6px !important;
+  }
+
+  /* --- KANAN: judul + spesifikasi di atas, tombol di bawah --- */
+  .accd-side h1{ margin: 0 0 12px !important; }
+  .accd-specs{ padding: 0 !important; }
+  .accd-specs > div{ margin-bottom: 18px !important; }
+
+  /* dorong tombol ke dasar kolom kanan */
+  .accd-order{ margin-top: auto !important; }
+
+  /* Bersihkan penempatan grid lama (ini WAJIB supaya tidak tumpang-tindih) */
+  .accd-hero,
+  .accd-detail .accd-thumbs,
+  .accd-side h1,
+  .accd-specs,
+  .accd-order{
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  /* === Active state thumbnail: border/ring hitam jelas === */
+  .accd-detail .accd-thumb{
+    border: 2px solid transparent;
+    border-radius: 12px;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    overflow: hidden; /* biar sudut tetap bulat */
+  }
+
+  .accd-detail .accd-thumb.is-active{
+    border-color: #111;           /* fallback */
+    box-shadow: 0 0 0 1.5px #111; /* ring hitam keliling, ikut radius */
+  }
+
+  /* aksesibilitas: saat fokus keyboard tampilkan ring juga */
+  .accd-detail .accd-thumb:focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 1.5px #111;
+  }
+
+  /* 1) Pusatkan judul "Aksesoris Lainnya" */
+  .motor-accessories .section-title {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* Scope ke halaman accessoryDetail biar tidak ngaruh ke halaman lain */
+  .accd-detail .motor-accessories .section-title{
+    text-align:center;
+    margin-left:auto; margin-right:auto;
+  }
+
+  /* Susunannya flex wrap + center */
+  .accd-detail .motor-accessories .acc-track{
+    display:grid !important;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap:24px !important;
+    padding:2px !important;
+  }
+
+  /* >>> Ukuran kartu sama persis seperti di product detail <<< */
+  .accd-detail .motor-accessories .acc-card{
+    width:100% !important;
+    max-width:none !important;
+  }
+
+  
+
+  /* ===== GRID AKSESORIS: 4 kolom saat sidebar buka, 5 kolom saat sidebar ditutup ===== */
+
+  /* 1) LIST / NON-DETAIL AKSESORIS (pakai grid) – batasi ke non-detail saja */
+body:not(.sidebar-collapsed):not(.accd-detail)
+  .motor-accessories:not(.page-product-detail) .acc-track{
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px !important;
+}
+body.sidebar-collapsed:not(.accd-detail)
+  .motor-accessories:not(.page-product-detail) .acc-track{
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 24px !important;
+}
+
+/* 2) RESPONSIVE GRID — juga batasi ke non-detail */
+@media (max-width: 1400px){
+  .motor-accessories:not(.page-product-detail) .acc-track{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 992px){
+  .motor-accessories:not(.page-product-detail) .acc-track{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 576px){
+  .motor-accessories:not(.page-product-detail) .acc-track{
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 3) PRODUCT DETAIL — kill-switch:
+      pastikan selalu horizontal (flex, no-wrap) & kartu 320px */
+.motor-accessories.page-product-detail .acc-viewport{
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-behavior: smooth;
+}
+.motor-accessories.page-product-detail .acc-track{
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 22px !important;
+  padding: 2px !important;
+
+  /* kalau ada rule grid tersisa, matikan */
+  grid-template-columns: none !important;
+}
+.motor-accessories.page-product-detail .acc-card{
+  flex: 0 0 320px !important;
+  width: 320px !important;
+  max-width: 320px !important;
+}
+
+/* penting: rule “kartu 100%” hanya untuk NON-detail */
+.motor-accessories:not(.page-product-detail) .acc-track .acc-card{
+  width: 100% !important;
+  max-width: none !important;
+  flex: initial !important;
+}
+
+  /* =============== BANNER GLOBAL: NO CROP, FULL-BLEED OPSIONAL =============== */
+
+  /* 1) Matikan semua crop & kunci tinggi di SEMUA slide/banner */
+  .carousel-item img,
+  .motor-banner img,
+  .banner img {
+    width: 100%;
+    height: auto !important;          /* jangan dipatok, biar proporsional */
+    max-height: none !important;
+    object-fit: contain !important;   /* gambar utuh */
+    object-position: center center;
+    border-radius: 12px;
+  }
+
+  /* 2) Hapus efek tinggi paksa dari media queries lama */
+  @media (max-width: 3000px) {
+    .carousel-item img { height: auto !important; }
+  }
+
+  /* 3) (Opsional tapi disarankan) Bungkus banner dengan .banner-bleed
+        untuk efek "blur padding" seperti di home */
+  .banner-bleed {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;                 /* biar sudut rounded */
+  }
+  .banner-bleed::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--bg) center/cover no-repeat;
+    filter: blur(18px);
+    transform: scale(1.08);
+    opacity: .9;
+    z-index: 0;
+  }
+  .banner-bleed > img {
+    position: relative;
+    z-index: 1;                       /* gambar utama di atas blur */
+    display: block;
+  }
+
+  /* === Accessory Detail — spacing saat SIDEBAR KETUTUP === */
+  body.sidebar-collapsed .accd-side h1{
+    margin: 0 0 14px !important;          /* nama aksesoris tetap tampil */
+  }
+
+  /* Bikin jarak antar item spesifikasi lebih lega */
+  body.sidebar-collapsed .accd-specs > div{
+    margin-bottom: clamp(22px, 2.2vw, 36px) !important;
+  }
+
+  /* Sedikit renggangkan line-height */
+  body.sidebar-collapsed .accd-spec-title{ line-height: 1.55; }
+  body.sidebar-collapsed .accd-spec-text { line-height: 1.95; }
+
+  /* Tetap pertahankan tombol & thumbnail sejajar di dasar kolom */
+  body.sidebar-collapsed .accd-detail .accd-thumbs{ margin-top: auto !important; }
+  body.sidebar-collapsed .accd-order{ margin-top: auto !important; }
+
+  /* ==== DETAIL AKSESORIS — Aksesoris Lainnya: 3 kartu besar, gambar aman ==== */
+
+  /* 1) Paksa grid 3 kolom (baik sidebar buka/ketutup) */
+  .accd-detail .motor-accessories .acc-track{
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 28px !important;            /* sedikit lebih lega */
+    padding: 2px !important;
+  }
+
+  /* 2) Tampilkan 3 item pertama saja */
+  .accd-detail .motor-accessories .acc-track > .acc-card:nth-child(n+4){
+    display: none !important;
+  }
+
+  /* AKSESORIS LAINNYA – gambar lebih besar, sudut membulat, rata kiri */
+  .accd-detail .motor-accessories .acc-card{
+    border-radius: 18px !important;     /* lebih membulat dari 12px */
+    padding: 22px !important;           /* rapetin padding */
+  }
+
+  .accd-detail .motor-accessories .acc-img{
+    aspect-ratio: 1 / 1 !important;
+
+    /* kunci: gambar nempel ke tepi lalu di-clip oleh wrapper */
+    padding: 0 !important;                 /* <— hapus gutter 12px */
+    border-radius: 16px !important;        /* sudut di wrapper */
+    overflow: hidden !important;           /* wrapper nge-clip gambar */
+  }
+
+  .accd-detail .motor-accessories .acc-img img{
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;        /* boleh cover kalau mau lebih penuh */
+    display: block !important;             /* hilangkan gap inline img */
+    border-radius: 0 !important;           /* ikut radius wrapper */
+    margin: 0 !important;
+  }
+
+  .accd-detail .motor-accessories .acc-body{
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;  /* rata kiri */
+    gap: 10px !important;                /* jarak antar elemen lebih rapat */
+    padding: 14px 12px 0 !important;
+  }
+
+  .accd-detail .motor-accessories .acc-title{
+    margin: 6px 0 4px !important;
+    line-height: 1.2 !important;
+  }
+
+  .accd-detail .motor-accessories .acc-price strong{
+    margin: 4px 0 10px !important;
+  }
+
+  /* Tombol “Detail” full width & tetap rata kiri */
+  .accd-detail .motor-accessories .acc-cta{
+    width: 100% !important;          /* penuhi lebar body card */
+    max-width: none !important;
+    height: 48px !important;         /* boleh tetap 46 kalau mau */
+    font-size: 18px !important;
+    padding: 0 18px !important;      /* biar teks & chevron lega */
+    justify-content: space-between !important;
+  }
+
+  /* 6) Responsif: 2 kolom saat lebar turun (termasuk portrait 1080×1920), 1 kolom di mobile */
+  @media (max-width: 1280px){
+    .accd-detail .motor-accessories .acc-track{
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+  @media (max-width: 640px){
+    .accd-detail .motor-accessories .acc-track{
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* 7) Landscape lebar (1920×1080): ruang gambar sedikit lebih besar */
+  @media (min-width: 1920px) and (orientation: landscape){
+    .accd-detail .motor-accessories .acc-card{ min-height: 320px !important; }
+    .accd-detail .motor-accessories .acc-img{ aspect-ratio: 16 / 10; } /* lebih wide enak di desktop */
+  }
+
+  /* ==== Portrait 1080×1920: 2 kolom & hanya 2 kartu ==== */
+  @media (max-width: 1080px) and (min-height: 1800px) and (orientation: portrait){
+    .accd-detail .motor-accessories .acc-track{
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    /* tampilkan 2 item saja */
+    .accd-detail .motor-accessories .acc-track > .acc-card:nth-child(n+3){
+      display: none !important;
+    }
+  }
+
+  /* Portrait 1080×1920: rapetin hero ↔ thumbs + kecilkan font */
+  @media (max-width:1080px) and (min-height:1800px) and (orientation:portrait){
+
+    /* Kolom kiri–kanan lebih rapat */
+    .accd-header{ column-gap: 1rem !important; }
+
+    /* Hero + thumbnails: jarak dipendekin */
+    .accd-hero{ margin: 0 0 4px !important; }
+    .accd-detail .accd-thumbs{ margin-top: 4px !important; gap: 4px !important; }
+    .accd-detail .accd-thumb img{ height: 92px !important; }   /* dari 120px */
+
+    /* Judul & teks kanan diperkecil + dirapatkan */
+    .accd-side h1{ font-size: 1.15rem !important; line-height: 1.25 !important; }
+    .accd-spec-title{ font-size: 1rem !important; margin-bottom: 6px !important; }
+    .accd-spec-text{ font-size: .95rem !important; line-height: 1.5 !important; }
+    .accd-price-red{ font-size: 1rem !important; }
+
+    /* Tombol order lebih kompak */
+    .accd-cta{
+      height: 44px !important;
+      width: 240px !important;
+      font-size: 16px !important;
+      padding: 0 14px !important;
+    }
+    .accd-specs > div{ margin-bottom: 12px !important; } /* antar item spesifikasi */
+  }
+
+  /* === PRODUCT DETAIL: pakai carousel (flex + scroll), BUKAN grid === */
+  .motor-accessories.page-product-detail .acc-track{
+    display: flex !important;
+    gap: 22px !important;
+    padding: 2px !important;
+  }
+
+  .motor-accessories.page-product-detail .acc-viewport{
+    overflow: auto !important;      /* aktifkan horizontal scroll */
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  .motor-accessories.page-product-detail .acc-viewport::-webkit-scrollbar{ display:none; }
+
+  /* kartu tetap ukuran carousel (bukan fill cell) */
+  .motor-accessories.page-product-detail .acc-card{
+    flex: 0 0 320px !important;
+    max-width: 320px !important;
+  }
+
+  /* pastikan tombol panah tampil */
+  .motor-accessories.page-product-detail .acc-nav{
+    display: flex !important;
+  }
+
+  /* (opsional) saat item <= 2, center-kan */
+  .motor-accessories.page-product-detail .acc-track.acc-center{
+    justify-content: center !important;
+  }
+
+  /* =========================
+   APPAREL — hero + tabs + grid card (FINAL)
+========================= */
+
+/* Hero */
+.apr-hero { border-radius: 12px; overflow: hidden; }
+.apr-hero-img { height: 420px; width: 100%; object-fit: cover; }
+.apr-hero-nav { filter: drop-shadow(0 2px 8px rgba(0,0,0,.25)); }
+.apr-hero-overlay{
+  position:absolute; right:24px; top:50%; transform:translateY(-50%);
+  background:rgba(36,38,43,.92); color:#fff; border-radius:8px;
+  padding:16px 18px; min-width:380px;
+}
+.apr-hero-item{ display:flex; align-items:center; gap:10px; padding:8px 0; }
+.apr-hero-item .num{ opacity:.8; width:20px; display:inline-block; }
+.apr-hero-item .ttl{ font-weight:600; }
+
+/* Tabs */
+.apr-tab{
+  background:#fff; border:1px solid #e5e7eb; border-radius:999px;
+  padding:10px 18px; font-weight:600; color:#111;
+}
+.apr-tab:hover{ border-color:#b91c1c; color:#b91c1c; }
+
+/* Grid 2 kolom */
+.apr-grid{ --gap:24px; }
+.apr-col{ padding-left:12px; padding-right:12px; }
+.apr-card{
+  display:grid; grid-template-columns: 220px 1fr; gap:18px;
+  border:2px solid #e4a3a3; border-radius:12px; padding:20px;
+  background:#fff; transition:box-shadow .2s ease, transform .2s ease;
+}
+.apr-card:hover{ transform:translateY(-1px); box-shadow:0 10px 22px rgba(0,0,0,.06); }
+
+/* Gambar */
+.apr-img{ display:flex; align-items:center; justify-content:center; }
+.apr-img img{ max-width:100%; height:180px; object-fit:contain; }
+
+/* Info */
+.apr-info{ display:flex; flex-direction:column; }
+.apr-ttl{ font-size:20px; font-weight:800; margin:4px 0 14px; letter-spacing:.3px; }
+.apr-price{ display:flex; align-items:baseline; gap:8px; margin-bottom:14px; }
+.apr-price span{ color:#6b7280; }
+.apr-price strong{ font-size:18px; }
+
+/* CTA (default) */
+.apr-cta{
+  margin-top:auto;                      /* default: nempel bawah */
+  margin-bottom:12px;
+  display:inline-flex; align-items:center; justify-content:space-between;
+  gap:16px; padding:10px 16px; border:2px solid #e4a3a3; border-radius:10px;
+  text-decoration:none; color:#111; font-weight:700;
+}
+.apr-cta:hover{ border-color:#b91c1c; color:#b91c1c; }
+
+/* Detail page bits (dipertahankan) */
+.apr-gallery-main{ width:100%; height:420px; object-fit:contain; border:1px solid #eee; border-radius:12px; }
+.apr-thumbs{ display:flex; gap:10px; }
+.apr-thumb{ width:82px; height:82px; object-fit:contain; border:1px solid #eee; border-radius:10px; cursor:pointer; }
+.apr-detail-price{ display:flex; align-items:baseline; gap:8px; }
+.apr-detail-price span{ color:#6b7280; }
+.apr-detail-price strong{ font-size:22px; }
+
+.apr-specs{ display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
+.apr-specs > div{
+  display:flex; align-items:center; justify-content:space-between;
+  border:1px dashed #e5e7eb; border-radius:10px; padding:10px 12px;
+}
+.apr-specs span{ color:#6b7280; }
+
+/* Responsif */
+@media (max-width: 991.98px){
+  .apr-card{ grid-template-columns: 1fr; }
+  .apr-img img{ height:160px; }
+  .apr-hero-img{ height:320px; }
+  .apr-hero-overlay{ right:12px; min-width:300px; }
+  .apr-cta{ margin-bottom:8px; }        
+}
+
+/* ===== FINAL OVERRIDES di kartu apparel (.acc-motor-card) ===== */
+.acc-motor-card .acc-motor-title{
+  font-size:20px;
+  line-height:1.25;
+  margin:0 0 4px;
+}
+.acc-motor-card .acc-motor-info{
+  display:flex; flex-direction:column; align-items:flex-start;
+  gap:6px;
+}
+.acc-motor-card .acc-price,
+.acc-motor-card .acc-price.mb-2{ margin:0 !important; }
+.acc-motor-card .acc-price span{ font-size:14px; }
+.acc-motor-card .acc-price strong{ font-size:20px; }
+
+/* ini yang “mengangkat” tombol Detail */
+.acc-motor-card .apr-cta{
+  margin-top:4px !important;            
+  margin-bottom:0 !important;           
+  align-self:flex-start;                
+}
+
+/* Hero thumbnail (gambar besar) kasih border tipis + sedikit shadow) */
+.accd-detail .accd-hero{
+  border: 2px solid #E6E6E6;   
+  border-radius: 16px;
+  padding: 6px;                 
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06); 
+  overflow: hidden;              
+}
+
+.accd-detail .accd-hero-img{
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;           
+}
+
+/* === APPAREL DETAIL only: rapetin hero ↔ thumbs, biarkan kolom kanan apa adanya === */
+
+/* kalau kolom kiri pakai justify-content-between, paksa jadi kumpul di atas */
+.apr-left{
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  align-items:stretch !important;
+  gap: 8px !important;               /* jarak kecil antar elemen kiri */
+}
+
+/* hilangkan dorongan "mt-auto" pada thumbnails (kalau ada) */
+.apr-thumbs{
+  margin-top: 0 !important;          /* nempel ke hero */
+  gap: 6px !important;               /* jarak antar thumb */
+}
+.apr-thumbs.mt-auto{ margin-top: 0 !important; }
+
+/* kasih border tipis di gambar besar seperti desain kedua */
+.apr-gallery-main{
+  border: 2px solid #E6E6E6 !important;
+  border-radius: 16px !important;
+  padding: 6px !important;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  /* biar border + padding tidak bikin tinggi berlebih */
+  height: auto !important;
+  max-height: 420px;                 /* opsional: tetap batasi tinggi */
+  object-fit: contain !important;
+}
+
+/* Bungkus gambar: ukurannya = ukuran gambar, bukan full width halaman */
+.accd-stage { position: relative; text-align: center; margin: 10px 0 20px; }
+.accd-stage-wrap {
+  position: relative;
+  display: inline-block;    /* <- kunci: shrink to image */
+  line-height: 0;           /* hilangkan gap inline image */
+}
+.accd-stage-img {
+  display: block;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* ===== APPAREL DETAIL — jarak hero ↔ thumbs konstan ===== */
+:root{
+  --APR_GAP: 10px;                 /* atur angka ini sesuai selera (px) */
+}
+
+/* Grid header normal saja, jangan samakan tinggi kiri/kanan */
+.accd-header{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1.5rem;
+  align-items: start;              /* penting: biar tidak stretch */
+}
+
+/* Kolom kiri: stack vertikal dgn gap tetap */
+.accd-left{
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  gap: var(--APR_GAP) !important;  /* <— jarak hero ↔ thumbs FIX */
+  min-height: auto !important;     /* batalkan min-height sebelumnya */
+}
+
+/* Figure default Bootstrap punya margin; nolkan supaya gap benar2 dari --APR_GAP */
+.accd-hero{ margin: 0 !important; }
+
+/* Thumbs jangan pernah terdorong ke bawah */
+.accd-thumbs{ margin: 0 !important; gap: 6px !important; }
+.accd-thumbs.mt-auto{ margin-top: 0 !important; }  /* override jika ada class mt-auto */
+
+/* Kolom kanan kembali normal (tidak dipaksa sama tinggi) */
+.accd-side{
+  display: block !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-right: 0 !important;
+}
+
+/* Tombol order normal lagi (tak perlu sticky kalau tak diinginkan) */
+.accd-order{ position: static !important; }
+
+/* Mobile tetap rapi (opsional) */
+@media (max-width: 991.98px){
+  .accd-header{ grid-template-columns: 1fr; }
+}
+
+/* Titik (punya kamu sudah ok) */
+.accd-hotspot{ position:absolute; transform:translate(-50%,-50%); width:18px;height:18px; border-radius:50%; background:#E11D2B; border:3px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,.35); cursor:pointer; }
+.accd-hotspot::after{ content:""; position:absolute; inset:-8px; border-radius:50%; border:2px solid rgba(225,29,43,.45); animation:accdPulse 1.6s infinite; }
+@keyframes accdPulse{ from{transform:scale(1);opacity:1} to{transform:scale(1.8);opacity:0} }
+
+/* Flyout card – persis gaya detail produk */
+.accd-pop{
+  position: absolute;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 220px 1fr;   /* gambar kiri, konten kanan */
+  gap: 18px;
+  width: clamp(420px, 46vw, 560px);
+  min-height: 200px;
+  padding: 22px 24px;
+  background: #fff;
+  color: #111;
+
+  /* hilangkan border merah */
+  border: none !important;
+
+  /* radius & shadow seperti detail produk */
+  border-radius: 16px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,.18) !important;
+}
+
+/* gambar melengkung */
+.accd-pop-img{ 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+.accd-pop-img img{
+  width: 100%;
+  height: 180px;
+  max-width: 220px;
+  object-fit: cover;          /* biar penuh, tapi tetap rapi */
+  border-radius: 12px;        /* melengkung */
+}
+
+/* teks rata kiri */
+.accd-pop-body{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+}
+.accd-pop-body h5{
+  margin: 0;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1.2;
+}
+.accd-pop-body p{
+  margin: 0;
+  color: #555;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* Mobile */
+@media (max-width:768px){
+  .accd-pop{
+    grid-template-columns: 1fr;
+    width: min(92vw, 560px);
+    padding: 16px;
+    gap: 12px;
+  }
+  .accd-pop-img img{
+    height: 140px;
+    max-width: 100%;
+  }
+}
+
+/* === Kartu Apparel & Aksesoris (General) — foto rounded & sedikit lebih besar === */
+.page-apparels .acc-motor-card .acc-motor-img,
+.page-accessories .acc-motor-card .acc-motor-img{
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px;        /* bikin melengkung */
+  overflow:hidden;           /* pastikan sudut gambar ikut melengkung */
+}
+
+.page-apparels .acc-motor-card .acc-motor-img img,
+.page-accessories .acc-motor-card .acc-motor-img img{
+  height:200px;              /* > dari 180px → jadi sedikit lebih besar */
+  max-height:220px;
+  width:auto; max-width:100%;
+  object-fit:contain;        /* tidak crop gambar; ubah ke 'cover' kalau mau memenuhi kotak */
+  border-radius:12px;        /* cadangan kalau wrapper tidak memotong sudut */
+}
+
+/* (Opsional) kalau kolom gambar terasa sempit, lebarin dikit kolom kiri */
+.page-apparels .acc-motor-card,
+.page-accessories .acc-motor-card{
+  grid-template-columns: 240px 1fr;  /* semula ~220px, bikin ruang foto lebih lega */
+}
+
+/* ======= BANDINGKAN MOTOR — STYLE UTAMA ======= */
+/* Header abu-abu */
+.cmp-hero{
+background:#F1F3F5; border-radius:16px; padding:26px 28px; position:relative;
+box-shadow:0 8px 28px rgba(0,0,0,.08);
+}
+.cmp-hero::after{ content:""; position:absolute; left:18px; right:18px; bottom:-2px; height:3px;
+border-radius:3px; background:#dc3545; filter:drop-shadow(0 2px 2px rgba(220,53,69,.35)); }
+.cmp-ttl{ font-size:36px; font-weight:800; text-align:center; margin:4px 0 8px; color:#111; }
+.cmp-sub{ font-size:20px; line-height:1.45; text-align:center; color:#2b2f36; }
+
+/* Grid 3 + 2 */
+.cmp-grid{
+margin-top:34px; display:grid; grid-template-columns:repeat(3, minmax(240px,1fr));
+gap:34px 42px; justify-items:center;
+}
+.cmp-row-break{ grid-column:1 / -1; height:6px; }
+
+/* Slot kosong */
+.cmp-slot{
+display:inline-flex; align-items:center; gap:14px; height:72px; padding:0 24px;
+background:#fff; border:2px solid #111; border-radius:14px; font-weight:700; font-size:22px; color:#111;
+text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.08);
+transition:transform .12s ease, box-shadow .12s ease;
+}
+.cmp-slot.small{ height:44px; padding:0 14px; font-size:16px; }
+.cmp-slot.danger{ border-color:#dc3545; color:#dc3545; }
+.cmp-slot:hover{ transform:translateY(-2px); box-shadow:0 8px 22px rgba(0,0,0,.12); }
+.cmp-plus{ display:inline-grid; place-items:center; width:34px; height:34px; border-radius:50%; border:2px solid #111; font-size:22px; }
+
+/* Slot terisi */
+.cmp-picked{
+width:100%; max-width:420px; background:#fff; border:2px solid #111; border-radius:14px;
+display:flex; gap:14px; padding:12px; align-items:center; box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+.cmp-picked img{ width:96px; height:72px; object-fit:contain; border-radius:10px; }
+.cmp-picked-name{ font-weight:700; font-size:18px; line-height:1.2; }
+.cmp-picked-hint{ color:#6b7280; font-size:14px; }
+.cmp-picked-price{ font-weight:800; }
+.cmp-picked-actions{ display:flex; flex-direction:column; gap:8px; }
+
+/* Notice */
+.cmp-note{ margin:28px auto 0; display:inline-flex; align-items:center; gap:10px;
+background:#E9ECEF; color:#111; border-radius:12px; padding:12px 16px;
+box-shadow:0 2px 8px rgba(0,0,0,.08); font-weight:600; }
+.cmp-note .ico{ font-size:18px; color:#dc3545; }
+
+/* Headbar & layout pilih */
+.cmp-headbar{ display:flex; align-items:center; gap:14px; padding:14px 0 18px; border-bottom:2px solid #111; }
+.cmp-back{ display:inline-grid; place-items:center; width:48px; height:48px; border-radius:50%;
+border:2px solid #111; color:#111; text-decoration:none; font-size:20px; font-weight:700; }
+.cmp-head-title{ font-size:34px; font-weight:800; color:#111; }
+
+.cmp-pick{ display:grid; grid-template-columns:300px 1fr; gap:48px; margin-top:18px; }
+@media (max-width:992px){ .cmp-pick{ grid-template-columns:1fr; } }
+
+/* Filter kiri */
+.cmp-filter .group{ display:flex; flex-direction:column; gap:14px; }
+.cmp-radio{ display:flex; align-items:center; gap:12px; text-decoration:none; color:#111; }
+.cmp-radio input{ appearance:none; width:22px; height:22px; border:3px solid #111; border-radius:50%; position:relative; }
+.cmp-radio input:checked{ border-color:#dc3545; }
+.cmp-radio input:checked::after{ content:""; position:absolute; inset:4px; border-radius:50%; background:#dc3545; }
+
+.cmp-start{ display:inline-flex; align-items:center; justify-content:center; height:58px; padding:0 18px;
+background:#111; color:#fff; border-radius:12px; font-weight:800; text-decoration:none; }
+
+/* Kategori title kanan */
+.cmp-cat-ttl{ font-size:28px; font-weight:800; margin:8px 0 14px; position:relative; display:inline-block; color:#111; }
+.cmp-cat-ttl::after{ content:""; position:absolute; left:0; right:0; bottom:-6px; height:4px; border-radius:4px; background:#dc3545; }
+
+/* Kartu motor (border merah + shadow) */
+.cmp-card-grid{ display:grid; grid-template-columns:repeat(2, minmax(320px, 1fr)); gap:32px; }
+@media (max-width:1200px){ .cmp-card-grid{ grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:768px){ .cmp-card-grid{ grid-template-columns:1fr; } }
+
+.cmp-card{
+display:flex; flex-direction:column; gap:12px; background:#fff;
+border:2px solid #dc3545; border-radius:14px; padding:16px;
+box-shadow:0 10px 24px rgba(0,0,0,.10);
+}
+.cmp-card-img{ display:flex; align-items:center; justify-content:center; min-height:220px; }
+.cmp-card-img img{ max-width:100%; height:220px; object-fit:contain; }
+.cmp-card-title{ font-size:22px; font-weight:800; margin:0; }
+.cmp-card-price-hint{ color:#6b7280; }
+.cmp-card-price{ font-weight:800; font-size:18px; }
+.cmp-choose{
+width:100%; height:48px; border:2px solid #111; border-radius:10px; background:#fff; font-weight:800;
+}
+.cmp-choose:hover{ border-color:#dc3545; color:#dc3545; }
+
+/* Responsif draft */
+@media (max-width:992px){
+.cmp-grid{ grid-template-columns: repeat(2, minmax(220px,1fr)); }
+}
+@media (max-width:576px){
+.cmp-ttl{ font-size:28px; } .cmp-sub{ font-size:16px; }
+.cmp-grid{ grid-template-columns:1fr; gap:18px; }
+.cmp-slot{ width:100%; justify-content:center; }
+}
+
+/* Judul kategori di TENGAH + garis pendek (bukan full baris) */
+.cmp-cat-ttl{
+display: block;            /* supaya bisa text-center penuh */
+text-align: center !important;
+}
+.cmp-cat-ttl::after{
+left: 50% !important;
+right: auto !important;
+transform: translateX(-50%);
+width: 84px;               /* panjang garis merah di bawah judul */
+height: 4px;
+}
+
+/* Tinggikan gambar kartu sedikit agar proporsional seperti mockup */
+.cmp-card-img img{ height: 260px; }
+
+/* Tombol CTA kartu: tipografi dan feel seperti mockup */
+.cmp-choose{
+font-size: 16px;
+letter-spacing: .2px;
+}
+
+/* Hanya halaman ini yang tidak scroll global */
+#cmpPickPage{ height:100vh; overflow:hidden; }
+
+/* Panel kiri sticky persis di bawah header/subtitle */
+.cmp-filter-stick{
+position: sticky;
+top: var(--cmpStickyTop, 96px); /* fallback */
+align-self: start;
+border-radius: 12px;
+}
+
+/* Kolom kanan saja yang scroll */
+.cmp-right-scroll{
+height: calc(100vh - var(--cmpStickyTop, 96px) - 16px);
+overflow-y: auto;
+padding-right: 6px;          /* space untuk scrollbar */
+overscroll-behavior: contain;
+-webkit-overflow-scrolling: touch;
+}
+
+/* Judul kategori di tengah dengan underline pendek (sudah ada, pastikan center) */
+.cmp-cat-ttl{ display:block; text-align:center !important; }
+.cmp-cat-ttl::after{
+left:50% !important; right:auto !important; transform:translateX(-50%);
+width:84px; height:4px;
+}
+
+/* (opsional) rapikan radio custom */
+.cmp-radio input{ width:22px; height:22px; border:3px solid #111; border-radius:50%; }
+.cmp-radio span{ font-weight:600; letter-spacing:.2px; }
+
+/* Panel kiri full-height sampai atas footer, dan sticky di bawah judul */
+.cmp-filter-stick{
+position: sticky;
+top: var(--cmpStickyTop);
+align-self: start;
+
+/* tinggi panel = viewport - header(atas) - footer(bawah) */
+min-height: calc(100vh - var(--cmpStickyTop) - var(--cmpFooterH) - 12px);
+
+display: flex;
+flex-direction: column;
+
+/* kalau konten kiri kepanjangan di hp kecil, dia yang scroll */
+overflow: auto;
+}
+
+/* CTA nempel bawah panel kiri */
+.cmp-filter-stick .cmp-stick-cta{ margin-top: auto; }
+
+/* Area kanan yang scroll sendiri */
+.cmp-right-scroll{
+height: calc(100vh - var(--cmpStickyTop) - var(--cmpFooterH) - 12px);
+overflow-y: auto;
+padding-right: 6px;
+overscroll-behavior: contain;
+-webkit-overflow-scrolling: touch;
+}
+
+/* Panel kiri: kasih ruang aman di bawah dan boleh scroll kalau layar pendek */
+.cmp-filter-stick{
+position: sticky;
+top: var(--cmpStickyTop, 96px);
+align-self: start;
+display: flex;
+flex-direction: column;
+overflow: auto;
+/* tinggi panel + ruang aman agar tidak ketutup footer */
+min-height: calc(100vh - var(--cmpStickyTop, 96px));
+padding-bottom: calc(var(--cmpFooterH, 60px) + 16px);
+}
+
+/* Tombol di panel kiri lengket di bawah (di atas footer) */
+.cmp-filter-stick .cmp-stick-cta{
+position: sticky;
+bottom: calc(var(--cmpFooterH, 60px) + 12px);
+z-index: 1; /* biar selalu di atas konten panel */
+}
+
+/* Area kanan juga dikasih padding bawah biar tidak nabrak footer */
+.cmp-right-scroll{
+height: calc(100vh - var(--cmpStickyTop, 96px) - 12px);
+overflow-y: auto;
+padding-left: 28px;                 /* <— ini yang baru */
+padding-right: 6px;
+padding-bottom: calc(var(--cmpFooterH, 60px) + 16px);
+overscroll-behavior: contain;
+-webkit-overflow-scrolling: touch;
+}
+
+/* ====== Tipografi & jarak panel kiri (sesuai request) ====== */
+.cmp-filter-title{
+/* "Model Yang Tersedia" — dibesarkan & TIDAK bold */
+font-size: 26px;
+font-weight: 400;         /* normal */
+color: #111;
+line-height: 1.2;
+letter-spacing: .2px;
+}
+
+.cmp-filter-subtitle{
+/* "Model" — dibesarkan & tetap bold */
+font-size: 22px;
+font-weight: 800;
+color: #111;
+line-height: 1.2;
+letter-spacing: .2px;
+}
+
+/* Radio + label kategori dibesarkan */
+.cmp-filter-stick .cmp-radio{
+display: flex;
+align-items: center;
+gap: 14px;                       /* jarak dot ↔ teks */
+margin-bottom: 18px !important;  /* lebarkan jarak antar baris */
+}
+
+.cmp-filter-stick .cmp-radio input{
+/* dot/lingkaran dibesarkan */
+width: 28px;
+height: 28px;
+border: 3px solid #111;
+border-radius: 50%;
+position: relative;
+}
+
+.cmp-filter-stick .cmp-radio input:checked{ border-color:#dc3545; }
+.cmp-filter-stick .cmp-radio input:checked::after{
+content:"";
+position:absolute;
+inset: 6px;                      /* ukuran titik dalam */
+background:#dc3545;
+border-radius:50%;
+}
+
+.cmp-filter-stick .cmp-radio span{
+font-size: 20px;                 /* teks kategori lebih besar */
+font-weight: 600;
+letter-spacing: .2px;
+}
+
+/* Biar list-nya terasa memanjang ke bawah, tambahkan sedikit spacing
+  antara subtitle dan radio pertama */
+.cmp-filter-subtitle + .cmp-radio{ margin-top: 6px; }
+
+/* (opsional) skala sedikit lebih kecil di layar sempit */
+@media (max-width: 576px){
+.cmp-filter-title{ font-size:24px; }
+.cmp-filter-subtitle{ font-size:20px; }
+.cmp-filter-stick .cmp-radio span{ font-size:18px; }
+.cmp-filter-stick .cmp-radio{ margin-bottom:16px !important; }
+.cmp-filter-stick .cmp-radio input{ width:26px; height:26px; }
+.cmp-filter-stick .cmp-radio input:checked::after{ inset:6px; }
+}
+
+/* =========================
+  PERBANDINGAN MOTOR (GRID)
+  ========================= */
+
+:root{
+--cmpMaxW: 1360px;   /* satu angka untuk semua halaman compare */
+--cmpGutter: 16px;
+}
+
+/* Satu-satunya definisi .cmp-wrap yang dipakai di MENU & HASIL */
+.cmp-wrap{
+max-width: var(--cmpMaxW);
+width: 100%;
+margin: 24px auto 40px;
+padding: 0 var(--cmpGutter);
+}
+
+/* --- FLUID MODE untuk halaman MENU: samakan lebar dengan compareResult --- */
+.cmp-wrap--fluid{
+  max-width: none !important;  /* hilangkan batas 1360px */
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;             /* biar persis seperti compareResult */
+  padding-right: 0;
+}
+
+/* Header abu-abu + garis merah tipis di bawah */
+.cmp-hero{
+background:#F1F3F5;
+border-radius:16px;
+padding:26px 28px;
+position:relative;
+box-shadow:0 8px 28px rgba(0,0,0,.08);
+}
+.cmp-hero::after{
+content:"";
+position:absolute;
+left:18px; right:18px; bottom:-2px;
+height:3px; border-radius:3px;
+background:#dc3545;
+filter:drop-shadow(0 2px 2px rgba(220,53,69,.35));
+}
+.cmp-ttl{
+font-size:36px; font-weight:800; color:#111;
+text-align:center; margin:4px 0 8px;
+}
+.cmp-sub{
+font-size:20px; line-height:1.45; color:#2b2f36;
+text-align:center;
+}
+
+/* ===== Grid 3 di atas + 2 di bawah (kiri & kanan) ===== */
+.cmp-grid{
+margin-top:34px;
+display:grid;
+grid-template-columns: repeat(3, minmax(260px, 1fr));
+gap:34px 42px;
+justify-content:center;   /* pusatkan keseluruhan grid */
+justify-items:center;     /* pusatkan tiap item */
+}
+
+@media (max-width: 992px){
+.cmp-grid{ grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+.cmp-bottom-left, .cmp-bottom-right{ grid-column: auto; }
+}
+
+@media (max-width: 576px){
+.cmp-grid{ grid-template-columns: 1fr; }
+}
+
+/* pemisah baris di tengah */
+.cmp-row-break{ grid-column: 1 / -1; height:6px; }
+
+/* posisi spesifik 2 tombol bawah */
+.cmp-bottom-left{  grid-column: 1; }
+.cmp-bottom-right{ grid-column: 3; }
+
+/* Responsif */
+@media (max-width: 992px){
+.cmp-grid{ grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+.cmp-bottom-left, .cmp-bottom-right{ grid-column: auto; } /* biar otomatis */
+}
+@media (max-width: 576px){
+.cmp-grid{ grid-template-columns: 1fr; }
+}
+
+/* ===== Slot kosong (tombol "Pilih Model") ===== */
+.cmp-slot{
+display:inline-flex; align-items:center; gap:14px;
+height:72px; padding:0 24px;
+background:#fff; border:2px solid #111; border-radius:14px;
+font-weight:700; font-size:22px; color:#111;
+text-decoration:none;
+box-shadow:0 4px 14px rgba(0,0,0,.08);
+transition: transform .12s ease, box-shadow .12s ease;
+}
+.cmp-slot:hover{ transform:translateY(-2px); box-shadow:0 8px 22px rgba(0,0,0,.12); }
+
+/* ===== Ikon plus TANPA bulatan (override style lama) ===== */
+.cmp-plus{
+width:auto; height:auto; border:none; border-radius:0; padding:0; /* hapus bulatan */
+font-size:32px; line-height:1; display:inline-block;
+transform: translateY(-1px); /* align optik dengan teks */
+}
+
+/* ===== Slot terisi ===== */
+.cmp-picked{
+width:100%; max-width:420px;
+background:#fff; border:2px solid #111; border-radius:14px;
+display:flex; gap:14px; padding:12px; align-items:center;
+box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+.cmp-picked img{ width:96px; height:72px; object-fit:contain; border-radius:10px; }
+.cmp-picked-name{ font-weight:700; font-size:18px; line-height:1.2; }
+.cmp-picked-hint{ color:#6b7280; font-size:14px; }
+.cmp-picked-price{ font-weight:800; }
+
+/* ===== Notice di bawah ===== */
+.cmp-note{
+margin:28px auto 0;
+display:inline-flex; align-items:center; gap:10px;
+background:#E9ECEF; color:#111;
+border-radius:12px; padding:12px 16px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+font-weight:600;
+}
+.cmp-note .ico{ font-size:18px; color:#dc3545; }
+
+/* Jarak antar kategori saat "Semua" */
+.cmp-cat-block + .cmp-cat-block{ margin-top: 36px; }
+
+/* Pastikan judul kategori hitam (bukan abu) */
+.cmp-cat-ttl{ color:#111 !important; }
+
+/* ========== OVERRIDES: Compare Pick ========== */
+
+/* 1) Jarak panel kiri ↔ konten kanan dibesarkan */
+.cmp-pick{
+/* kolom kiri tetap 300px, tapi jaraknya dibesarkan */
+grid-template-columns: 300px 1fr;
+column-gap: 64px;                /* sebelumnya 28/48 → jadi 64 */
+}
+
+/* 2) Konten kanan agak dimajukan ke kanan sedikit lagi */
+.cmp-right-scroll{
+padding-left: 36px;              /* tambahkan ruang dari panel kiri */
+}
+
+/* 3) Grid kartu: tetap 2 kolom tapi kartu lebih ramping */
+.cmp-card-grid{
+/* pakai lebar kartu “fixed-ish” agar proporsi mirip mockup */
+grid-template-columns: repeat(2, 360px);   /* ramping */
+gap: 36px 44px;                             /* jarak antar kartu */
+justify-content: flex-start;                /* mulai dari kiri kolom kanan */
+}
+
+/* Saat layar ekstra lebar, kartu boleh sedikit lebih lebar */
+@media (min-width: 1400px){
+.cmp-card-grid{ grid-template-columns: repeat(2, 380px); }
+}
+
+/* Saat layar sedang, tetap dua kolom namun fleksibel */
+@media (max-width: 1200px){
+.cmp-card-grid{ grid-template-columns: repeat(2, minmax(300px, 1fr)); }
+}
+
+/* 4) Sedikit tuning tampilan kartu agar visualnya padat seperti desain */
+.cmp-card{ padding: 18px; }
+.cmp-card-img{ min-height: 240px; }
+.cmp-card-img img{ height: 260px; }           /* kalau terlalu besar, turunkan ke 240px */
+.cmp-card-title{ font-size: 22px; }
+.cmp-choose{ height: 52px; font-size: 16px; }
+
+/* === Grid kartu selalu di tengah persis di bawah judul === */
+.cmp-card-grid{
+display: grid;
+grid-template-columns: repeat(2, 380px); /* dua kartu dengan lebar tetap */
+justify-content: center;   /* pusatkan grid terhadap kontainer */
+gap: 32px 48px;             /* jarak antar kartu */
+margin-top: 24px;
+}
+
+/* Kartu tidak melar, ikut lebar grid */
+.cmp-card{
+width: 100%;
+max-width: 380px;
+margin: 0 auto;  /* jaga center kalau 1 kartu saja */
+}
+
+/* Responsif */
+@media (max-width: 1200px){
+.cmp-card-grid{ grid-template-columns: repeat(2, 340px); }
+}
+@media (max-width: 992px){
+.cmp-card-grid{
+  grid-template-columns: 1fr;
+  justify-content: center; /* satu kartu tetap center */
+}
+}
+
+/* ===== HERO (sama seperti halaman lain) ===== */
+.cmp-hero{
+background:#F1F3F5; border-radius:16px; padding:24px 28px; position:relative;
+box-shadow:0 8px 28px rgba(0,0,0,.08);
+}
+.cmp-hero::after{
+content:""; position:absolute; left:18px; right:18px; bottom:-2px; height:3px;
+border-radius:3px; background:#dc3545; filter:drop-shadow(0 2px 2px rgba(220,53,69,.35));
+}
+.cmp-ttl{ font-size:36px; font-weight:800; text-align:center; margin:4px 0 8px; color:#111; }
+.cmp-sub{ font-size:20px; line-height:1.45; text-align:center; color:#2b2f36; }
+
+/* ======= FIGMA STYLE: GRID 3 KOLOM + KARTU BESAR ======= */
+.cmp-fig-grid{
+display:grid;
+grid-template-columns: repeat(3, minmax(320px, 1fr));
+gap: 48px 64px;
+align-items:start;
+}
+@media (max-width: 1200px){
+.cmp-fig-grid{ grid-template-columns: repeat(2, minmax(300px, 1fr)); gap: 40px; }
+}
+@media (max-width: 768px){
+.cmp-fig-grid{ grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* Kartu clean (tanpa border merah), shadow halus seperti figma */
+.cmp-fig-card{
+position:relative;
+background:#fff;
+border: 2px solid #e5e7eb;        /* garis tipis */
+border-radius: 16px;
+padding: 20px 22px 24px;
+box-shadow: 0 10px 28px rgba(0,0,0,.08);
+text-align:center;
+}
+
+/* Tombol X tanpa lingkaran, di pojok kanan atas */
+.cmp-fig-close{
+position:absolute; top: 12px; right: 16px;
+}
+.cmp-fig-close button{
+background: transparent;
+border: none;
+font-size: 36px;
+line-height: 1;
+cursor: pointer;
+color: #111;
+padding: 0;
+}
+.cmp-fig-close button:hover{ opacity:.8; }
+
+/* Gambar besar */
+.cmp-fig-img{ min-height: 260px; display:flex; align-items:center; justify-content:center; }
+.cmp-fig-img img{ height: 340px; max-width: 100%; object-fit: contain; }
+
+/* Nama & harga sesuai figma */
+.cmp-fig-name{
+margin: 12px 0 4px;
+font-size: 34px;                   /* besar */
+font-weight: 800;
+color: #111;
+text-transform: none;
+}
+.cmp-fig-price{
+color: #dc3545;                    /* merah */
+font-weight: 800;
+font-size: 28px;
+margin-bottom: 12px;
+}
+
+/* Tombol detail */
+.cmp-fig-detail{
+display:inline-block;
+border: 2px solid #111;
+border-radius: 12px;
+padding: 12px 18px;
+text-decoration: none;
+color: #111;
+font-weight: 700;
+font-size: 18px;
+}
+.cmp-fig-detail:hover{ border-color:#dc3545; color:#dc3545; }
+
+/* ===== OVERRIDE: tampil tanpa card, teks diperkecil ===== */
+
+/* item jadi transparan, tanpa border & shadow */
+.cmp-fig-card{
+position: relative;
+background: transparent !important;
+border: 0 !important;
+box-shadow: none !important;
+padding: 0 !important;
+text-align: center;
+}
+
+/* tombol X tetap mengambang di pojok kanan item */
+.cmp-fig-close{ position:absolute; top:-6px; right:0; }
+.cmp-fig-close button{
+background: transparent; border: 0; padding: 0;
+font-size: 32px; line-height: 1; cursor: pointer; color:#111;
+}
+
+/* gambar besar, tanpa “bingkai” */
+.cmp-fig-img{ min-height: 220px; display:flex; align-items:center; justify-content:center; }
+.cmp-fig-img img{ height: 320px; max-width:100%; object-fit:contain; }
+
+/* — ukuran teks DIPERKECIL — */
+.cmp-fig-name{
+margin: 10px 0 2px;
+font-size: 22px;          /* semula 34px */
+font-weight: 700;         /* semula 800 */
+color:#111;
+}
+.cmp-fig-price{
+font-size: 18px;          /* semula 28px */
+font-weight: 800;
+color:#dc3545;
+margin-bottom: 10px;
+}
+
+/* grid tetap rapih walau tanpa card */
+.cmp-fig-grid{
+display:grid;
+grid-template-columns: repeat(3, minmax(280px, 1fr));
+gap: 36px 48px;
+align-items:start;
+}
+@media (max-width:1200px){ .cmp-fig-grid{ grid-template-columns:repeat(2, minmax(260px,1fr)); gap:28px 36px; } }
+@media (max-width:768px){  .cmp-fig-grid{ grid-template-columns:1fr; gap:24px; } }
+
+/* tombol detail tetap outlined hitam, tapi sedikit lebih kecil */
+.cmp-fig-detail{
+display:inline-block;
+border:2px solid #111; border-radius:12px;
+padding:10px 16px; font-size:16px; font-weight:700;
+color:#111; text-decoration:none;
+}
+.cmp-fig-detail:hover{ border-color:#dc3545; color:#dc3545; }
+
+/* ===============================
+  COMPARE RESULT: Accordion Spec — FINAL (flat & nempel)
+  =============================== */
+
+/* Satu blok accordion */
+.cmp-spec-block{ margin:0 0 18px; }
+
+/* Header kategori (default tertutup) */
+.cmp-spec-head{
+display:flex; align-items:center; justify-content:space-between;
+padding:14px 18px;
+cursor:pointer;
+font-size:20px; font-weight:700;
+background:#fff; color:#111;
+
+/* gaya flat: tanpa frame, hanya garis merah bawah */
+border:none;
+border-bottom:2px solid #dc3545;
+border-radius:0;
+margin:0;                    /* buang margin biar rapat */
+}
+.cmp-spec-head .ico{ font-size:26px; line-height:1; color:#111; }
+
+/* Saat dibuka → bar merah penuh, teks & ikon putih */
+.cmp-spec-head.is-open{
+background:#dc3545;
+color:#fff;
+border:none;                 /* hilangkan garis bawah */
+margin:0;
+}
+.cmp-spec-head.is-open h4,
+.cmp-spec-head.is-open .ico{
+color:#fff;
+}
+
+/* Body tabel (nempel ke header, tanpa jarak) */
+.cmp-spec-body{
+display:none;
+background:#fff;
+border:none;
+border-radius:0;
+margin:0;                   /* buang gap */
+padding:0;                  /* buang gap */
+}
+.cmp-spec-body.open{ display:block; }
+
+/* Pembungkus tabel */
+.cmp-spec-table-wrap{
+overflow:auto;
+margin:0;                   /* buang gap */
+}
+
+/* Tabel spesifikasi */
+.cmp-spec-table{
+width:100%;
+border-collapse:collapse;   /* rapat antar sel */
+border-spacing:0;
+border-top:none;            /* nempel langsung ke header merah */
+}
+.cmp-spec-table th,
+.cmp-spec-table td{
+padding:12px 14px;
+text-align:left;
+vertical-align:top;
+}
+.cmp-spec-table thead th{
+background:#f8f9fa;
+font-weight:700;
+border-bottom:1px solid #ddd;
+}
+.cmp-spec-table tbody tr:nth-child(odd){ background:#fff; }
+.cmp-spec-table tbody tr:nth-child(even){ background:#f9f9f9; }
+.cmp-spec-table .attr{ font-weight:600; width:40%; }
+
+/* util */
+.w-40{ width:40%; }
+
+/* Tombol Hapus: outline → jadi merah solid saat interaksi */
+.cmp-remove.btn-outline-danger{
+--cmp-danger: #dc3545;
+border-color: var(--cmp-danger);
+color: var(--cmp-danger);
+}
+
+/* Saat hover/focus/active → merah penuh + teks putih */
+.cmp-remove.btn-outline-danger:hover,
+.cmp-remove.btn-outline-danger:focus,
+.cmp-remove.btn-outline-danger:active{
+background: var(--cmp-danger) !important;
+color: #fff !important;
+border-color: var(--cmp-danger) !important;
+box-shadow: 0 0 0 .25rem rgba(220,53,69,.25);
+}
+
+/* Biar ikon ikut ganti warna */
+.cmp-remove i{ color: inherit; }
+
+/* Sedikit efek saat ditekan */
+.cmp-remove.btn-outline-danger:active{ filter: brightness(.92); }
+
+/* Kunci lebar kolom antar-tabel supaya sejajar */
+.cmp-spec-table{
+table-layout: fixed;     /* patuhi lebar dari <colgroup> */
+width: 100%;
+}
+.cmp-spec-table th,
+.cmp-spec-table td{
+word-wrap: break-word;
+overflow-wrap: anywhere; /* jaga teks panjang agar tidak melebar */
+}
+
+/* (opsional) tetap lebar 40% untuk kolom atribut pada device sempit */
+@media (max-width: 576px){
+.cmp-spec-table col:first-child{ width: 44% !important; }
+}
+
+/* Kasih ruang aman terhadap footer untuk halaman compare result ini */
+main.flex-fill.p-4{
+padding-bottom: calc(var(--cmpFooterH, 60px) + 24px);
+}
+
+/* Pastikan section terakhir tidak nabrak footer */
+.cmp-spec-block:last-child{
+margin-bottom: calc(var(--cmpFooterH, 60px) + 24px);
+}
+
+/* Hilangkan celah antar header accordion */
+.cmp-spec-block{
+margin: 0 !important;        /* no gap antara header2 */
+}
+
+/* Tetap kasih ruang aman di paling bawah halaman */
+.cmp-spec-block:last-child{
+margin-bottom: calc(var(--cmpFooterH, 60px) + 24px) !important;
+}
+
+/* =========================
+   COMPARE RESULT — GRID ADAPTIF (FINAL)
+   ========================= */
+
+/* Kontainer grid: selalu center dan boleh multi-baris */
+.cmp-fig-grid{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;      /* baris selalu di-tengah */
+  align-items:flex-start;
+  gap:36px 48px;               /* row gap / column gap */
+}
+
+/* Kolom default: gunakan CSS var agar mudah switch 2/3 kolom */
+.cmp-fig-item{
+  flex:0 1 var(--cmpColW, 380px);
+  max-width:100%;
+}
+
+/* Mode 2 kolom → dipakai saat renderCount = 2 atau 4 */
+.cmp-fig-grid--is-2{ --cmpColW: 520px; }  /* sesuaikan kalau terlalu lebar */
+@media (max-width:1400px){ .cmp-fig-grid--is-2{ --cmpColW: 440px; }}
+
+/* Mode 3 kolom → dipakai saat renderCount = 3, 5, atau 6 */
+.cmp-fig-grid--is-3{ --cmpColW: 380px; }
+
+/* Responsif */
+@media (max-width:1200px){
+  .cmp-fig-item{ flex-basis:340px; }
+}
+@media (max-width:992px){
+  .cmp-fig-item{ flex-basis:48%; }   /* tablet: 2 kolom, tetap center */
+}
+@media (max-width:576px){
+  .cmp-fig-item{ flex-basis:100%; }  /* hp: 1 kolom, center */
+}
+
+/* =========================
+   KARTU (tanpa frame) & KONTEN
+   ========================= */
+
+/* Kartu tampil bersih (tanpa border/shadow), tetap pos:relative untuk tombol X */
+.cmp-fig-card{
+  position:relative;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  padding:0 !important;
+  text-align:center;
+}
+
+/* Tombol X di pojok kanan atas item */
+.cmp-fig-close{ position:absolute; top:-6px; right:0; }
+.cmp-fig-close button{
+  background:transparent; border:0; padding:0;
+  font-size:32px; line-height:1; cursor:pointer; color:#111;
+}
+
+/* Gambar + teks */
+.cmp-fig-img{ min-height:220px; display:flex; align-items:center; justify-content:center; }
+.cmp-fig-img img{ height:320px; max-width:100%; object-fit:contain; }
+
+.cmp-fig-name{
+  margin:10px 0 2px; font-size:22px; font-weight:700; color:#111;
+}
+.cmp-fig-price{
+  font-size:18px; font-weight:800; color:#dc3545; margin-bottom:10px;
+}
+.cmp-fig-detail{
+  display:inline-block; border:2px solid #111; border-radius:12px;
+  padding:10px 16px; font-size:16px; font-weight:700; color:#111; text-decoration:none;
+}
+.cmp-fig-detail:hover{ border-color:#dc3545; color:#dc3545; }
+
+/* =========================
+   SLOT KOSONG (Pilih Model) — muncul hanya jika openSlot
+   ========================= */
+.cmp-slot{
+  display:inline-flex; align-items:center; gap:14px;
+  height:72px; padding:0 24px;
+  background:#fff; border:2px solid #111; border-radius:14px;
+  font-weight:700; font-size:22px; color:#111; text-decoration:none;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.cmp-slot:hover{ transform:translateY(-2px); box-shadow:0 8px 22px rgba(0,0,0,.12); }
+
+/* Ikon plus tanpa bulatan (sesuai mockup) */
+.cmp-plus{ width:auto; height:auto; border:none; padding:0; font-size:32px; line-height:1; transform:translateY(-1px); }
+
+/* 1920×1080 (landscape) — OPEN=4, CLOSED=5 */
+@media (min-width:1900px) and (max-height:1100px){
+
+  /* aktifkan container-query di kolom kanan */
+  #cmpPickPage .cmp-right-scroll{
+    container-type: inline-size;
+    container-name: pick;
+  }
+
+  /* default (aman) */
+  #cmpPickPage .cmp-right-scroll .cmp-card-grid,
+  #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
+    display: grid !important;
+    justify-content: center !important;
+    grid-auto-flow: row dense !important;
+    gap: 24px !important;
+    margin-top: 24px !important;
+  }
+
+  /* SIDEBAR TERBUKA → 4 kolom */
+  body:not(:is(.sidebar-collapsed,.sidebar-closed))
+  #cmpPickPage .cmp-right-scroll .cmp-card-grid,
+  body:not(:is(.sidebar-collapsed,.sidebar-closed))
+  #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
+    grid-template-columns: repeat(4, minmax(320px, 1fr)) !important;
+  }
+
+  /* SIDEBAR TERTUTUP → 5 kolom (saat kanan cukup lebar) */
+  @container pick (min-width:1550px){
+    :is(body.sidebar-collapsed, body.sidebar-closed)
+    #cmpPickPage .cmp-right-scroll .cmp-card-grid,
+    :is(body.sidebar-collapsed, body.sidebar-closed)
+    #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
+      grid-template-columns: repeat(5, minmax(280px, 1fr)) !important;
+    }
+  }
+
+  /* Posisikan CTA "Mulai Bandingkan" lebih dekat ke kategori */
+  .cmp-filter-stick .cmp-stick-cta{
+    position: static !important;   /* lepas dari sticky bawah */
+    bottom: auto !important;
+    margin-top: 12px !important;   /* tepat di bawah radio terakhir */
+  }
+  .cmp-filter-stick .cmp-start{ margin-top: 12px !important; }
+}
+
+/* Jika viewport ≤1200px, pakai 2 kolom agar tidak overflow di mode 1080×1920 */
+@media (max-width: 1200px){
+  .cmp-grid{
+    grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+    justify-content: center;   /* tetap rapi di tengah */
+  }
+}
+
+/* Saat 2 kolom (≤1200px), matikan pemisah baris */
+@media (max-width: 1200px){
+  .cmp-row-break{ display:none !important; }
+}
+
+/* Portrait 1080×1920 — PAKSA 2 card per baris (sidebar buka/tutup) */
+@media (max-width:1200px) and (min-height:1200px){
+
+  /* kasih ruang ke konten kanan */
+  .row > .col-lg-3{ flex:0 0 210px; max-width:210px; }
+  .row > .col-lg-9{ flex:1 1 auto; max-width:calc(100% - 210px); }
+  .cmp-right-scroll{ padding-left:8px !important; padding-right:4px !important; overflow-x:hidden; }
+
+  /* GRID: selalu 2 kolom fleksibel */
+  .cmp-card-grid{
+    display:grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important; /* <-- kunci 2 kolom */
+    gap:20px !important;
+    justify-items:center !important;   /* kartu di tengah tiap sel */
+    margin-top:12px !important;
+  }
+
+  /* Kartu mengikuti lebar kolom, tapi dibatasi agar tak melebar */
+  .cmp-card{
+    width:100% !important;
+    max-width:320px !important;        /* boleh 300–340 sesuai selera */
+    margin:0 auto !important;
+  }
+
+  /* Skala isi kartu agar muat di 2 kolom */
+  .cmp-card-img{ min-height:160px !important; }
+  .cmp-card-img img{ height:180px !important; }
+  .cmp-card-title{ font-size:18px !important; }
+  .cmp-choose{ height:44px !important; font-size:14px !important; }
+
+  /* Naikkan tombol "Mulai Bandingkan" */
+  .cmp-filter-stick .cmp-stick-cta{
+    position:static !important;
+    bottom:auto !important;
+    margin-top:10px !important;
+  }
+}
+
+/* (opsional) kalau kanan super sempit banget, baru turun ke 1 kolom */
+.cmp-right-scroll{ container-type:inline-size; }
+@container (max-width:520px){
+  .cmp-card-grid{ grid-template-columns:1fr !important; }
+}
+
+/* Rapihin tombol "Tambah Untuk Membandingkan" */
+.cmp-choose{
+  display: flex !important;
+  align-items: center;       /* teks center vertikal */
+  justify-content: center;   /* teks + ikon center horizontal */
+  text-align: center;
+  
+  padding: 0 10px !important;  /* sempitkan padding horizontal */
+  height: 46px !important;
+  line-height: 1.2 !important; /* biar multi-line rapih */
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  white-space: normal !important; /* izinkan teks turun baris */
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+.cmp-choose i{
+  margin-right: 6px;         /* jarak ikon ↔ teks */
+  flex: 0 0 auto;
+}
+
+/* Portrait 1080×1920 — SAAT SIDEBAR TERTUTUP */
+@media (max-width:1200px) and (min-height:1200px){
+  /* Batasi lebar seluruh baris supaya rasanya sama seperti saat sidebar terbuka */
+  body.sidebar-closed #cmpPickPage .row{
+    max-width: 980px;            /* sesuaikan kalau mau lebih rapat/lega */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Kolom filter kiri agak digeser ke kanan (ikut nyempil ke tengah) */
+  body.sidebar-closed #cmpPickPage .row > .col-lg-3{
+    flex: 0 0 210px;
+    max-width: 210px;
+    padding-left: 12px;          /* geser dikit ke kanan */
+  }
+
+  /* Area kanan: tambah padding kiri dikit biar jarak antar kolom terasa sama */
+  body.sidebar-closed .cmp-right-scroll{
+    padding-left: 20px !important;
+    padding-right: 6px !important;
+    overflow-x: hidden;
+  }
+
+  /* GRID kartu: kunci tetap 2 kolom dengan lebar kartu tetap -> jarak antar kartu stabil */
+  body.sidebar-closed .cmp-card-grid{
+    display: grid !important;
+    grid-template-columns: repeat(2, 320px) !important;  /* 300–340px silakan disetel */
+    gap: 24px 36px !important;                           /* row-gap / col-gap */
+    justify-content: center !important;                  /* center di kontainer */
+    align-items: start;
+    margin-top: 12px !important;
+  }
+
+  /* Kartu ikut ukuran grid (tidak melebar) */
+  body.sidebar-closed .cmp-card{
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto !important;
+  }
+
+  /* CTA di panel kiri tetap nempel tepat di bawah kategori */
+  body.sidebar-closed .cmp-filter-stick .cmp-stick-cta{
+    position: static !important;
+    bottom: auto !important;
+    margin-top: 10px !important;
+  }
+}
+
+/* kartu dianggap “terpilih” kalau ada tombol hapus .cmp-remove di dalamnya */
+.cmp-card{ border-color:#000000; }
+.cmp-card:has(.cmp-remove){ border-color:#dc3545; box-shadow:0 10px 24px rgba(220,53,69,.15); }
+
+/* Hover/focus/active: tombol ADD (outline-dark) hijau, teks & ikon hitam */
+.cmp-card .cmp-choose.btn-outline-dark:hover,
+.cmp-card .cmp-choose.btn-outline-dark:focus,
+.cmp-card .cmp-choose.btn-outline-dark:active{
+  background:#22c55e !important;   /* hijau */
+  border-color:#16a34a !important;
+  color:#111 !important;            /* teks hitam */
+  box-shadow:none !important;
+}
+
+/* (opsional) saat disabled tetap outline abu-abu */
+.cmp-choose.btn-outline-dark:disabled,
+.cmp-choose.btn-outline-dark[disabled]{
+  background:#fff !important;
+  color:#6b7280 !important;
+  border-color:#d1d5db !important;
+}
+
+/* Hover hijau hanya untuk card yang BELUM dipilih */
+.cmp-card:not(.is-selected):hover{
+  border-color:#16a34a;                    /* hijau */
+  box-shadow:0 0 0 3px rgba(22,163,74,.18);
+}
+
+/* Saat terpilih + hover, tetap merah */
+.cmp-card.is-selected:hover,
+.cmp-card:has(.cmp-remove):hover{
+  border-color:#dc3545 !important;
+  box-shadow:0 0 0 3px rgba(220,53,69,.18) !important;
+}
+
+/* ===== Back bar di halaman Detail (muncul hanya dari Compare) ===== */
+.backbar{
+  border-bottom:2px solid #111;
+  position: static !important;     
+  top: 0;
+  background:#fff;
+  z-index: 20;
+}
+.accd-back-link{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  color:#111;
+  text-decoration:none;
+}
+.accd-back-link:hover{ opacity:.85; }
+.accd-back-ico svg{ display:block; width:28px; height:28px; }
+
+/* ======= Aksesori: sembunyikan panah & scroll saat item ≤3 ======= */
+.acc-wrap.no-nav .acc-nav,
+.acc-nav.is-hidden{ display:none !important; }
+
+.acc-viewport.is-static{ overflow:visible !important; }
+.acc-wrap.no-nav .acc-track{ justify-content:center; flex-wrap:wrap; }
+
+/* Kartu & ukuran tetap seperti sebelumnya */
+.acc-card{ flex:0 0 320px; max-width:320px; }
+
+/* Samakan tinggi judul supaya baris Harga/Rp/Detail sejajar */
+.acc-title{
+  font-size:24px;
+  font-weight:800;
+  line-height:1.2;
+  min-height:2.4em;          /* = 2 baris line-height 1.2 → ~58px */
+  margin:14px 0 10px;
+  color:#111;
+}
+
+/* Rapikan blok harga & tombol */
+.acc-price span{ display:block; font-size:14px; color:#666; line-height:1; }
+.acc-price strong{ display:block; font-size:22px; font-weight:800; margin:8px 0 16px; color:#000; }
+
+/* Panah (tetap seperti sebelumnya) */
+.acc-nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:64px; height:64px; border-radius:50%;
+  background:#fff; color:#000; border:1px solid #E6E6E6;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.12); z-index:5;
+}
+.acc-prev{ left:0; } .acc-next{ right:0; }
+.acc-nav i{ font-size:22px; }
+.acc-nav:hover{ box-shadow:0 10px 28px rgba(0,0,0,.16); }
+
+/* Track & viewport tetap seperti sebelumnya (carousel) */
+.acc-wrap{ position:relative; max-width:1200px; margin:0 auto 18px; padding:0 72px; }
+.acc-viewport{ overflow:auto; scroll-behavior:smooth; scrollbar-width:none; }
+.acc-viewport::-webkit-scrollbar{ display:none; }
+.acc-track{ display:flex; gap:22px; padding:2px; }
+.acc-track.acc-center{ justify-content:center; }
+
+/* Body kartu (pastikan kolom vertikal) */
+.acc-body{ padding:16px 24px 18px; display:flex; flex-direction:column; }
+
+/* Gambar di dalam kartu (tetap besar & rapi) */
+.acc-img img{
+  display:block;
+  width: calc(100% - 64px);
+  height: 240px;
+  margin: 32px auto 0;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+/* Responsif ringkas */
+@media (max-width:1200px){
+  .acc-card{ flex-basis:300px; max-width:300px; }
+  .acc-img img{ width: calc(100% - 56px); height: 220px; margin-top:28px; }
+  .acc-title{ font-size:22px; min-height:2.4em; }
+  .acc-price strong{ font-size:20px; }
+}
+@media (max-width:768px){
+  .acc-wrap{ padding:0 54px; }
+  .acc-card{ flex-basis:86vw; max-width:86vw; }
+  .acc-img img{ width: calc(100% - 48px); height: 200px; margin-top:24px; }
+}
+
+/* ========== DEALER (PUBLIC) — FINAL ========== */
+
+/* ===== HERO ===== */
+.dealer-hero{margin-top:6px;margin-bottom:2px;}
+.dealer-h1{font-size:44px;font-weight:800;line-height:1.2;color:#0f172a;text-align:center;margin:0 0 6px;}
+.dealer-redline{height:4px;background:#c4161c;border-radius:2px;width:100%;margin:6px 0 12px;}
+.dealer-tagline{font-size:28px;font-weight:800;color:#0f172a;text-align:center;margin:0 0 8px;}
+
+/* ===== FILTER BAR ===== */
+.dealer-flex{display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 12px;margin-top:8px;}
+.dealer-field{flex:1 1 260px;width:auto;}
+.dealer-btn-wrap{flex:0 0 140px;align-self:flex-end;}
+.dealer-label{font-weight:700;color:#0f172a;margin-bottom:6px;font-size:16px;}
+.dealer-control{width:100%;height:56px;border-radius:12px;font-size:18px;padding:0 44px 0 16px;border:1.5px solid #111827;background:#fff;}
+.dealer-select{-webkit-appearance:none;-moz-appearance:none;appearance:none;padding-right:52px!important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='%23C4161C' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;background-size:20px 20px;}
+.dealer-search-btn{height:56px;border-radius:12px;border:1.5px solid #111827;color:#111827;background:#fff;font-weight:700;font-size:18px;padding:0 20px;display:inline-flex;align-items:center;gap:10px;position:relative;width:100%;text-indent: 14px;}
+.dealer-search-btn::after{content:"";width:20px;height:20px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 12h12M13 6l6 6-6 6' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:20px 20px;margin-left:5px;}
+.dealer-search-btn:hover{background:#111827;color:#fff;border-color:#111827;}
+.dealer-search-btn:hover::after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 12h12M13 6l6 6-6 6' fill='none' stroke='%23FFFFFF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");}
+.dealer-select:focus,.dealer-control:focus,.dealer-search-btn:focus{outline:3px solid rgba(196,22,28,.2);outline-offset:2px;box-shadow:none;}
+
+/* ===== HALAMAN LIST+MAP ===== */
+.dealer-page{display:flex;flex-direction:column;height:100%;min-height:0;}
+.dealer-top{flex:0 0 auto;}
+.dealer-split{flex:1 1 auto;min-height:0;display:grid;grid-template-columns: minmax(0,5fr) minmax(0,7fr);gap:16px;}
+.dealer-list-pane{background:#fff;border-radius:12px;padding:8px;height:100%;overflow:auto;min-height:0;}
+.dealer-map-pane{display:flex;align-items:stretch;position:relative;}
+.dealer-map-canvas{width:100%;min-height:560px;border:0;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+@media (max-height:820px){ .dealer-map-canvas{ min-height:440px; } }
+
+/* ===== InfoWindow content (custom) ===== */
+.gm-popup{max-width:360px}
+.gm-popup .gm-title{font-weight:800;font-size:18px;margin-bottom:6px;color:#111827}
+.gm-popup .gm-addr{font-size:14px;color:#4b5563;line-height:1.35;margin-bottom:6px}
+.gm-popup .gm-phone{font-size:14px;color:#4b5563;margin-bottom:8px}
+.gm-popup .gm-link{display:inline-block;margin-top:2px;color:#c4161c;font-weight:700;text-decoration:none}
+.gm-popup .gm-link:hover{text-decoration:underline}
+
+/* ===== KARTU LIST ===== */
+.dealer-item{padding:12px 12px 14px;;border-radius:12px;transition:background .15s;}
+.dealer-card .dealer-card-body{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;}
+.dealer-card .dealer-info{flex:1 1 auto;}
+.dealer-name{font-weight:800;font-size:20px;margin-bottom:6px;color:#111827 !important;}
+.dealer-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px;}
+.dealer-row .ico{flex:0 0 20px;margin-top:2px;}
+.dealer-text{color:#000;line-height:1.5;}
+.dealer-cta{margin-top:6px;font-weight:700;border-radius:10px;display:inline-flex;align-items:center;gap:10px;padding:10px 16px;}
+.dealer-sep{border:0;height:0;border-top:2px solid #2c2c2c;margin:0 -8px 10px;}
+.dealer-item:last-child .dealer-sep{display:none;}
+
+.dealer-meta{flex:0 0 150px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;margin-left:12px;}
+.dealer-hcode{font-weight:400 !important;font-size:28px;line-height:1;color:#111827;margin:0;}
+.dealer-meta-lines{font-size:13px;line-height:1.25;color:#6b7280;}
+
+/* ===== STATE: aktif (dipilih) ===== */
+.dealer-item.is-active{background:#fff7f7;}
+.dealer-item.is-active .dealer-name{color:#c4161c !important;}
+.dealer-item.is-active .dealer-text,
+.dealer-item.is-active .dealer-meta-lines,
+.dealer-item.is-active .dealer-hcode{font-weight:700;}
+
+/* Responsive */
+@media (max-width:992px){
+  .dealer-split{grid-template-columns:1fr;}
+  .dealer-map-canvas{min-height:420px;}
+}
+@media (max-width:576px){
+  .dealer-card .dealer-card-body{flex-direction:column;}
+  .dealer-meta{align-items:flex-start;text-align:left;flex:0 0 auto;}
+  .dealer-hcode{font-size:20px;}
+  .dealer-meta-lines{font-size:12px;}
+}
+
+/* Spasi antara filter dan list/map */
+.dealer-top + .dealer-split{margin-top:28px;}
+@media (max-width:1200px){.dealer-top + .dealer-split{margin-top:24px;}}
+@media (max-width:768px){.dealer-top + .dealer-split{margin-top:16px;}}
+
+/* Keep filter in one row di layar lebar */
+@media (min-width:1200px){ .dealer-flex{flex-wrap:nowrap;} }
+
+/* ==== KEEP FILTER IN ONE ROW (MATCH DESIGN) ==== */
+
+/* biar kolom fleksibel dan rapat */
+.dealer-flex{
+  display:flex; flex-wrap:wrap; align-items:flex-end;
+  gap:16px 12px;   /* sedikit lebih rapat */
+}
+
+/* setiap field: basis 260px tapi fleksibel membesar/mengecil */
+.dealer-field{
+  flex: 1 1 260px;
+  width: auto;     /* override width terdahulu */
+}
+
+/* tombol: lebar tetap, sejajar bawah input */
+.dealer-btn-wrap{
+  flex: 0 0 140px;  /* tombol sesuai desain */
+  align-self: flex-end;
+}
+
+/* layar lebar: jangan dibungkus ke baris baru */
+@media (min-width: 1200px){
+  .dealer-flex{ flex-wrap: nowrap; }
+}
+
+/* kontrol tetap full width di kolomnya */
+.dealer-control{ width:100%; }
+
+/* tombol tetap memenuhi kolom tombol */
+.dealer-search-btn{ width:100%; }
+
+/* tinggi minimal layar yang benar di mobile (menghindari bug 100vh) */
+.app-shell { min-height: 100vh; }
+@supports (height: 100dvh) {
+  .app-shell { min-height: 100dvh; }
+}
+
+/* === tinggi footer fix (sesuaikan) === */
+:root { --footer-fixed-h: 80px; }  /* ganti 80px kalau tinggi footer beda */
+
+/* <main> adalah scroller: tambahkan padding bawah supaya tidak ketiban footer */
+.app-main {
+  padding-bottom: calc(var(--footer-fixed-h) + env(safe-area-inset-bottom, 0px));
+  min-height: 0; /* penting di flex container */
+}
+
+/* spacer tak terlihat di akhir halaman di dalam <main> */
+.dealer-page::after{
+  content:"";
+  display:block;
+  height: var(--footer-fixed-h);
+}
+
+/* pastikan anak-anak grid bisa menyusut di dalam scroller */
+.dealer-page,
+.dealer-split,
+.dealer-list-pane { min-height: 0; }
+
+/* kecil tapi membantu: pastikan canvas map block */
+.dealer-map-canvas{ display:block; }
+
+/* === Dealer: perbesar MAP di desktop lebar === */
+
+/* ≥1440px: list 33% — map 67% */
+@media (min-width:1440px) and (orientation:landscape){
+  .dealer-split{
+    grid-template-columns: minmax(0,4fr) minmax(0,8fr);
+  }
+}
+
+/* ≥1920px: list 25% — map 75% (sesuai 1920×1080 scale 100%) */
+@media (min-width:1920px) and (orientation:landscape){
+  .dealer-split{
+    grid-template-columns: minmax(0,3fr) minmax(0,9fr);
+  }
+  /* rapetin kolom meta H123 supaya list makin ramping */
+  .dealer-meta{ flex:0 0 120px; }
+  /* kecilkan sedikit gap dalam card agar konten list lebih padat */
+  .dealer-card .dealer-card-body{ gap:12px; }
+}
+
+/* tombol di ujung kanan bar */
+.dealer-btn-wrap{
+  flex: 0 0 auto;
+  align-self: flex-end;
+  margin-left: auto;       /* dorong ke paling kanan */
+}
+
+/* baris 2 tombol */
+.dealer-btn-row{
+  display: flex;
+  gap: 12px;
+}
+
+/* gaya tombol Clear */
+.dealer-clear-btn{
+  height:56px;
+  border-radius:12px;
+  border:1.5px solid #c4161c;
+  background:#fff;
+  color:#c4161c;
+  font-weight:700;
+  font-size:18px;
+  padding:0 16px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:120px;         /* opsional */
+}
+.dealer-clear-btn:hover{
+  border-color:#c4161c; background:#c4161c; color:#ffffff;
+}
+
+/* ukuran tombol Cari (opsional biar konsisten) */
+.dealer-search-btn{ min-width:140px; }
+
+/* mobile: jadi vertikal, urutan tetap Cari lalu Clear */
+@media (max-width:576px){
+  .dealer-btn-wrap{ flex:1 1 100%; }
+  .dealer-btn-row{ flex-direction:column; }
+}
+
+/* ===== Portrait 1080×1920: jaga "Cari" + "Clear" tetap satu baris ===== */
+@media (max-width:1080px) and (orientation:portrait){
+  /* kolom boleh menyusut */
+  .dealer-field{ flex:1 1 210px; min-width:0; }
+
+  /* kolom "Cari Nama Dealer" boleh menyusut banget */
+  .dealer-field:last-of-type{ flex:1 1 0; min-width:0; }
+
+  /* grup tombol tetap di kanan dengan lebar tetap */
+  .dealer-btn-wrap{
+    margin-left:auto;
+    flex:0 0 156px;          /* ruang untuk 2 tombol */
+    align-self:flex-end;
+  }
+  .dealer-btn-row{ gap:8px; }
+
+  /* jangan paksa tombol melebar; biar muat di baris yang sama */
+  .dealer-search-btn,
+  .dealer-clear-btn{
+    width:auto;
+    min-width:0;
+    padding:0 14px;
+  }
+
+  /* sedikit rapetin jarak antar kolom */
+  .dealer-flex{ gap:12px 12px; }
+}
+
+/* =========================
+   PRICE LIST PAGE
+========================= */
+
+/* HERO abu-abu + garis merah bawah */
+.pl-hero{
+  position: relative;
+  background:#F1F3F5;
+  border-radius:12px;
+  padding:26px 28px;
+  box-shadow:0 8px 28px rgba(0,0,0,.08);
+}
+.pl-hero::after{
+  content:""; position:absolute; left:18px; right:18px; bottom:-2px; height:3px;
+  border-radius:3px; background:#dc3545; filter:drop-shadow(0 2px 2px rgba(220,53,69,.35));
+}
+.pl-title{ font-size:36px; font-weight:800; text-align:center; }
+.pl-sub{ font-size:20px; text-align:center; color:#222; opacity:.85; }
+
+/* ==== HILANGKAN RASA "DI DALAM CARD" ==== */
+.pl-card{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+  padding:0 !important;
+}
+.pl-card h5{ font-size:20px; }
+
+/* Chip "Lihat Produk" */
+.pl-chip{
+  display:inline-block; background:#E9ECEF; color:#111;
+  padding:6px 10px; border-radius:8px; font-weight:700; font-size:14px;
+  text-decoration:none;
+}
+.pl-chip.disabled{ opacity:.6; pointer-events:none; }
+
+/* Tabel tipe & harga (bukan table HTML, biar gampang di-style) */
+.pl-table{ 
+  border:none;           /* jangan ada border kotak luar */
+  border-radius:0; 
+  overflow:visible;      /* header merah tetap rounded tapi tidak mengkotak putih */
+}
+
+/* Header merah persis seperti desain */
+.pl-table-head{
+  display:flex; align-items:center;
+  background:#dc3545; color:#fff; padding:12px 16px;
+  border-radius:12px 12px 0 0;   /* rounded di atas saja */
+}
+.pl-th{ flex:1 1 auto; font-weight:800; }
+.pl-th:last-child{ flex:0 0 240px; }
+
+/* Body tabel: hanya garis sisi + bawah, dan rounded di bawah */
+.pl-table-body{
+  border:1px solid #E7E7E7; 
+  border-top:none;
+  border-radius:0 0 12px 12px;   /* rounded bawah */
+  background:#fff;
+}
+.pl-tr{
+  display:flex; align-items:center;
+  padding:12px 16px;
+  border-top:1px solid #F0F0F0;
+  background:#fff;
+}
+.pl-tr.alt{ background:#F8F9FA; }
+.pl-td{ flex:1 1 auto; font-weight:600; color:#444; }
+.pl-td:last-child{ flex:0 0 240px; }
+
+/* Responsiveness */
+@media (max-width: 1200px){
+  .pl-th:last-child, .pl-td:last-child{ flex:0 0 180px; }
+}
+@media (max-width: 576px){
+  .pl-th:last-child, .pl-td:last-child{ flex:0 0 140px; }
+  .pl-title{ font-size:28px; }
+  .pl-sub{ font-size:16px; }
+}
+
+/* Kolom harga rata kiri seperti desain */
+.pl-price { text-align: left !important; padding-left: 14px; }
+
+/* (opsional) kalau kolom harga terasa kepanjangan, kecilkan dikit lebarnya */
+@media (min-width: 992px){
+  .pl-th:last-child, .pl-td:last-child { flex:0 0 220px; }
+}
+
+/* =========================
+   CREDIT SIM PAGE
+========================= */
+.cs-page .fw-600{ font-weight:600; }
+
+/* Back */
+.cs-back { color:#111; text-decoration:none; }
+.cs-back-ico{
+  display:inline-block; width:28px; height:28px; border:2.5px solid #111;
+  border-radius:50%; position:relative;
+}
+.cs-back-ico::before, .cs-back-ico::after{
+  content:""; position:absolute; left:9px; top:50%; width:10px; height:2.5px; background:#111;
+  transform:translateY(-50%);
+}
+.cs-back-ico::after{ width:0; height:0; border:6px solid transparent; border-right-color:#111; left:4px; top:50%; transform:translateY(-50%) rotate(180deg); }
+
+/* HERO */
+.cs-hero{
+  position:relative; background:#E9ECEF; border-radius:12px; padding:26px 28px;
+  box-shadow:0 8px 28px rgba(0,0,0,.08);
+}
+.cs-hero::after{
+  content:""; position:absolute; left:18px; right:18px; bottom:-2px; height:3px;
+  border-radius:3px; background:#dc3545; filter:drop-shadow(0 2px 2px rgba(220,53,69,.35));
+}
+.cs-title{ font-size:36px; font-weight:800; text-align:center; }
+.cs-sub{ font-size:20px; text-align:center; color:#111; opacity:.9; }
+
+/* Section */
+.cs-section{ background:#fff; border:1px solid #eee; border-radius:12px; overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.06); }
+.cs-section-head{ background:#dc3545; color:#fff; padding:12px 16px; font-weight:800; }
+.cs-section-body{ padding:16px; }
+.cs-select, .cs-input{ border-radius:10px; }
+
+/* OTR + image */
+.cs-motor-img{ width:210px; max-width:46%; border-radius:12px; object-fit:contain; background:#fafafa; }
+.cs-otr-label{ font-weight:700; color:#6c757d; }
+.cs-otr-price{ font-size:20px; font-weight:800; }
+
+/* CTA */
+.cs-cta{ font-weight:700; border-radius:10px; }
+
+/* Result */
+/* Card simulasi */
+.cs-result{
+  border:1px solid #e5e5e5;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+  overflow:visible;                 /* <— was hidden */
+}
+
+/* Sudut atas- bawah mulus */
+.cs-result-head{
+  background:#3f3f3f;
+  color:#fff;
+  padding:12px 16px;
+  font-weight:800;
+  border-top-left-radius:12px;      /* <— tambahkan */
+  border-top-right-radius:12px;     /* <— tambahkan */
+}
+.cs-result-body{
+  padding:16px;
+  border-bottom-left-radius:12px;   /* <— tambahkan */
+  border-bottom-right-radius:12px;  /* <— tambahkan */
+}
+.cs-est-title{ font-size:24px; font-weight:800; margin-bottom:4px; }
+.cs-est-value{ font-size:28px; font-weight:900; color:#dc3545; }
+
+@media (max-width:576px){
+  .cs-title{ font-size:28px; }
+  .cs-sub{ font-size:16px; }
+  .cs-motor-img{ width:160px; }
+}
+
+/* tinggi footer fix; ganti sesuai tinggi footer-mu sebenarnya */
+:root { --footer-fixed-h: 80px; }
+
+/* <main class="flex-fill p-4 overflow-auto cs-page"> adalah scroller */
+.cs-page{
+  /* tambahkan padding bawah = padding default p-4 (1.5rem) + tinggi footer */
+  padding-bottom: calc(1.5rem + var(--footer-fixed-h) + env(safe-area-inset-bottom, 0px)) !important;
+  min-height: 0; /* penting untuk child flex yang jadi scroller */
+}
+
+/* --- Detail CTA: universal red on hover/press/focus --- */
+.acc-cta,
+.apr-cta,
+.acc-motor-cta {
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+/* anchor-nya */
+.acc-cta:hover,
+.acc-cta:focus-visible,
+.acc-cta:active,
+.apr-cta:hover,
+.apr-cta:focus-visible,
+.apr-cta:active,
+.acc-motor-cta:hover,
+.acc-motor-cta:focus-visible,
+.acc-motor-cta:active {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+/* pastikan anak-anaknya ikut putih (beberapa halaman memberi warna ke <span>) */
+.acc-cta:hover span,
+.acc-cta:focus-visible span,
+.acc-cta:active span,
+.apr-cta:hover span,
+.apr-cta:focus-visible span,
+.apr-cta:active span,
+.acc-motor-cta:hover span,
+.acc-motor-cta:focus-visible span,
+.acc-motor-cta:active span,
+.acc-cta:hover i,
+.acc-cta:focus-visible i,
+.acc-cta:active i,
+.apr-cta:hover i,
+.apr-cta:focus-visible i,
+.apr-cta:active i,
+.acc-motor-cta:hover i,
+.acc-motor-cta:focus-visible i,
+.acc-motor-cta:active i {
+  color: #fff !important;
+}
+
+/* default: biar teks di dalam tombol mengikuti warna anchor */
+.acc-cta span,
+.apr-cta span,
+.acc-motor-cta span { color: inherit; }
+
+/* Accessories Detail CTA — samakan dengan yang lain */
+.accd-cta,
+.accd-cta:link,
+.accd-cta:visited{
+  color:#111 !important;
+  text-decoration:none;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.accd-cta:hover,
+.accd-cta:focus-visible,
+.accd-cta:active{
+  background:#dc3545;
+  border-color:#dc3545;
+  color:#fff !important;
+}
+
+/* pastikan anak-anaknya ikut putih */
+.accd-cta:hover span,
+.accd-cta:focus-visible span,
+.accd-cta:active span,
+.accd-cta:hover i,
+.accd-cta:focus-visible i,
+.accd-cta:active i{
+  color:#fff !important;
+}
+
+/* Area gambar di kartu */
+.product-image-left,
+.card-thumb,
+.list-motor .thumb {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  /* samakan tinggi area gambar */
+  height: 220px;          /* sesuaikan: 200–260px */
+  padding: 8px 0;
+  overflow: visible;       /* jangan potong gambar */
+}
+
+/* Gambarnya: jangan dipotong, skalakan proporsional */
+.product-image-left img,
+.card-thumb img,
+.list-motor .thumb img {
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit: contain !important;   /* kunci: jangan cover */
+  object-position:center center;
+}
+
+/* Kalau ada global style yang set cover (mis. .card-img-top),
+   paksa override di komponen ini saja */
+.card-img-top,
+.card-img,
+img.card-img-top {
+  object-fit: contain !important;
+}
+
+/* Portrait 1080x1920: viewport gambar bisa sedikit lebih tinggi */
+@media (max-width:1200px) and (min-height:1200px){
+  .product-image-left,
+  .card-thumb,
+  .list-motor .thumb { height: 260px; }
+}
+
+/* (opsional) gunakan aspect-ratio agar tinggi adaptif */
+@supports (aspect-ratio: 16/9) {
+  .product-image-left,
+  .card-thumb,
+  .list-motor .thumb {
+    height: auto;
+    aspect-ratio: 16/9;   /* atau 4/3 sesuai desain */
+  }
+}
+
+/* ==== CARD MOTOR (horizontal) — samakan tinggi ==== */
+.product-card{
+  position: relative;
+  display: grid;
+  grid-template-columns: 38% 1fr;   /* kiri gambar, kanan info */
+  align-items: center;
+  height: 230px;                    /* <-- kunci: semua card sama tinggi */
+  padding: 20px 26px;
+}
+
+/* viewport gambar kiri */
+.product-image-left{
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0;
+  overflow: visible;                 /* jangan motong gambar */
+}
+.product-image-left img{
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain !important;    /* jangan cover */
+  object-position: center;
+}
+
+/* kolom kanan: konten dipusatkan vertikal */
+.product-info,
+.card-body, .right-info{             /* sesuaikan dengan kelas yang kamu pakai */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;                     /* biar flex bisa nge-shrink */
+}
+
+/* 1) Judul global: biar tidak menambah tinggi card (default 1 baris) */
+.product-title,
+.card-title,
+.ttl{
+  display: -webkit-box;            /* kompatibilitas lama */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  -webkit-line-clamp: 2;           /* ubah ke 2 jika mau 2 baris */
+  line-clamp: 1;                   /* properti standar */
+}
+
+/* badge "New!" tidak menambah tinggi layout */
+.badge-new, .badge-new1{
+  position: absolute;
+  top: 10px; right: 12px;
+}
+
+/* Responsive portrait 1080x1920: card boleh sedikit lebih tinggi */
+@media (max-width:1200px) and (min-height:1200px){
+  .product-card{ height: 260px; }
+}
+
+/* =========================================================
+   KETIKA SIDEBAR TERBUKA -> kecilkan typografi & tombol card
+   (pakai 2 selector state untuk aman di project-mu)
+   ========================================================= */
+@media (max-width:1200px) and (orientation:portrait){
+
+  /* --- Kartu tetap horizontal 2 kolom, hanya lebih kompak --- */
+  body:not(.sidebar-collapsed) .product-card,
+  .sidebar.open ~ main .product-card,
+  body:not(.sidebar-collapsed) .acc-motor-card,
+  .sidebar.open ~ main .acc-motor-card,
+  body:not(.sidebar-collapsed) .catalog-card,
+  .sidebar.open ~ main .catalog-card{
+    grid-template-columns: 150px 1fr;  /* gambar | info */
+    min-height: 190px;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  /* --- Viewport gambar & img --- */
+  body:not(.sidebar-collapsed) .product-image-left,
+  .sidebar.open ~ main .product-image-left,
+  body:not(.sidebar-collapsed) .acc-motor-img,
+  .sidebar.open ~ main .acc-motor-img,
+  body:not(.sidebar-collapsed) .catalog-image,
+  .sidebar.open ~ main .catalog-image{
+    height: 150px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0;
+  }
+  body:not(.sidebar-collapsed) .product-image-left img,
+  .sidebar.open ~ main .product-image-left img,
+  body:not(.sidebar-collapsed) .acc-motor-img img,
+  .sidebar.open ~ main .acc-motor-img img,
+  body:not(.sidebar-collapsed) .catalog-image img,
+  .sidebar.open ~ main .catalog-image img{
+    max-height: 100%;
+    max-width: 100%;
+    width:auto; height:auto;
+    object-fit: contain !important;
+  }
+
+  /* --- Info: kecilkan font & rapikan spacings --- */
+  body:not(.sidebar-collapsed) .product-info-right,
+  .sidebar.open ~ main .product-info-right,
+  body:not(.sidebar-collapsed) .acc-motor-info,
+  .sidebar.open ~ main .acc-motor-info,
+  body:not(.sidebar-collapsed) .catalog-info,
+  .sidebar.open ~ main .catalog-info{
+    gap: 6px;
+    min-width:0;
+  }
+
+  /* 2) Judul saat sidebar terbuka (1 baris, lebih kecil) */
+body:not(.sidebar-collapsed) .product-title,
+.sidebar.open ~ main .product-title,
+body:not(.sidebar-collapsed) .acc-motor-title,
+.sidebar.open ~ main .acc-motor-title,
+body:not(.sidebar-collapsed) .catalog-title,
+.sidebar.open ~ main .catalog-title{
+  font-size: .95rem;               /* ~15.2px */
+  line-height: 1.2;
+  margin: 0;
+
+  display: -webkit-box;            /* kompatibilitas lama */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+
+  -webkit-line-clamp: 2;           /* tetap 1 baris */
+  line-clamp: 1;                   /* properti standar */
+}
+
+  /* Subtitle & harga */
+  body:not(.sidebar-collapsed) .product-subtitle,
+  .sidebar.open ~ main .product-subtitle{
+    font-size: .78rem;           /* ~12.5px */
+    margin: 0;
+  }
+  body:not(.sidebar-collapsed) .product-price,
+  .sidebar.open ~ main .product-price,
+  body:not(.sidebar-collapsed) .acc-price strong,
+  .sidebar.open ~ main .acc-price strong{
+    font-size: .9rem;            /* ~14.4px */
+    line-height: 1.2;
+    margin: 0;
+    white-space: nowrap;         /* angka harga tetap satu baris */
+  }
+
+  /* --- Baris tombol: wrap kalau sempit & diperkecil --- */
+  body:not(.sidebar-collapsed) .product-info-right > .d-flex,
+  .sidebar.open ~ main .product-info-right > .d-flex,
+  body:not(.sidebar-collapsed) .acc-motor-info > .d-flex,
+  .sidebar.open ~ main .acc-motor-info > .d-flex,
+  body:not(.sidebar-collapsed) .catalog-info > .d-flex,
+  .sidebar.open ~ main .catalog-info > .d-flex{
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;   /* tetap rata kanan */
+    margin-right: 0;
+  }
+
+  /* Tombolnya dikecilkan (Detail, Bandingkan, dll.) */
+  body:not(.sidebar-collapsed) .product-info-right .btn,
+  .sidebar.open ~ main .product-info-right .btn,
+  body:not(.sidebar-collapsed) .acc-motor-info .btn,
+  .sidebar.open ~ main .acc-motor-info .btn,
+  body:not(.sidebar-collapsed) .catalog-info .btn,
+  .sidebar.open ~ main .catalog-info .btn,
+  body:not(.sidebar-collapsed) .acc-cta,
+  .sidebar.open ~ main .acc-cta,
+  body:not(.sidebar-collapsed) .apr-cta,
+  .sidebar.open ~ main .apr-cta{
+    padding: 4px 8px;
+    font-size: .75rem;           /* ~12px */
+    line-height: 1.1;
+    border-radius: 6px;
+    white-space: nowrap;         /* teks tombol 1 baris */
+  }
+
+  /* Badge "New!" agar tidak mendominasi */
+  body:not(.sidebar-collapsed) .catalog-badge,
+  .sidebar.open ~ main .catalog-badge{
+    transform: scale(.9);
+    transform-origin: top right;
+  }
+}
+
+/* ===== Accessories & Apparels — portrait ≤1200px (sidebar kebuka/ketutup) ===== */
+@media (max-width:1200px) and (orientation:portrait){
+
+  /* Kartu: beri ruang lebih utk teks */
+  .page-accessories .acc-motor-card,
+  .page-apparels   .acc-motor-card{
+    grid-template-columns: 120px 1fr;
+    gap: 12px;
+    padding: 14px 16px;
+    min-height: 200px;              /* naikkan supaya muat judul multi-baris */
+    overflow: hidden;
+  }
+  .page-accessories .acc-motor-img,
+  .page-apparels   .acc-motor-img{ height: 120px; }
+  .page-accessories .acc-motor-img img,
+  .page-apparels   .acc-motor-img img{
+    max-width:100%; max-height:100%; object-fit:contain;
+  }
+
+  /* Container info harus boleh menyempit agar teks bisa wrap */
+  .page-accessories .acc-motor-info,
+  .page-apparels   .acc-motor-info{ min-width:0; display:flex; flex-direction:column; gap:8px; }
+  .page-accessories .acc-motor-info *:not(img),
+  .page-apparels   .acc-motor-info *:not(img){ min-width:0; }
+
+  /* === Judul: JANGAN terpotong ===
+     Matikan clamp/ellipsis yang lama dengan !important */
+  .page-accessories .acc-motor-title,
+  .page-apparels   .acc-motor-title{
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    display: block !important;          /* hentikan -webkit-box dari rule lama */
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    font-size: .95rem;
+    line-height: 1.25;
+    margin: 0;
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+
+  /* Harga/label sedikit dirampingkan */
+  .page-accessories .acc-price span,
+  .page-apparels   .acc-price span{ font-size: .78rem; }
+  .page-accessories .acc-price strong,
+  .page-apparels   .acc-price strong{ font-size: .9rem; white-space: nowrap; }
+
+  /* Tombol bisa wrap rapi di kanan */
+  .page-accessories .acc-motor-info > .d-flex,
+  .page-apparels   .acc-motor-info > .d-flex{
+    flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-right: 0;
+  }
+
+  /* Tombol “Detail”: lebih panjang supaya tidak kelihatan mepet */
+  .page-accessories .acc-cta,
+  .page-accessories .acc-motor-cta,
+  .page-apparels   .acc-cta,
+  .page-apparels   .apr-cta{
+    display:inline-flex; align-items:center; justify-content:space-between;
+    height: 36px;
+    min-width: 140px;                  /* <- PANJANG tombol; ubah 150–160px kalau perlu */
+    max-width: 100%;
+    padding: 0 14px;
+    font-size: .8rem;
+    line-height: 1;
+    border-radius: 8px;
+    white-space: nowrap;
+    width: auto !important;
+  }
+
+  /* Select di kartu aksesoris jangan memaksa lebar */
+  .page-accessories .acc-motor-card select{
+    display:inline-block; max-width:100%;
+  }
+}
+
+/* ==== DESKTOP ( >1200px ) – balikin ukuran tombol seperti semula ==== */
+@media (min-width:1201px){
+  .page-accessories .acc-cta,
+  .page-accessories .acc-motor-cta,
+  .page-accessories .apr-cta,
+  .page-apparels   .acc-cta,
+  .page-apparels   .acc-motor-cta,
+  .page-apparels   .apr-cta{
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px !important;        /* ukuran normal desktop */
+    min-width: 200px !important;     /* panjang seperti sebelumnya (atur 180–220px sesuai selera) */
+    padding: 0 18px !important;
+    font-size: .95rem !important;
+    border-radius: 10px;
+    white-space: nowrap;
+    gap: 8px;
+  }
+}
+
+/* ==== PORTRAIT ≤1200px – tombol diperkecil agar muat di card ==== */
+@media (max-width:1200px) and (orientation:portrait){
+  .page-accessories .acc-cta,
+  .page-accessories .acc-motor-cta,
+  .page-accessories .apr-cta,
+  .page-apparels   .acc-cta,
+  .page-apparels   .acc-motor-cta,
+  .page-apparels   .apr-cta{
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: space-between;
+    height: 34px !important;
+    min-width: 150px !important;     /* boleh 150–160px */
+    padding: 0 14px !important;
+    font-size: .85rem !important;
+    border-radius: 8px;
+    white-space: nowrap;
+    gap: 6px;
+  }
+}
+
+/* ==== FIX setelah sidebar dipindah ke layout (flex) ==== */
+.main-wrapper{ margin-left: 0 !important; }   /* hapus offset 500px */
+
+/* Kalau kamu tetap mau sidebar lebar di layar ≥1920, cukup atur lebarnya,
+   TAPI jangan kasih margin kiri ke main lagi */
+@media (min-width:1920px) and (orientation:landscape){
+  .sidebar{
+    width: 320px !important;    /* atur sesuai selera: 420–500 */
+    flex: 0 0 320px !important;
+    max-width: 320px !important;
+  }
+  .main-wrapper{ margin-left: 0 !important; } /* tetap 0 */
+}
+
+/* === FINAL PATCH === */
+
+/* 0) Background putih (menang atas .bg-light Bootstrap) */
+body.bg-light,
+body { background: #fff !important; }
+
+/* 1) Section Rekomendasi — grid & kartu */
+.rec-section { background:#fff; }
+.rec-section .rec-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:24px;
+  background:#fff;
+}
+
+/* Kartu lebih padat dan gambar lebih besar */
+.rec-section .product-card{
+  display:grid;
+  grid-template-columns: 44% 1fr; /* porsi gambar diperbesar */
+  align-items:center;
+  height:260px;                   /* tambah tinggi agar proporsional */
+  background:#fff;
+}
+
+.rec-section .product-image-left{ height:100%; }
+.rec-section .product-image-left img{
+  width:100%;
+  height:100%;
+  object-fit: cover;  /* gambar isi penuh (sedikit crop, tampak besar) */
+  display:block;
+}
+
+.rec-section .product-info-right{ padding-right:24px; }
+.rec-section .buttons{ display:flex; gap:10px; justify-content:flex-end; }
+
+/* 2) Responsif */
+@media (max-width:1535.98px){
+  .rec-section .product-card{ grid-template-columns: 40% 1fr; height:240px; }
+}
+@media (max-width:991.98px){
+  .rec-section .rec-grid{ grid-template-columns: 1fr; }
+  .rec-section .product-card{ grid-template-columns: 38% 1fr; height:220px; }
+}
+
+/* === FIX: Detail Aksesoris melebar seperti halaman lain === */
+.accd-header{
+  display:grid;              /* just in case */
+  grid-template-columns: 52% 1fr;  /* kiri lebih lebar */
+  column-gap: clamp(16px, 2vw, 32px);
+  align-items:start;
+}
+
+/* Hilangkan batas lebar di hero & thumbs */
+.accd-detail .accd-hero,
+.accd-detail .accd-thumbs{
+  max-width: none !important;
+  width: 100% !important;
+}
+.accd-detail .accd-hero-img{
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Responsif: tumpuk di tablet/HP */
+@media (max-width: 992px){
+  .accd-header{ grid-template-columns: 1fr; }
+}
+
+/* ==== Compare Pick — FINAL ==== */
+:root{
+  --cmpStickyTop: 96px;         /* diset via JS */
+  --cmpFooterH: 60px;           /* diset via JS */
+  --cmpCtaLift: 20px;           /* ↑ jarak tombol di atas footer (atur 16–28px) */
+}
+
+/* Nonaktifkan scroll global di halaman ini (main-wrapper dari layout) */
+.main-wrapper.cmp-no-scroll{ overflow: hidden !important; }
+
+/* Hanya kolom kanan yang scroll */
+#cmpPickPage .cmp-right-scroll{
+  height: calc(100vh - var(--cmpStickyTop) - var(--cmpFooterH) - 16px);
+  overflow-y: auto;
+  padding-left: 28px;
+  padding-right: 6px;
+  padding-bottom: calc(var(--cmpFooterH) + 16px); /* ruang aman ke footer */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Panel kiri sticky + ruang aman ke footer */
+#cmpPickPage .cmp-filter-stick{
+  position: sticky;
+  top: var(--cmpStickyTop);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  overflow: auto; /* kalau konten kiri kepanjangan */
+  min-height: calc(100vh - var(--cmpStickyTop));
+  padding-bottom: calc(var(--cmpFooterH) + var(--cmpCtaLift) + 20px);
+}
+
+/* Tombol "Mulai Bandingkan" nempel DI ATAS footer, sedikit naik */
+#cmpPickPage .cmp-filter-stick .cmp-stick-cta{
+  position: sticky;
+  bottom: calc(var(--cmpFooterH) + env(safe-area-inset-bottom, 0px) + var(--cmpCtaLift));
+  z-index: 1;
+}
+
+/* ===== Desktop 1920×1080: tombol tepat di bawah "BIG BIKE" (tidak sticky) ===== */
+@media (min-width:1900px) and (max-height:1100px){
+  #cmpPickPage .cmp-filter-stick{
+    min-height: auto;
+    padding-bottom: 20px;
+  }
+  #cmpPickPage .cmp-filter-stick .cmp-stick-cta{
+    position: static;      /* lepas dari footer */
+    bottom: auto;
+    margin-top: 12px;      /* tepat di bawah kategori terakhir */
+  }
+  /* kanan jadi sedikit lebih tinggi */
+  #cmpPickPage .cmp-right-scroll{
+    height: calc(100vh - var(--cmpStickyTop) - 24px);
+  }
+}
+
+/* ==== COMPARE PICK — layout wide 1920×1080 @100% ==== */
+#cmpPickPage .cmp-card-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr)); /* default */
+  gap: 24px;
+}
+
+/* Mode desktop lebar: 4 kartu + CTA tidak sticky */
+@media (min-width: 1800px) and (orientation: landscape){
+  /* 4 kartu per baris, kartu lebih ramping otomatis */
+  #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+
+  /* CTA kiri tepat di bawah kategori terakhir (bukan nempel footer) */
+  #cmpPickPage .cmp-filter-stick{
+    min-height: auto;               /* lepas tinggi paksa */
+  }
+  #cmpPickPage .cmp-filter-stick .cmp-stick-cta{
+    position: static;               /* tidak sticky ke bawah */
+    bottom: auto;
+    margin-top: 14px;               /* jeda dari "BIG BIKE" */
+  }
+
+  /* Tinggikan area scroll kanan sedikit supaya lega */
+  #cmpPickPage .cmp-right-scroll{
+    height: calc(100vh - var(--cmpStickyTop, 96px) - 24px);
+  }
+}
+
+/* ====== HARGA DIBAWAH NAMA MOTOR (COMPARE RESULT) ====== */
+/* ====== TABEL SPESIFIKASI – header & sel kiri ====== */
+.cmp-spec-table th { padding: 14px 12px; vertical-align: top; }
+.cmp-spec-table th:first-child,
+.cmp-spec-table td:first-child { text-align: left; }
+
+.cmp-spec-table .cmp-hcell{
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 96px;              /* konsisten agar tombol sejajar */
+  line-height: 1.2;
+}
+
+/* versi rata kiri + sedikit geser kiri */
+.cmp-spec-table .cmp-hcell--left{
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 10px;            /* geser dikit ke kiri */
+}
+
+/* nama: 1 baris saja + elipsis jika kepanjangan */
+.cmp-spec-table .cmp-spec-name{
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #111;
+  max-width: 100%;
+  white-space: nowrap;           /* cegah 2 baris */
+  overflow: hidden;
+  text-overflow: ellipsis;       /* tampilkan … saat kepanjangan */
+}
+
+/* harga */
+.cmp-spec-table .cmp-spec-price{
+  font-weight: 800;
+  font-size: .95rem;
+  color: #dc3545;
+  margin-top: 2px;
+}
+
+/* tombol “Detail” lebih pendek */
+.cmp-spec-cta{
+  display: inline-block;
+  padding: 6px 12px;
+  border: 2px solid #111;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #111;
+  background: #fff;
+  text-decoration: none;
+  margin-top: 4px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.cmp-spec-cta:hover{ transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+.cmp-spec-cta.is-disabled{ cursor: not-allowed; opacity:.55; border-color:#aaa; color:#777; pointer-events:none; }
+
+/* RATakan konten sel spesifikasi sedikit ke kiri juga */
+.cmp-spec-table td{
+  text-align: left;
+  padding-left: 18px;            /* geser isi sel ke kiri */
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width:1200px) and (min-height:1200px){
+  .cmp-spec-table .cmp-spec-name{ font-size: 1rem; }
+  .cmp-spec-table .cmp-spec-price{ font-size: .9rem; }
+  .cmp-spec-cta{ padding: 6px 10px; font-size: .88rem; }
+  .cmp-spec-table .cmp-hcell{ min-height: 100px; }
+}
+
+@media (max-width:768px){
+  .cmp-spec-table th{ padding: 12px 8px; }
+  .cmp-spec-table td{ padding-left: 12px; }
+  .cmp-spec-table .cmp-spec-name{ font-size: .95rem; }
+  .cmp-spec-table .cmp-spec-price{ font-size: .85rem; }
+  .cmp-spec-cta{ padding: 5px 9px; font-size: .84rem; border-width: 1.5px; }
+}
+
+/* ===== ALIGN HEADER ↔ BODY: FINAL ===== */
+.cmp-spec-table{
+  table-layout: fixed;          /* konsisten dengan <colgroup> */
+  border-collapse: separate;
+  border-spacing: 0;
+  --col-pad: 14px;              /* PAD KIRI KOLOM MOTOR (satu sumber kebenaran) */
+}
+
+/* Kolom 'Atribut' lebih rapat ke kolom motor */
+.cmp-spec-table th:first-child,
+.cmp-spec-table td:first-child{
+  text-align: left;
+  padding-left: 12px;
+  padding-right: 10px;
+}
+
+/* Semua kolom motor: SAMAKAN padding kiri header & body */
+.cmp-spec-table th:not(:first-child),
+.cmp-spec-table td:not(:first-child){
+  text-align: left;
+  padding-left: var(--col-pad); /* ⬅️ kunci keselarasan */
+  padding-right: 10px;
+}
+
+/* Header cell: jangan ada padding/margin internal */
+.cmp-spec-table th .cmp-hcell,
+.cmp-spec-table .cmp-hcell--left{
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 98px;             /* seragamkan posisi tombol */
+  line-height: 1.2;
+  padding: 0;                   /* ⬅️ nolkan offset */
+  margin: 0;
+  width: 100%;
+}
+
+/* Nama 1 baris + elipsis (hindari turun baris) */
+.cmp-spec-table .cmp-spec-name{
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #111;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Harga & tombol */
+.cmp-spec-table .cmp-spec-price{
+  font-weight: 800;
+  font-size: .95rem;
+  color: #dc3545;
+  margin-top: 2px;
+}
+.cmp-spec-cta{
+  display: inline-block;
+  padding: 6px 12px;
+  border: 2px solid #111;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #111;
+  background: #fff;
+  text-decoration: none;
+  margin-top: 4px;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.cmp-spec-cta:hover{ transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+.cmp-spec-cta.is-disabled{ cursor: not-allowed; opacity:.55; border-color:#aaa; color:#777; pointer-events:none; }
+
+/* Body rows: bersihkan margin default agar baseline sama */
+.cmp-spec-table td p,
+.cmp-spec-table td ul,
+.cmp-spec-table td ol{ margin: 0; }
+
+/* ===== Responsive ===== */
+/* Portrait 1080×1920 */
+@media (max-width:1200px) and (min-height:1200px){
+  .cmp-spec-table{ --col-pad: 12px; }   /* rapatkan sedikit */
+  .cmp-spec-table .cmp-hcell{ min-height: 102px; }
+  .cmp-spec-table .cmp-spec-name{ font-size: 1rem; }
+  .cmp-spec-table .cmp-spec-price{ font-size: .9rem; }
+  .cmp-spec-cta{ padding: 6px 10px; font-size: .88rem; }
+}
+/* Mobile/Tablet */
+@media (max-width:768px){
+  .cmp-spec-table{ --col-pad: 10px; }
+  .cmp-spec-table th, .cmp-spec-table td{ padding-right: 8px; }
+  .cmp-spec-table th:first-child, .cmp-spec-table td:first-child{ padding-left: 10px; }
+  .cmp-spec-table .cmp-spec-name{ font-size: .95rem; }
+  .cmp-spec-table .cmp-spec-price{ font-size: .85rem; }
+  .cmp-spec-cta{ padding: 5px 9px; font-size: .84rem; border-width: 1.5px; }
+}
+
+/* ===== On-Screen Keyboard ===== */
+.osk-backdrop{
+  position: fixed; inset: 0; background: rgba(0,0,0,.15);
+  z-index: 9998; backdrop-filter: blur(1px);
+}
+.osk{
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999;
+  background: #fff; border-top-left-radius: 16px; border-top-right-radius: 16px;
+  box-shadow: 0 -12px 28px rgba(0,0,0,.2);
+  padding: 10px 12px 14px; max-height: 45vh;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.osk[hidden], .osk-backdrop[hidden]{ display:none !important; }
+
+.osk-head{ display:flex; align-items:center; justify-content:space-between; }
+.osk-title{ font-weight: 700; font-size: 16px; }
+.osk-close{
+  border: 2px solid #111; background:#fff; color:#111; border-radius: 10px;
+  width:36px; height:32px; line-height:28px; font-size:20px; cursor:pointer;
+}
+.osk-keys{
+  display:grid; grid-template-columns: repeat(14, minmax(0,1fr));
+  grid-auto-rows: 56px; gap: 8px; user-select:none; touch-action: manipulation;
+}
+.osk-key{
+  grid-column: span var(--w,1);
+  display:flex; align-items:center; justify-content:center;
+  border: 2px solid #111; border-radius: 12px; background:#fff; color:#111;
+  font-weight:700; font-size:20px; cursor:pointer;
+  transition: transform .05s ease, background .1s ease, color .1s ease, border-color .1s ease;
+}
+.osk-key:active{ transform: translateY(1px); }
+.osk-key.fn{ font-size:18px; }
+.osk-key.accent{ background:#dc3545; color:#fff; border-color:#dc3545; }
+.osk-key.muted{ opacity:.85; }
+.osk-key.wide2{ --w: 2; } .osk-key.wide3{ --w: 3; } .osk-key.wide4{ --w: 4; } .osk-key.wide5{ --w: 5; }
+
+/* Responsif */
+@media (max-width:1200px) and (min-height:1200px){  /* portrait 1080×1920 */
+  .osk-keys{ grid-auto-rows: 64px; gap: 10px; }
+  .osk-key{ font-size:22px; }
+}
+@media (max-width:768px){
+  .osk-keys{ grid-auto-rows: 52px; }
+  .osk-key{ font-size:18px; }
+}
+
+/* Saat keyboard terbuka, cegah scroll pergeseran layout */
+body.osk-open{ overflow:hidden; }
+
+/* --- ACCESSORIES: portrait ≤1200px — OPEN = normal, CLOSED = bigger --- */
+@media (max-width:1200px) and (orientation:portrait){
+
+  /* ---------- SIDEBAR TERBUKA (tetap kecil/normal) ---------- */
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-motor-card{
+    display: grid !important;
+    grid-template-columns: 130px 1fr !important;
+    min-height: 200px !important;
+    overflow: visible !important;        /* jangan memotong isi */
+    padding-right: 10px !important;      /* ruang aman kanan card */
+  }
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-motor-img{
+    height: 130px !important;
+    overflow: visible !important;
+  }
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-motor-img img{
+    max-height: 130px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+  }
+  /* kolom info boleh menyusut supaya tombol tidak keluar */
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-motor-info{
+    min-width: 0 !important;
+  }
+  /* tombol “Detail” dimundurkan dikit & dibatasi lebar */
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-motor-cta{
+    width: 192px !important;
+    height: 38px !important;
+    padding: 0 14px !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    transform: translateX(-6px);         /* mundur 6px dari tepi kanan */
+  }
+
+  /* ---------- SIDEBAR TERTUTUP (gambar lebih besar & konten geser kanan) ---------- */
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-motor-card{
+    display: grid !important;
+    grid-template-columns: 180px 1fr !important;   /* kolom gambar lebih lebar */
+    min-height: 210px !important;
+    overflow: visible !important;
+  }
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-motor-img{
+    height: 160px !important;
+    overflow: visible !important;
+  }
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-motor-img img{
+    max-height: 160px !important;                  /* scale by height */
+    width: auto !important;
+    max-width: none !important;                    /* biar gak ketahan */
+    object-fit: contain !important;
+  }
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-motor-info{
+    padding-left: 0px !important;                 /* geser nama & tombol */
+    min-width: 0 !important;
+  }
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-motor-cta{
+    width: 220px !important;                       /* sedikit lebih panjang */
+    height: 40px !important;
+    padding: 0 16px !important;
+  }
+
+  /* ---------- GENERAL ITEM (kartu .acc-card) mengikuti ---------- */
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-card{
+    grid-template-columns: 130px 1fr !important;
+    overflow: visible !important;
+    padding-right: 10px !important;                /* ruang aman kanan */
+  }
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-card{
+    grid-template-columns: 180px 1fr !important;
+    overflow: visible !important;
+  }
+  :is(body:not(.sidebar-collapsed), .sidebar.open ~ main) .page-accessories .acc-img{ height:130px !important; }
+  :is(body.sidebar-collapsed, .sidebar:not(.open) ~ main) .page-accessories .acc-img{ height:160px !important; }
+}
+
+/* === Rekomendasi Varian (halaman detail) — samakan dengan kartu di menu Produk === */
+.rec-section .product-card{
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  height: auto;                    /* biar ikutin tinggi konten */
+}
+
+.rec-section .product-image-left{
+  flex: 0 0 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* kunci: sama seperti kartu di menu Produk -> contain 180px */
+.rec-section .product-image-left img{
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 180px;
+  object-fit: contain;             /* override rule 'cover' yang lama */
+}
+
+.rec-section .product-info-right{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;             /* center */
+  text-align: center;              /* center */
+  gap: 12px;
+}
+
+.rec-section .product-info-right .buttons{
+  display: flex;
+  gap: 12px;
+  justify-content: center;         /* center tombol */
+}
+
+/* Responsive: stack vertikal di mobile + gambar boleh sedikit lebih tinggi */
+@media (max-width: 992px){
+  .rec-section .product-card{ flex-direction: column; }
+  .rec-section .product-image-left{ flex: 0 0 auto; }
+  .rec-section .product-image-left img{ max-height: 220px; }
+}
+
+/* ===== GRID PRODUK ADAPTIF — 1920x1080 ===== */
+@media (min-width: 1920px) and (orientation: landscape){
+
+  /* Sidebar BUKA → 3 kolom */
+  body:not(.sidebar-collapsed) .product-grid .product-col{
+    flex: 0 0 33.333333% !important;
+    max-width: 33.333333% !important;
+  }
+
+  /* Sidebar TUTUP → 4 kolom */
+  body.sidebar-collapsed .product-grid .product-col{
+    flex: 0 0 25% !important;
+    max-width: 25% !important;
+  }
+}
+
+/* Matikan dorongan 500px pada layout portrait 1080×1920 (atau layar ≤1200px) */
+@media (max-width:1200px) {
+  .main-wrapper { margin-left: 0 !important; }
+}
+
+/* (opsional) kalau sidebar memang fixed 270px dan kamu ingin ada offset saat TERBUKA */
+@media (max-width:1200px) {
+  body.sidebar-open .main-wrapper { margin-left: 270px !important; } /* samakan dengan lebar sidebar-mu */
+  body.sidebar-collapsed .main-wrapper { margin-left: 0 !important; }
+}
+
+/* === Compare Pick (1080×1920 portrait)
+   Sidebar OPEN = 2 kolom, CLOSED = 3 kolom === */
+@media (max-width:1200px) and (min-height:1200px) and (orientation:portrait){
+
+  /* SIDEBAR TERBUKA → 2 kolom */
+  body:not(.sidebar-collapsed) #cmpPickPage .cmp-card-grid{
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    gap: 20px 24px !important;
+    justify-content: center !important;
+  }
+
+  /* SIDEBAR TERTUTUP → 3 kolom */
+  body.sidebar-collapsed #cmpPickPage .cmp-card-grid{
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    gap: 20px 24px !important;
+    justify-content: center !important;
+  }
+
+  /* keamanan: cegah isi kartu/kolom kepotong saat sempit */
+  #cmpPickPage .cmp-right-scroll{ overflow-y:auto; padding-right:4px; }
+  #cmpPickPage .cmp-card{ min-width:0; }
+}
+
+/* 1920×1080 @100% — hanya halaman Pilih Model (#cmpPickPage) Sidebar OPEN  => 4 kolom Sidebar CLOSED => 5 kolom */
+@media (min-width:1910px) and (max-width:1930px)
+       and (min-height:1060px) and (max-height:1090px)
+       and (orientation:landscape){
+
+  /* = Sidebar TERBUKA = 4 kolom */
+  body:not(:is(.sidebar-collapsed,.sidebar-closed)) #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(4, minmax(240px, 1fr)) !important;
+    gap: 24px !important;
+    justify-content: center !important;
+  }
+
+  /* = Sidebar TERTUTUP = 5 kolom */
+  body:is(.sidebar-collapsed,.sidebar-closed) #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(5, minmax(200px, 1fr)) !important;
+    gap: 20px !important;
+    justify-content: center !important;
+  }
+}
+
+/* ==== PRODUCT DETAIL: samakan lebar dgn Banner & Spesifikasi ==== */
+/* Aksesoris: area kartu (wrap) & baris tombol */
+.motor-accessories.page-product-detail .acc-wrap,
+.motor-accessories.page-product-detail .acc-actions{
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Rekomendasi Varian (section + grid) */
+.rec-section{
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* (opsional) beri gutter kiri/kanan mengikuti konten lain */
+.motor-accessories.page-product-detail .acc-wrap,
+.motor-accessories.page-product-detail .acc-actions,
+.rec-section{
+  padding-left: 0 !important;   /* pakai gutter dari layout kamu */
+  padding-right: 0 !important;  /* kalau perlu, bisa diset 12–16px */
+}
+
+/* ===== 1920×1080 landscape — SIDEBAR TERTUTUP ===== */
+@media (min-width: 1920px) and (orientation: landscape){
+  /* Nonaktifkan carousel & rapikan viewport */
+  body.sidebar-collapsed .motor-accessories.page-product-detail .acc-viewport{
+    overflow: visible !important;        /* tidak scroll ke samping */
+  }
+
+  /* Pakai FLEX seperti sebelumnya, tapi center */
+  body.sidebar-collapsed .motor-accessories.page-product-detail .acc-track{
+    display: flex !important;
+    flex-wrap: nowrap !important;        /* 6 item 1 baris */
+    justify-content: center !important;  /* TENGAH */
+    align-items: stretch !important;
+    transform: none !important;          /* jaga-jaga dari translateX */
+  }
+
+  /* Pastikan ukuran kartu tetap seperti sebelumnya */
+  body.sidebar-collapsed .motor-accessories.page-product-detail .acc-card{
+    flex: 0 0 320px !important;          /* sesuaikan bila kartu kamu bukan 320 */
+    max-width: 320px !important;
+  }
+
+  /* Sembunyikan panah */
+  body.sidebar-collapsed .motor-accessories.page-product-detail .acc-nav{
+    display: none !important;
+  }
+
+  /* Rekomendasi Varian: 4 card/baris */
+  .rec-section .rec-grid{
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+    gap: 24px !important;                /* boleh ubah kalau jarak lama ≠ 24 */
+    justify-items: center;
+  }
+}
+
+/* PILIH MODEL — 1920×1080 @100% Sidebar OPEN = 4 kolom, CLOSED = 5 kolom (pakai flag <html class="is-1920-100"> dari appPublic.blade) */
+html.is-1920-100 #cmpPickPage .cmp-right-scroll .cmp-card-grid,
+html.is-1920-100 #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
+  display: grid !important;
+  justify-content: center !important;
+  grid-auto-flow: row dense !important;
+  gap: 24px !important;              
+  margin-top: 24px !important;
+}
+
+/* Sidebar TERBUKA → 4 kolom */
+html.is-1920-100 body:not(.sidebar-collapsed)
+#cmpPickPage .cmp-right-scroll .cmp-card-grid,
+html.is-1920-100 body:not(.sidebar-collapsed)
+#cmpPickPage .cmp-right-scroll .cmp-fig-grid{
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+/* Sidebar TERTUTUP → 5 kolom */
+html.is-1920-100 body.sidebar-collapsed
+#cmpPickPage .cmp-right-scroll .cmp-card-grid,
+html.is-1920-100 body.sidebar-collapsed
+#cmpPickPage .cmp-right-scroll .cmp-fig-grid{
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
+
+/* ===== QR Map Modal ===== */
+.qrmm[hidden]{display:none !important;}
+.qrmm{position:fixed;inset:0;z-index:1060;}
+.qrmm__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px);}
+.qrmm__box{
+  position:relative;z-index:1;
+  max-width:600px;   
+  width:96%;         
+  margin:6vh auto;
+  background:#fff;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.24);
+  padding:24px 22px 20px;text-align:center;
+}
+.qrmm__close{
+  position:absolute;top:8px;right:10px;width:36px;height:36px;border:0;border-radius:10px;
+  background:#f3f4f6;font-size:22px;line-height:1;cursor:pointer;
+}
+.qrmm__title{font-size:22px;font-weight:800;color:#111827;margin:4px 0 6px;}
+.qrmm__tag{color:#374151;margin:0 0 14px;}
+.qrmm__canvas{display:grid;place-items:center;min-height:300px;}
+
+/* === ACCESSORIES DETAIL — samakan seperti grid Aksesoris (kartu ramping) === */
+
+/* 1920×1080 landscape, sidebar BUKA = 3 kolom */
+@media (min-width:1900px) and (max-height:1100px) and (orientation:landscape){
+  body:not(.sidebar-collapsed) .accd-grid{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    gap: 22px;
+  }
+  /* sidebar TUTUP = 4 kolom */
+  body.sidebar-collapsed .accd-grid{
+    grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+    gap: 22px;
+  }
+
+  /* Kartu jadi vertikal, biar muat di 3/4 kolom */
+  .accd-grid .accd-card{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    padding: 20px 22px;
+    min-height: auto;
+  }
+
+  /* Thumbnail penuh lebar, gambar tidak kepotong */
+  .accd-grid .accd-thumb{
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+  .accd-grid .accd-thumb img{
+    width: 100%;
+    height: 180px;
+    object-fit: contain;   /* anti crop */
+    border-radius: 12px;
+  }
+
+  /* Tombol full width supaya kolom bisa ramping */
+  .accd-grid .accd-cta{
+    width: 100%;
+    height: 44px;
+    font-size: 18px;
+  }
+}
+
+/* Fallback umum (layar besar selain 1920×1080): sama persis */
+@media (min-width:1400px){
+  body:not(.sidebar-collapsed) .accd-grid{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+  body.sidebar-collapsed .accd-grid{ grid-template-columns: repeat(4, minmax(0,1fr)) !important; }
+}

@@ -1,10 +1,36 @@
 <ul>
-    {{-- Banner --}}
-    <li class="nav-item @if(request()->routeIs('admin.banner')) active @endif">
-        <a href="{{ route('admin.banner') }}" class="nav-link">
-            <span class="icon"><i class="fa-solid fa-image"></i></span>
-            <span class="text" style="vertical-align: middle; line-height: 22px; display: inline-block;">Banner</span>
+    {{-- General --}}
+    <li class="nav-item nav-item-has-children">
+    <a class="collapsed nav-link" href="#0" data-bs-toggle="collapse" data-bs-target="#ddmenu_general"
+        aria-controls="ddmenu_general" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="icon"><i class="fa-solid fa-layer-group"></i></span>
+        <span class="text" style="vertical-align: middle; line-height: 22px; display: inline-block;">General</span>
+    </a>
+    <ul id="ddmenu_general" class="dropdown-nav collapse @if(
+            request()->routeIs('admin.banner') ||
+            request()->routeIs('admin.price_list.index') ||
+            request()->routeIs('admin.accessories.general.*')   {{-- <-- wildcard --}}
+        ) show @endif">
+
+        <li class="nav-item">
+        <a href="{{ route('admin.banner') }}" class="@if(request()->routeIs('admin.banner')) active @endif">
+            Banner
         </a>
+        </li>
+
+        <li class="nav-item">
+        <a href="{{ route('admin.price_list.index') }}" class="@if(request()->routeIs('admin.price_list.index')) active @endif">
+            Price List
+        </a>
+        </li>
+
+        <li class="nav-item">
+        <a href="{{ route('admin.accessories.general.index') }}"
+           class="@if(request()->routeIs('admin.accessories.general.*')) active @endif">
+            Aksesoris (General)
+        </a>
+        </li>
+    </ul>
     </li>
 
     {{-- Data Motor --}}
@@ -14,7 +40,7 @@
             <span class="icon"><i class="fa-solid fa-motorcycle"></i></span>
             <span class="text" style="vertical-align: middle; line-height: 22px; display: inline-block;">Data Motor</span>
         </a>
-    <ul id="ddmenu_motor" class="dropdown-nav collapse @if(request()->routeIs('admin.motors.index') || request()->routeIs('admin.motor-type.index') || request()->routeIs('admin.motor-color*') || request()->routeIs('admin.categories.index')) show @endif">
+        <ul id="ddmenu_motor" class="dropdown-nav collapse @if(request()->routeIs('admin.motors.index') || request()->routeIs('admin.motor-type.index') || request()->routeIs('admin.motor-color*') || request()->routeIs('admin.categories.index')) show @endif">
             <li class="nav-item">
                 <a href="{{ route('admin.motor-type.index') }}" class="@if(request()->routeIs('admin.motor-type.index')) active @endif">Tipe Motor</a>
             </li>
@@ -26,7 +52,6 @@
             <li class="nav-item">
                 <a href="{{ route('admin.motors.index') }}" class="@if(request()->routeIs('admin.motors.index')) active @endif">Kelola Motor</a>
             </li>
-            
         </ul>
     </li>
 
@@ -82,14 +107,6 @@
         <a href="{{ route('admin.credit_simulations.index') }}" class="nav-link">
             <span class="icon"><i class="fa-solid fa-dollar"></i></span>
             <span class="text" style="vertical-align: middle; line-height: 22px; display: inline-block;">Simulasi Kredit</span>
-        </a>
-    </li>
-
-    {{-- Price List --}}
-    <li class="nav-item @if(request()->routeIs('admin.price_list.index')) active @endif">
-        <a href="{{ route('admin.price_list.index') }}" class="nav-link">
-            <span class="icon"><i class="fa-solid fa-list"></i></span>
-            <span class="text" style="vertical-align: middle; line-height: 22px; display: inline-block;">Price List</span>
         </a>
     </li>
 </ul>

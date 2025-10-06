@@ -11,14 +11,21 @@ class Apparel extends Model
 
     protected $fillable = [
         'name_apparel',
-        'image',
+        'cover_image', 
         'category_id',
         'description',
+        'material',
         'dimensions',
         'weight',
         'color',
         'size',
         'part_number',
+        'stock',
+        'is_new',
+    ];
+
+    protected $casts = [
+        'is_new' => 'boolean', 
     ];
 
     /**
@@ -28,5 +35,10 @@ class Apparel extends Model
     public function category()
     {
         return $this->belongsTo(ApparelCategory::class, 'category_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ApparelImage::class)->orderBy('sort');
     }
 }

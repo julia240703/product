@@ -55,12 +55,27 @@
                                 <textarea class="form-control" id="description" name="description"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="x_position" class="form-label">Posisi X (pixel) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="x_position" name="x_position" required>
+  <label class="form-label">Tentukan Titik pada Gambar (klik)</label>
+  <div id="picker" class="position-relative"
+       style="border:1px dashed #dee2e6;border-radius:12px;overflow:hidden;">
+    <img id="pickerImage"
+         src="{{ $motor->feature_image ? asset('storage/'.$motor->feature_image) : asset('storage/'.$motor->feature_thumbnail) }}"
+         alt="Base Image"
+         class="img-fluid w-100">
+    <div id="pickerDot"
+         class="position-absolute"
+         style="width:18px;height:18px;border-radius:50%;background:#dc3545;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none;display:none;">
+    </div>
+  </div>
+  <small class="text-muted">Klik pada gambar untuk mengisi X/Y (dalam persen). Nilai 0–100.</small>
+</div>
+                            <div class="mb-3">
+                                <label for="x_position" class="form-label">Posisi X (%) <span class="text-danger">*</span></label>
+<input type="number" step="0.01" min="0" max="100" class="form-control" id="x_position" name="x_position" required>
                             </div>
                             <div class="mb-3">
-                                <label for="y_position" class="form-label">Posisi Y (pixel) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="y_position" name="y_position" required>
+                                <label for="y_position" class="form-label">Posisi Y (%) <span class="text-danger">*</span></label>
+<input type="number" step="0.01" min="0" max="100" class="form-control" id="y_position" name="y_position" required>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
@@ -98,12 +113,27 @@
                                 <textarea class="form-control" id="description_edit" name="description"></textarea>
                             </div>
                             <div class="mb-3">
-                                <label for="x_position_edit" class="form-label">Posisi X (pixel) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="x_position_edit" name="x_position" required>
+  <label class="form-label">Tentukan Titik pada Gambar (klik)</label>
+  <div id="picker" class="position-relative"
+       style="border:1px dashed #dee2e6;border-radius:12px;overflow:hidden;">
+    <img id="pickerImage"
+         src="{{ $motor->feature_image ? asset('storage/'.$motor->feature_image) : asset('storage/'.$motor->feature_thumbnail) }}"
+         alt="Base Image"
+         class="img-fluid w-100">
+    <div id="pickerDot"
+         class="position-absolute"
+         style="width:18px;height:18px;border-radius:50%;background:#dc3545;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);pointer-events:none;display:none;">
+    </div>
+  </div>
+  <small class="text-muted">Klik pada gambar untuk mengisi X/Y (dalam persen). Nilai 0–100.</small>
+</div>
+                            <div class="mb-3">
+                                <label for="x_position_edit" class="form-label">Posisi X (%) <span class="text-danger">*</span></label>
+<input type="number" step="0.01" min="0" max="100" class="form-control" id="x_position_edit" name="x_position" required>
                             </div>
                             <div class="mb-3">
-                                <label for="y_position_edit" class="form-label">Posisi Y (pixel) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="y_position_edit" name="y_position" required>
+                                <label for="y_position_edit" class="form-label">Posisi Y (%) <span class="text-danger">*</span></label>
+<input type="number" step="0.01" min="0" max="100" class="form-control" id="y_position_edit" name="y_position" required>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
@@ -177,96 +207,157 @@
 
         <!-- Script -->
         <script>
-$(document).ready(function() {
-    var dataTable = $('#feature-table').DataTable({
-        responsive: true,
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('admin.features.index', $motor->id) }}",
-        columns: [
-            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'name', name: 'name' },
-            { 
-                data: 'image', 
-                name: 'image',
-                className: "text-center",
-                render: function(data, type, row) {
-                    return data 
-                        ? `<img src="${data}" style="width:50px;height:50px;object-fit:cover;cursor:pointer;" class="rounded image-preview" data-image="${data}" data-title="${row.name || ''}">`
-                        : '<span class="text-muted">Tidak ada gambar</span>';
-                }
-            },
-            { data: 'position', name: 'position', render: function(data) {
-                return data || 'N/A';
-            }},
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: function(data) {
-                    return `
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary me-1 editBtn" data-id="${data.id}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger deleteBtn" data-id="${data.id}" data-name="${data.name}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        ]
-    });
+$(function () {
 
-    // ========== EDIT ==========
-    $(document).on('click', '.editBtn', function() {
-        var featureData = dataTable.row($(this).closest('tr')).data();
-        $('#name_edit').val(featureData.name);
-        $('#description_edit').val(featureData.description);
-        $('#x_position_edit').val(featureData.x_position);
-        $('#y_position_edit').val(featureData.y_position);
-        
-        if (featureData.image) {
-            $('#current-image').html(`
-                <label class="form-label">Gambar Saat Ini:</label><br>
-                <img src="${featureData.image}" alt="Current Image" style="width: 100px; height: 100px; object-fit: cover;" class="rounded">
-            `);
-        } else {
-            $('#current-image').empty();
+  // ================== DATATABLE ==================
+  var dataTable = $('#feature-table').DataTable({
+    responsive: true,
+    processing: true,
+    serverSide: true,
+    ajax: "{{ route('admin.features.index', $motor->id) }}",
+    columns: [
+      { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+      { data: 'name', name: 'name' },
+      {
+        data: 'image',
+        name: 'image',
+        className: "text-center",
+        render: function(data, type, row) {
+          return data
+            ? `<img src="${data}" style="width:50px;height:50px;object-fit:cover;cursor:pointer;" class="rounded image-preview" data-image="${data}" data-title="${row.name || ''}">`
+            : '<span class="text-muted">Tidak ada gambar</span>';
         }
+      },
+      { data: 'position', name: 'position', render: function(data){ return data || 'N/A'; } },
+      {
+        data: null,
+        orderable: false,
+        searchable: false,
+        render: function(data) {
+          return `
+            <div class="btn-group">
+              <button class="btn btn-sm btn-primary me-1 editBtn" data-id="${data.id}">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              <button class="btn btn-sm btn-danger deleteBtn" data-id="${data.id}" data-name="${data.name}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          `;
+        }
+      }
+    ]
+  });
 
-        // Set dynamic action for edit form
-        const editForm = $('#editFeatureForm');
-        const baseEditUrl = "{{ route('admin.features.update', ['motor' => $motor->id, 'id' => 'DUMMY']) }}".replace('DUMMY', featureData.id);
-        editForm.attr('action', baseEditUrl);
+  // ========== EDIT ==========
+  $(document).on('click', '.editBtn', function () {
+    var featureData = dataTable.row($(this).closest('tr')).data();
+    $('#name_edit').val(featureData.name);
+    $('#description_edit').val(featureData.description);
+    $('#x_position_edit').val(featureData.x_position);
+    $('#y_position_edit').val(featureData.y_position);
 
-        $('#editModal').modal('show');
-    });
+    if (featureData.image) {
+      $('#current-image').html(`
+        <label class="form-label">Gambar Saat Ini:</label><br>
+        <img src="${featureData.image}" alt="Current Image"
+             style="width:100px;height:100px;object-fit:cover;" class="rounded">
+      `);
+    } else {
+      $('#current-image').empty();
+    }
 
-    // ========== DELETE ==========
-    $(document).on('click', '.deleteBtn', function() {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        $('#delete_feature_name').text(name);
-        const form = $('#deleteForm');
-        const baseUrl = "{{ route('admin.features.delete', ['motor' => $motor->id, 'id' => 'DUMMY']) }}".replace('DUMMY', id);
-        form.attr('action', baseUrl);
-        $('#deleteModal').modal('show');
-    });
+    const editForm = $('#editFeatureForm');
+    const baseEditUrl = "{{ route('admin.features.update', ['motor' => $motor->id, 'id' => 'DUMMY']) }}".replace('DUMMY', featureData.id);
+    editForm.attr('action', baseEditUrl);
 
-    // ========== VIEW IMAGE ==========
-    $(document).on('click', '.image-preview', function() {
-        $('#modalImage').attr('src', $(this).data('image'));
-        $('#imageTitle').text($(this).data('title'));
-        $('#viewImageModal').modal('show');
-    });
+    // buka modal -> init picker setelah tampil
+    $('#editModal').one('shown.bs.modal', function(){ initFeaturePicker(this); }).modal('show');
+  });
 
-    // Reset form saat modal ditutup
-    $('.modal').on('hidden.bs.modal', function () {
-        $(this).find('form')[0]?.reset();
-        $('#current-image').empty();
-    });
+  // ========== DELETE ==========
+  $(document).on('click', '.deleteBtn', function () {
+    const id = $(this).data('id');
+    const name = $(this).data('name');
+    $('#delete_feature_name').text(name);
+    const form = $('#deleteForm');
+    const baseUrl = "{{ route('admin.features.delete', ['motor' => $motor->id, 'id' => 'DUMMY']) }}".replace('DUMMY', id);
+    form.attr('action', baseUrl);
+    $('#deleteModal').modal('show');
+  });
+
+  // ========== VIEW IMAGE ==========
+  $(document).on('click', '.image-preview', function () {
+    $('#modalImage').attr('src', $(this).data('image'));
+    $('#imageTitle').text($(this).data('title'));
+    $('#viewImageModal').modal('show');
+  });
+
+  // Reset form saat modal ditutup
+  $('.modal').on('hidden.bs.modal', function () {
+    this.querySelector('form')?.reset();
+    $('#current-image').empty();
+    const dot = this.querySelector('#pickerDot');
+    if (dot) dot.style.display = 'none';
+  });
+
+  // ========== PICKER: klik gambar -> muncul titik + isi X/Y (persen) ==========
+  // init saat modal Tambah dibuka
+  $('#addModal').on('shown.bs.modal', function(){ initFeaturePicker(this); });
+  // init saat modal Edit dibuka (untuk kasus open tanpa klik editBtn lebih dulu)
+  $('#editModal').on('shown.bs.modal', function(){ initFeaturePicker(this); });
+
+  function initFeaturePicker(modalEl){
+    const picker = modalEl.querySelector('#picker');
+    const img    = modalEl.querySelector('#pickerImage');   // gambar panggung
+    const dot    = modalEl.querySelector('#pickerDot');     // titik merah
+    const xInp   = modalEl.querySelector('input[name="x_position"]');
+    const yInp   = modalEl.querySelector('input[name="y_position"]');
+    if(!picker || !img || !dot || !xInp || !yInp) return;
+
+    picker.style.cursor = 'crosshair';
+    img.style.display = 'block';
+
+    // pastikan tidak double-bind
+    if (img._pickerClick) img.removeEventListener('click', img._pickerClick);
+
+    img._pickerClick = function(e){
+      const rect = img.getBoundingClientRect();
+      // hitung persen posisi klik terhadap IMG
+      const x = ((e.clientX - rect.left) / rect.width)  * 100;
+      const y = ((e.clientY - rect.top)  / rect.height) * 100;
+
+      const xVal = Math.max(0, Math.min(100, x)).toFixed(2);
+      const yVal = Math.max(0, Math.min(100, y)).toFixed(2);
+
+      xInp.value = xVal;
+      yInp.value = yVal;
+
+      // tampilkan titik tepat di posisi klik
+      dot.style.left = xVal + '%';
+      dot.style.top  = yVal + '%';
+      dot.style.transform = 'translate(-50%, -50%)';
+      dot.style.display   = 'block';
+    };
+
+    // pasang listener setelah img siap (biar rect.width > 0)
+    if (img.complete && img.naturalWidth) {
+      img.addEventListener('click', img._pickerClick);
+    } else {
+      img.addEventListener('load', () => img.addEventListener('click', img._pickerClick), { once:true });
+    }
+
+    // jika mode edit & sudah ada nilai, render titiknya
+    if (xInp.value && yInp.value) {
+      dot.style.left = xInp.value + '%';
+      dot.style.top  = yInp.value + '%';
+      dot.style.transform = 'translate(-50%, -50%)';
+      dot.style.display   = 'block';
+    } else {
+      dot.style.display = 'none';
+    }
+  }
+
 });
 </script>
 @endsection

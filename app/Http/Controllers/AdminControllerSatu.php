@@ -6,6 +6,7 @@ use App\Models\Motor;
 use App\Models\Banner;
 use App\Models\Branch;
 use App\Models\Apparel;
+use App\Models\ApparelImage;
 use App\Models\Position;
 use App\Models\TestRide;
 use App\Models\MotorPart;
@@ -21,6 +22,9 @@ use Illuminate\Validation\Rule;
 use App\Models\MotorType;
 use App\Models\BannerTemplate;
 use App\Models\MotorAccessory;
+use App\Models\GeneralAccessory;
+use App\Models\GeneralAccessoryVariant;
+use App\Models\GeneralAccessoryImage;
 use App\Models\ApparelCategory;
 use App\Models\CreditSimulation;
 use App\Models\PriceList;
@@ -41,366 +45,548 @@ use Yajra\DataTables\Facades\DataTables;
 class AdminControllerSatu extends Controller
 {
 
-    /* =========================
+   /* =========================
        KELOLA MOTOR
-    ========================== */
+   ========================== */
 
-    public function motorsIndex(Request $request)
-    {
-        $publishedCount = Motor::where('status', 'published')->count();
-        $unpublishedCount = Motor::where('status', 'unpublished')->count();
+public function motorsIndex(Request $request)
+{
+    $publishedCount   = Motor::where('status', 'published')->count();
+    $unpublishedCount = Motor::where('status', 'unpublished')->count();
 
-        return view('pages.admin.motorDataTables', [
-            'publishedCount' => $publishedCount,
-            'unpublishedCount' => $unpublishedCount,
-            'categories' => Category::all(),
-            'types' => MotorType::all(),
-        ]);
+    return view('pages.admin.motorDataTables', [
+        'publishedCount'   => $publishedCount,
+        'unpublishedCount' => $unpublishedCount,
+        'categories'       => Category::all(),
+        'types'            => MotorType::all(),
+    ]);
+}
+
+public function motorsPublished(Request $request)
+{
+    if ($request->ajax()) {
+        $data = Motor::where('status', 'published')->with('category', 'type');
+
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('product', function ($row) {
+                $html = '
+                    <div style="text-align:center; position:relative">
+                        ' . ($row->is_new ? '<div style="position:absolute; right:6px; top:4px; color:#E11D2B; font-weight:700;">New !</div>' : '') . '
+                        <img src="' . asset('storage/' . $row->thumbnail) . '" 
+                            alt="' . e($row->name) . '" 
+                            style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
+                            class="image-preview" 
+                            data-image="' . asset('storage/' . $row->thumbnail) . '" 
+                            data-title="' . e($row->name) . '">
+                        <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">' . e($row->name) . '</div>
+                    </div>
+                    <table style="width:100%; border: 1px solid black; border-collapse:collapse; margin-bottom:10px; font-size:14px; text-align:center;">
+                        <thead style="background:#f8f9fa;">
+                            <tr>
+                                <th style="padding:8px; border: 1px solid black;">Motor Code</th>
+                                <th style="padding:8px; border: 1px solid black;">WMS Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr) . '</td>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code) . '</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table style="width:100%; border: 1px solid black; border-collapse:collapse; font-size:14px; text-align:center;">
+                        <thead style="background:#f8f9fa;">
+                            <tr>
+                                <th style="padding:8px; border: 1px solid black;">Aksesoris</th>
+                                <th style="padding:8px; border: 1px solid black;">Warna</th>
+                                <th style="padding:8px; border: 1px solid black;">Spesifikasi</th>
+                                <th style="padding:8px; border: 1px solid black;">Fitur</th>
+                                <th style="padding:8px; border: 1px solid black;">Sparepart</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" title="Warna"><i class="fas fa-tint"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                ';
+                return $html;
+            })
+            ->addColumn('action', function ($row) {
+                $btn = '
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary me-1 editBtn" 
+                            data-id="' . $row->id . '" 
+                            data-name="' . e($row->name) . '" 
+                            data-motor_code_otr="' . e($row->motor_code_otr) . '" 
+                            data-motor_code_credit="' . e($row->motor_code_credit) . '" 
+                            data-wms_code="' . e($row->wms_code) . '" 
+                            data-category_id="' . $row->category_id . '" 
+                            data-type_id="' . $row->type_id . '" 
+                            data-description="' . e($row->description) . '" 
+                            data-status="' . e($row->status) . '"
+                            data-is_new="' . ($row->is_new ? 1 : 0) . '"
+                            data-thumbnail="' . ($row->thumbnail ? asset('storage/' . $row->thumbnail) : '') . '" 
+                            data-accessory_thumbnail="' . ($row->accessory_thumbnail ? asset('storage/' . $row->accessory_thumbnail) : '') . '"
+                            data-feature_thumbnail="' . ($row->feature_thumbnail ? asset('storage/' . $row->feature_thumbnail) : '') . '"
+                            data-spin_gif="' . e($row->spin_gif ?? '') . '">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger deleteBtn" 
+                            data-id="' . $row->id . '" 
+                            data-name="' . e($row->name) . '">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                ';
+                return $btn;
+            })
+            ->rawColumns(['product', 'action'])
+            ->make(true);
     }
 
-    public function motorsPublished(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Motor::where('status', 'published')->with('category', 'type');
+    return view('pages.admin.motorPublished', [
+        'categories' => Category::all(),
+        'types' => MotorType::all(),
+    ]);
+}
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('product', function ($row) {
-                    $html = '
-                        <div style="text-align:center">
-                            <img src="' . asset('storage/' . $row->thumbnail) . '" 
-                                alt="' . e($row->name) . '" 
-                                style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
-                                class="image-preview" 
-                                data-image="' . asset('storage/' . $row->thumbnail) . '" 
-                                data-title="' . e($row->name) . '">
-                            <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">' . e($row->name) . '</div>
-                        </div>
-                        <table style="width:100%; border: 1px solid black; border-collapse:collapse; margin-bottom:10px; font-size:14px; text-align:center;">
-                            <thead style="background:#f8f9fa;">
-                                <tr>
-                                    <th style="padding:8px; border: 1px solid black;">Motor Code</th>
-                                    <th style="padding:8px; border: 1px solid black;">WMS Code</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr) . '</td>
-                                    <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code) . '</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style="width:100%; border: 1px solid black; border-collapse:collapse; font-size:14px; text-align:center;">
-                            <thead style="background:#f8f9fa;">
-                                <tr>
-                                    <th style="padding:8px; border: 1px solid black;">Aksesoris</th>
-                                    <th style="padding:8px; border: 1px solid black;">Warna</th>
-                                    <th style="padding:8px; border: 1px solid black;">Spesifikasi</th>
-                                    <th style="padding:8px; border: 1px solid black;">Fitur</th>
-                                    <th style="padding:8px; border: 1px solid black;">Sparepart</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" title="Warna"><i class="fas fa-tint"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    ';
-                    return $html;
-                })
-                ->addColumn('action', function ($row) {
-                    $btn = '
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary me-1 editBtn" 
-                                data-id="' . $row->id . '" 
-                                data-name="' . e($row->name) . '" 
-                                data-motor_code_otr="' . e($row->motor_code_otr) . '" 
-                                data-motor_code_credit="' . e($row->motor_code_credit) . '" 
-                                data-wms_code="' . e($row->wms_code) . '" 
-                                data-category_id="' . $row->category_id . '" 
-                                data-type_id="' . $row->type_id . '" 
-                                data-description="' . e($row->description) . '" 
-                                data-status="' . e($row->status) . '" 
-                                data-thumbnail="' . ($row->thumbnail ? asset('storage/' . $row->thumbnail) : '') . '" 
-                                data-accessory_thumbnail="' . ($row->accessory_thumbnail ? asset('storage/' . $row->accessory_thumbnail) : '') . '">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger deleteBtn" 
-                                data-id="' . $row->id . '" 
-                                data-name="' . e($row->name) . '">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    ';
-                    return $btn;
-                })
-                ->rawColumns(['product', 'action'])
-                ->make(true);
-        }
+public function motorsUnpublished(Request $request)
+{
+    if ($request->ajax()) {
+        $data = Motor::where('status', 'unpublished')->with('category', 'type');
 
-        return view('pages.admin.motorPublished', [
-            'categories' => Category::all(),
-            'types' => MotorType::all(),
-        ]);
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->addColumn('product', function ($row) {
+                $html = '
+                    <div style="text-align:center; position:relative">
+                        ' . ($row->is_new ? '<div style="position:absolute; right:6px; top:4px; color:#E11D2B; font-weight:700;">New !</div>' : '') . '
+                        <img src="' . asset('storage/' . $row->thumbnail) . '" 
+                            alt="' . e($row->name) . '" 
+                            style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
+                            class="image-preview" 
+                            data-image="' . asset('storage/' . $row->thumbnail) . '" 
+                            data-title="' . e($row->name) . '">
+                        <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">' . e($row->name) . '</div>
+                    </div>
+                    <table style="width:100%; border: 1px solid black; border-collapse:collapse; margin-bottom:10px; font-size:14px; text-align:center;">
+                        <thead style="background:#f8f9fa;">
+                            <tr>
+                                <th style="padding:8px; border: 1px solid black;">Motor Code</th>
+                                <th style="padding:8px; border: 1px solid black;">WMS Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr) . '</td>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code) . '</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table style="width:100%; border: 1px solid black; border-collapse:collapse; font-size:14px; text-align:center;">
+                        <thead style="background:#f8f9fa;">
+                            <tr>
+                                <th style="padding:8px; border: 1px solid black;">Aksesoris</th>
+                                <th style="padding:8px; border: 1px solid black;">Warna</th>
+                                <th style="padding:8px; border: 1px solid black;">Spesifikasi</th>
+                                <th style="padding:8px; border: 1px solid black;">Fitur</th>
+                                <th style="padding:8px; border: 1px solid black;">Sparepart</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" title="Warna"><i class="fas fa-tint"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                ';
+                return $html;
+            })
+            ->addColumn('action', function ($row) {
+                $btn = '
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-primary me-1 editBtn" 
+                            data-id="' . $row->id . '" 
+                            data-name="' . e($row->name) . '" 
+                            data-motor_code_otr="' . e($row->motor_code_otr) . '" 
+                            data-motor_code_credit="' . e($row->motor_code_credit) . '" 
+                            data-wms_code="' . e($row->wms_code) . '" 
+                            data-category_id="' . $row->category_id . '" 
+                            data-type_id="' . $row->type_id . '" 
+                            data-description="' . e($row->description) . '" 
+                            data-status="' . e($row->status) . '"
+                            data-is_new="' . ($row->is_new ? 1 : 0) . '"
+                            data-thumbnail="' . ($row->thumbnail ? asset('storage/' . $row->thumbnail) : '') . '" 
+                            data-accessory_thumbnail="' . ($row->accessory_thumbnail ? asset('storage/' . $row->accessory_thumbnail) : '') . '"
+                            data-feature_thumbnail="' . ($row->feature_thumbnail ? asset('storage/' . $row->feature_thumbnail) : '') . '"
+                            data-spin_gif="' . e($row->spin_gif ?? '') . '">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger deleteBtn" 
+                            data-id="' . $row->id . '" 
+                            data-name="' . e($row->name) . '">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                ';
+                return $btn;
+            })
+            ->rawColumns(['product', 'action'])
+            ->make(true);
     }
 
-    public function motorsUnpublished(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = Motor::where('status', 'unpublished')->with('category', 'type');
+    return view('pages.admin.motorUnpublished', [
+        'categories' => Category::all(),
+        'types' => MotorType::all(),
+    ]);
+}
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('product', function ($row) {
-                    $html = '
-                        <div style="text-align:center">
-                            <img src="' . asset('storage/' . $row->thumbnail) . '" 
-                                alt="' . e($row->name) . '" 
-                                style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
-                                class="image-preview" 
-                                data-image="' . asset('storage/' . $row->thumbnail) . '" 
-                                data-title="' . e($row->name) . '">
-                            <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">' . e($row->name) . '</div>
-                        </div>
-                        <table style="width:100%; border: 1px solid black; border-collapse:collapse; margin-bottom:10px; font-size:14px; text-align:center;">
-                            <thead style="background:#f8f9fa;">
-                                <tr>
-                                    <th style="padding:8px; border: 1px solid black;">Motor Code</th>
-                                    <th style="padding:8px; border: 1px solid black;">WMS Code</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr) . '</td>
-                                    <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code) . '</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style="width:100%; border: 1px solid black; border-collapse:collapse; font-size:14px; text-align:center;">
-                            <thead style="background:#f8f9fa;">
-                                <tr>
-                                    <th style="padding:8px; border: 1px solid black;">Aksesoris</th>
-                                    <th style="padding:8px; border: 1px solid black;">Warna</th>
-                                    <th style="padding:8px; border: 1px solid black;">Spesifikasi</th>
-                                    <th style="padding:8px; border: 1px solid black;">Fitur</th>
-                                    <th style="padding:8px; border: 1px solid black;">Sparepart</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" title="Warna"><i class="fas fa-tint"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
-                                    <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    ';
-                    return $html;
-                })
-                ->addColumn('action', function ($row) {
-                    $btn = '
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary me-1 editBtn" 
-                                data-id="' . $row->id . '" 
-                                data-name="' . e($row->name) . '" 
-                                data-motor_code_otr="' . e($row->motor_code_otr) . '" 
-                                data-motor_code_credit="' . e($row->motor_code_credit) . '" 
-                                data-wms_code="' . e($row->wms_code) . '" 
-                                data-category_id="' . $row->category_id . '" 
-                                data-type_id="' . $row->type_id . '" 
-                                data-description="' . e($row->description) . '" 
-                                data-status="' . e($row->status) . '" 
-                                data-thumbnail="' . ($row->thumbnail ? asset('storage/' . $row->thumbnail) : '') . '" 
-                                data-accessory_thumbnail="' . ($row->accessory_thumbnail ? asset('storage/' . $row->accessory_thumbnail) : '') . '">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger deleteBtn" 
-                                data-id="' . $row->id . '" 
-                                data-name="' . e($row->name) . '">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    ';
-                    return $btn;
-                })
-                ->rawColumns(['product', 'action'])
-                ->make(true);
-        }
+public function motorsStore(Request $request)
+{
+    $data = $request->validate([
+        'name'                => 'required|string|max:255',
+        'motor_code_otr'      => 'nullable|string|max:255',
+        'motor_code_credit'   => 'nullable|string|max:255',
+        'wms_code'            => 'nullable|string|max:255',
+        'category_id'         => 'required|exists:categories,id',
+        'type_id'             => 'required|exists:motor_types,id',
+        'description'         => 'nullable|string',
+        'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'feature_thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'spin_gif'            => 'nullable|file|mimes:gif|max:8192', // <= FILE GIF
+        'status'              => 'required|in:published,unpublished',
+        'is_new'              => 'nullable|boolean',
+    ]);
 
-        return view('pages.admin.motorUnpublished', [
-            'categories' => Category::all(),
-            'types' => MotorType::all(),
-        ]);
+    $data['thumbnail']           = $this->uploadFile($request, 'thumbnail', 'thumbnails');
+    $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails');
+    $data['feature_thumbnail']   = $this->uploadFile($request, 'feature_thumbnail', 'feature_thumbnails');
+    $data['spin_gif']            = $this->uploadFile($request, 'spin_gif', 'spin_gifs'); // <= SIMPAN PATH
+
+    $data['is_new'] = $request->boolean('is_new');
+
+    $motor = Motor::create($data);
+
+    return redirect()
+        ->route($motor->status === 'published' ? 'admin.motors.published' : 'admin.motors.unpublished')
+        ->with('success', 'Motor berhasil ditambahkan.');
+}
+
+public function updateMotor(Request $request, $id)
+{
+    $motor = Motor::findOrFail($id);
+
+    $data = $request->validate([
+        'name'                => 'required|string|max:255',
+        'motor_code_otr'      => 'nullable|string|max:255',
+        'motor_code_credit'   => 'nullable|string|max:255',
+        'wms_code'            => 'nullable|string|max:255',
+        'category_id'         => 'required|exists:categories,id',
+        'type_id'             => 'required|exists:motor_types,id',
+        'description'         => 'nullable|string',
+        'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'feature_thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'spin_gif'            => 'nullable|file|mimes:gif|max:8192', // <= FILE GIF
+        'status'              => 'required|in:published,unpublished',
+        'is_new'              => 'nullable|boolean',
+    ]);
+
+    $data['thumbnail']           = $this->uploadFile($request, 'thumbnail', 'thumbnails', $motor->thumbnail);
+    $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails', $motor->accessory_thumbnail);
+    $data['feature_thumbnail']   = $this->uploadFile($request, 'feature_thumbnail', 'feature_thumbnails', $motor->feature_thumbnail);
+    $data['spin_gif']            = $this->uploadFile($request, 'spin_gif', 'spin_gifs', $motor->spin_gif); // <= REPLACE JIKA ADA FILE BARU
+
+    $data['is_new'] = $request->boolean('is_new');
+
+    $motor->update($data);
+
+    return redirect()
+        ->route($motor->status === 'published' ? 'admin.motors.published' : 'admin.motors.unpublished')
+        ->with('success', 'Motor berhasil diperbarui.');
+}
+
+public function deleteMotor($id)
+{
+    $motor  = Motor::findOrFail($id);
+    $status = $motor->status;
+
+    if ($motor->thumbnail && Storage::exists('public/' . $motor->thumbnail)) {
+        Storage::delete('public/' . $motor->thumbnail);
+    }
+    if ($motor->accessory_thumbnail && Storage::exists('public/' . $motor->accessory_thumbnail)) {
+        Storage::delete('public/' . $motor->accessory_thumbnail);
+    }
+    if ($motor->feature_thumbnail && Storage::exists('public/' . $motor->feature_thumbnail)) {
+        Storage::delete('public/' . $motor->feature_thumbnail);
+    }
+    // Hapus file GIF 360° jika ada
+    if ($motor->spin_gif && Storage::exists('public/' . $motor->spin_gif)) {
+        Storage::delete('public/' . $motor->spin_gif);
     }
 
-    public function motorsStore(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'motor_code_otr' => 'nullable|string|max:255',
-            'motor_code_credit' => 'nullable|string|max:255',
-            'wms_code' => 'nullable|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'type_id' => 'required|exists:motor_types,id',
-            'description' => 'nullable|string',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'status' => 'required|in:published,unpublished',
-        ]);
+    $motor->delete();
 
-        $data['thumbnail'] = $this->uploadFile($request, 'thumbnail', 'thumbnails');
-        $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails');
+    return redirect()
+        ->route($status === 'published' ? 'admin.motors.published' : 'admin.motors.unpublished')
+        ->with('success', 'Motor berhasil dihapus.');
+}
 
-        $motor = Motor::create($data);
-
-        if ($motor->status === 'published') {
-            return redirect()->route('admin.motors.published')->with('success', 'Motor berhasil ditambahkan.');
-        } else {
-            return redirect()->route('admin.motors.unpublished')->with('success', 'Motor berhasil ditambahkan.');
-        }
-    }
-
-    public function updateMotor(Request $request, $id)
-    {
-        $motor = Motor::findOrFail($id);
-
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'motor_code_otr' => 'nullable|string|max:255',
-            'motor_code_credit' => 'nullable|string|max:255',
-            'wms_code' => 'nullable|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'type_id' => 'required|exists:motor_types,id',
-            'description' => 'nullable|string',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'status' => 'required|in:published,unpublished',
-        ]);
-
-        $data['thumbnail'] = $this->uploadFile($request, 'thumbnail', 'thumbnails', $motor->thumbnail);
-        $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails', $motor->accessory_thumbnail);
-
-        $motor->update($data);
-
-        if ($motor->status === 'published') {
-            return redirect()->route('admin.motors.published')->with('success', 'Motor berhasil diperbarui.');
-        } else {
-            return redirect()->route('admin.motors.unpublished')->with('success', 'Motor berhasil diperbarui.');
-        }
-    }
-
-    public function deleteMotor($id)
-    {
-        $motor = Motor::findOrFail($id);
-        $status = $motor->status;
-
-        if ($motor->thumbnail && Storage::exists('public/' . $motor->thumbnail)) {
-            Storage::delete('public/' . $motor->thumbnail);
-        }
-
-        if ($motor->accessory_thumbnail && Storage::exists('public/' . $motor->accessory_thumbnail)) {
-            Storage::delete('public/' . $motor->accessory_thumbnail);
-        }
-
-        $motor->delete();
-
-        if ($status === 'published') {
-            return redirect()->route('admin.motors.published')->with('success', 'Motor berhasil dihapus.');
-        } else {
-            return redirect()->route('admin.motors.unpublished')->with('success', 'Motor berhasil dihapus.');
-        }
-    }
-
-    public function getTypesByCategory($categoryId)
-    {
-        $types = MotorType::where('category_id', $categoryId)->get();
-        return response()->json($types);
-    }
+public function getTypesByCategory($categoryId)
+{
+    $types = MotorType::where('category_id', $categoryId)->get();
+    return response()->json($types);
+}
 
     /* =========================
        KELOLA AKSESORIS MOTOR
    ========================== */
-    public function accessoriesIndex(Request $request, $motorId)
-    {
-        $motor = Motor::findOrFail($motorId);
+public function accessoriesIndex(Request $request, $motorId)
+{
+    $motor = Motor::findOrFail($motorId);
 
-        if ($request->ajax()) {
-            $data = MotorAccessory::where('motor_id', $motorId);
+    if ($request->ajax()) {
+        $data = MotorAccessory::where('motor_id', $motorId);
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->editColumn('image', function($row) {
-                    return $row->image 
-                        ? asset('storage/' . $row->image) 
-                        : null;
-                })
-                ->rawColumns(['image'])
-                ->make(true);
+        return DataTables::of($data)
+            ->addIndexColumn()
+            ->editColumn('image', function($row) {
+                return $row->image 
+                    ? asset('storage/' . $row->image) 
+                    : null;
+            })
+            ->addColumn('position', function($row) {
+                // tampilkan "x,y" kalau ada
+                if (!is_null($row->x_percent) && !is_null($row->y_percent)) {
+                    return $row->x_percent . ',' . $row->y_percent;
+                }
+                return null;
+            })
+            ->rawColumns(['image', 'position'])
+            ->make(true);
+    }
+
+    return view('pages.admin.motorAccessories', [
+        'motor' => $motor
+    ]);
+}
+
+public function accessoriesStore(Request $request, $motorId)
+{
+    $data = $request->validate([
+        'name'         => 'required|string|max:255',
+        'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'part_number'  => 'nullable|string|max:255',
+        'dimension'    => 'nullable|string|max:255',
+        'weight'       => 'nullable|numeric',
+        'description'  => 'nullable|string',
+        'color'        => 'nullable|string|max:100',
+        'material'     => 'nullable|string|max:100',
+        'stock'        => 'nullable|integer|min:0',
+        'x_percent'    => 'nullable|numeric|between:0,100',
+        'y_percent'    => 'nullable|numeric|between:0,100',
+    ]);
+
+    $data['motor_id'] = $motorId;
+    $data['image']    = $this->uploadFile($request, 'image', 'motor_accessories');
+
+    MotorAccessory::create($data);
+
+    return back()->with('success', 'Aksesoris berhasil ditambahkan.');
+}
+
+public function accessoriesUpdate(Request $request, $motorId, $id)
+{
+    $accessory = MotorAccessory::findOrFail($id);
+
+    $data = $request->validate([
+        'name'         => 'required|string|max:255',
+        'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'part_number'  => 'nullable|string|max:255',
+        'dimension'    => 'nullable|string|max:255',
+        'weight'       => 'nullable|numeric',
+        'description'  => 'nullable|string',
+        'color'        => 'nullable|string|max:100',
+        'material'     => 'nullable|string|max:100',
+        'stock'        => 'nullable|integer|min:0',
+        'x_percent'    => 'nullable|numeric|between:0,100',
+        'y_percent'    => 'nullable|numeric|between:0,100',
+    ]);
+
+    $data['image'] = $this->uploadFile($request, 'image', 'motor_accessories', $accessory->image);
+
+    $accessory->update($data);
+
+    return redirect()->route('admin.accessories.index', $motorId)
+                     ->with('success', 'Aksesoris berhasil diperbarui.');
+}
+
+public function accessoriesDelete($motorId, $id)
+{
+    $accessory = MotorAccessory::findOrFail($id);
+
+    if ($accessory->image && Storage::exists('public/' . $accessory->image)) {
+        Storage::delete('public/' . $accessory->image);
+    }
+
+    $accessory->delete();
+
+    return redirect()->route('admin.accessories.index', $motorId)
+                     ->with('success', 'Aksesoris berhasil dihapus.');
+}
+
+// =============== KELOLA GENERAL AKSESORIS ===============
+
+// LIST + VIEW
+public function accessoriesGeneralIndex()
+{
+    return view('pages.admin.generalAccessories');
+}
+
+public function accessoriesGeneralData()
+{
+    // tidak perlu withCount variants; cukup kirim ringkasan teks varian
+    $q = GeneralAccessory::query();
+
+    return DataTables::of($q)
+        ->addIndexColumn()
+        ->editColumn('cover_image', fn($r) => $r->cover_image ? asset('storage/'.$r->cover_image) : null)
+        ->addColumn('variant_excerpt', function ($r) {
+            return Str::limit(trim(strip_tags($r->variant ?? '')), 60);
+        })
+        ->make(true);
+}
+
+// STORE
+public function accessoriesGeneralStore(Request $r)
+{
+    $data = $r->validate([
+        'name'         => 'required|string|max:255',
+        'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'part_number'  => 'nullable|string|max:255',
+        'dimension'    => 'nullable|string|max:255',
+        'weight'       => 'nullable|numeric',
+        'price'        => 'nullable|numeric',
+        'description'  => 'nullable|string',
+        'variant'      => 'nullable|string', // <-- varian teks
+        'material'     => 'nullable|string|max:100',
+        'color'        => 'nullable|string|max:100',
+        'stock'        => 'nullable|integer|min:0',
+
+        // gallery[]
+        'gallery.*'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+    ]);
+
+    // cover
+    $data['cover_image'] = $this->uploadFile($r, 'cover_image', 'general_accessories');
+
+    $acc = GeneralAccessory::create($data);
+
+    // gallery images
+    if ($r->hasFile('gallery')) {
+        foreach ($r->file('gallery') as $idx => $file) {
+            $path = $file->store('general_accessories/gallery', 'public');
+            $acc->images()->create([
+                'image'   => $path,
+                'caption' => $r->input("gallery_captions.$idx"),
+                'sort'    => $idx,
+            ]);
         }
-
-        return view('pages.admin.motorAccessories', [
-            'motor' => $motor
-        ]);
     }
 
-    public function accessoriesStore(Request $request, $motorId)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'part_number' => 'nullable|string|max:255',
-            'dimension' => 'nullable|string|max:255',
-            'weight' => 'nullable|numeric',
-            'description' => 'nullable|string',
-        ]);
+    return back()->with('success', 'Aksesoris (General) berhasil ditambahkan.');
+}
 
-        $data['motor_id'] = $motorId;
-        $data['image'] = $this->uploadFile($request, 'image', 'motor_accessories');
+// EDIT (JSON utk modal)
+public function accessoriesGeneralEdit($id)
+{
+    $acc = GeneralAccessory::with('images')->findOrFail($id);
+    return response()->json($acc);
+}
 
-        MotorAccessory::create($data);
+// UPDATE
+public function accessoriesGeneralUpdate(Request $r, $id)
+{
+    $acc = GeneralAccessory::with('images')->findOrFail($id);
 
-        return back()->with('success', 'Aksesoris berhasil ditambahkan.');
-    }
+    $data = $r->validate([
+        'name'         => 'required|string|max:255',
+        'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'part_number'  => 'nullable|string|max:255',
+        'dimension'    => 'nullable|string|max:255',
+        'weight'       => 'nullable|numeric',
+        'price'        => 'nullable|numeric',
+        'description'  => 'nullable|string',
+        'variant'      => 'nullable|string', // <-- varian teks
+        'material'     => 'nullable|string|max:100',
+        'color'        => 'nullable|string|max:100',
+        'stock'        => 'nullable|integer|min:0',
+        'gallery.*'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+    ]);
 
-    public function accessoriesUpdate(Request $request, $motorId, $id)
-    {
-        $accessory = MotorAccessory::findOrFail($id);
+    $data['cover_image'] = $this->uploadFile($r, 'cover_image', 'general_accessories', $acc->cover_image);
+    $acc->update($data);
 
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'part_number' => 'nullable|string|max:255',
-            'dimension' => 'nullable|string|max:255',
-            'weight' => 'nullable|numeric',
-            'description' => 'nullable|string',
-        ]);
-
-        $data['image'] = $this->uploadFile($request, 'image', 'motor_accessories', $accessory->image);
-
-        $accessory->update($data);
-
-        return redirect()->route('admin.accessories.index', $motorId)->with('success', 'Aksesoris berhasil diperbarui.');
-    }
-
-    public function accessoriesDelete($motorId, $id)
-    {
-        $accessory = MotorAccessory::findOrFail($id);
-
-        if ($accessory->image && Storage::exists('public/' . $accessory->image)) {
-            Storage::delete('public/' . $accessory->image);
+    // tambah gallery baru (opsional)
+    if ($r->hasFile('gallery')) {
+        $start = ($acc->images()->max('sort') ?? 0) + 1;
+        foreach ($r->file('gallery') as $k => $file) {
+            $path = $file->store('general_accessories/gallery', 'public');
+            $acc->images()->create([
+                'image'   => $path,
+                'caption' => $r->input("gallery_captions.$k"),
+                'sort'    => $start + $k,
+            ]);
         }
-
-        $accessory->delete();
-
-        return redirect()->route('admin.accessories.index', $motorId)->with('success', 'Aksesoris berhasil dihapus.');
     }
+
+    return back()->with('success', 'Aksesoris (General) berhasil diperbarui.');
+}
+
+// DELETE
+public function accessoriesGeneralDelete($id)
+{
+    $acc = GeneralAccessory::with('images')->findOrFail($id);
+
+    if ($acc->cover_image && \Storage::exists('public/'.$acc->cover_image)) {
+        \Storage::delete('public/'.$acc->cover_image);
+    }
+    foreach ($acc->images as $im) {
+        if ($im->image && \Storage::exists('public/'.$im->image)) {
+            \Storage::delete('public/'.$im->image);
+        }
+    }
+
+    $acc->delete();
+    return back()->with('success', 'Aksesoris (General) dihapus.');
+}
+
+public function accessoriesGeneralDeleteImage($imageId)
+{
+    $img = GeneralAccessoryImage::findOrFail($imageId);
+
+    // hapus file fisik
+    if ($img->image && Storage::exists('public/'.$img->image)) {
+        Storage::delete('public/'.$img->image);
+    }
+
+    // hapus record
+    $img->delete();
+
+    return response()->json(['status' => 'ok']);
+}
 
     // ========================
     // KELOLA WARNA MOTOR
@@ -705,41 +891,39 @@ class AdminControllerSatu extends Controller
     }
 
     public function featuresStore(Request $request, $motorId)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'description' => 'nullable|string',
-            'x_position' => 'required|numeric',
-            'y_position' => 'required|numeric',
-        ]);
+{
+    $data = $request->validate([
+        'name'        => 'required|string|max:255',
+        'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'description' => 'nullable|string',
+        'x_position'  => 'required|numeric|between:0,100',  // persen
+        'y_position'  => 'required|numeric|between:0,100',  // persen
+    ]);
 
-        $data['motor_id'] = $motorId;
-        $data['image'] = $this->uploadFile($request, 'image', 'motor_features');
+    $data['motor_id'] = $motorId;
+    $data['image']    = $this->uploadFile($request, 'image', 'motor_features');
 
-        MotorFeature::create($data);
+    MotorFeature::create($data);
+    return back()->with('success', 'Fitur berhasil ditambahkan.');
+}
 
-        return back()->with('success', 'Fitur berhasil ditambahkan.');
-    }
+public function featuresUpdate(Request $request, $motorId, $id)
+{
+    $feature = MotorFeature::findOrFail($id);
 
-    public function featuresUpdate(Request $request, $motorId, $id)
-    {
-        $feature = MotorFeature::findOrFail($id);
+    $data = $request->validate([
+        'name'        => 'required|string|max:255',
+        'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'description' => 'nullable|string',
+        'x_position'  => 'required|numeric|between:0,100',  // persen
+        'y_position'  => 'required|numeric|between:0,100',  // persen
+    ]);
 
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'description' => 'nullable|string',
-            'x_position' => 'required|numeric',
-            'y_position' => 'required|numeric',
-        ]);
+    $data['image'] = $this->uploadFile($request, 'image', 'motor_features', $feature->image);
 
-        $data['image'] = $this->uploadFile($request, 'image', 'motor_features', $feature->image);
-
-        $feature->update($data);
-
-        return redirect()->route('admin.features.index', $motorId)->with('success', 'Fitur berhasil diperbarui.');
-    }
+    $feature->update($data);
+    return redirect()->route('admin.features.index', $motorId)->with('success', 'Fitur berhasil diperbarui.');
+}
 
     public function featuresDelete($motorId, $id)
     {
@@ -851,87 +1035,91 @@ class AdminControllerSatu extends Controller
     }
 
     // MOTOR TYPE
-    public function motorTypeIndex()
-    {
-        $categories = \App\Models\Category::all();
-        return view('pages.admin.manageMotorType', compact('categories'));
+public function motorTypeIndex()
+{
+    $categories = \App\Models\Category::all();
+    return view('pages.admin.manageMotorType', compact('categories'));
+}
+
+public function getMotorType(Request $request)
+{
+    if ($request->ajax()) {
+        // LEFT JOIN categories agar kolom 'tipe' bisa di-search & sort
+        $data = MotorType::query()
+            ->leftJoin('categories', 'categories.id', '=', 'motor_types.category_id')
+            ->select([
+                'motor_types.id',
+                'motor_types.name',
+                'motor_types.category_id',
+                'categories.name as tipe',
+            ]);
+
+        return Datatables::of($data)
+            ->addIndexColumn()
+            ->addColumn('action', function ($row) {
+                return '
+                    <button class="btn btn-sm btn-primary editBtn"
+                        data-id="' . $row->id . '"
+                        data-name="' . htmlspecialchars($row->name) . '"
+                        data-category_id="' . $row->category_id . '">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger deleteBtn"
+                        data-id="' . $row->id . '"
+                        data-name="' . htmlspecialchars($row->name) . '">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                ';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
 
-    public function getMotorType(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = MotorType::with('category')->select(['id', 'name', 'category_id']);
+    return response()->json(['error' => 'Not Ajax'], 400);
+}
 
-            return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('tipe', function ($row) {
-                    return $row->category ? $row->category->name : '-';
-                })
-                ->addColumn('action', function ($row) {
-                    return '
-                        <button class="btn btn-sm btn-primary editBtn"
-                            data-id="' . $row->id . '"
-                            data-name="' . htmlspecialchars($row->name) . '"
-                            data-category_id="' . $row->category_id . '">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger deleteBtn"
-                            data-id="' . $row->id . '"
-                            data-name="' . htmlspecialchars($row->name) . '">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    ';
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
+public function storeMotorType(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'category_id' => 'required|exists:categories,id',
+    ]);
 
-        return response()->json(['error' => 'Not Ajax'], 400);
-    }
+    MotorType::create([
+        'name' => $request->name,
+        'category_id' => $request->category_id,
+    ]);
 
-    public function storeMotorType(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-        ]);
+    return redirect()->back()->with('success', 'Tipe motor berhasil ditambahkan');
+}
 
-        MotorType::create([
-            'name' => $request->name,
-            'category_id' => $request->category_id,
-        ]);
+public function updateMotorType(Request $request)
+{
+    $request->validate([
+        'id' => 'required|exists:motor_types,id',
+        'name' => 'required|string|max:255',
+        'category_id' => 'required|exists:categories,id',
+    ]);
 
-        return redirect()->back()->with('success', 'Tipe motor berhasil ditambahkan');
-    }
+    $motorType = MotorType::findOrFail($request->id);
+    $motorType->name = $request->name;
+    $motorType->category_id = $request->category_id;
+    $motorType->save();
 
-    public function updateMotorType(Request $request)
-    {
-        $request->validate([
-            'id' => 'required|exists:motor_types,id',
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-        ]);
+    return response()->json(['message' => 'Tipe motor berhasil diperbarui']);
+}
 
-        $motorType = MotorType::findOrFail($request->id);
-        $motorType->name = $request->name;
-        $motorType->category_id = $request->category_id;
-        $motorType->save();
+public function deleteMotorType(Request $request)
+{
+    $request->validate([
+        'id' => 'required|exists:motor_types,id',
+    ]);
 
-        return response()->json(['message' => 'Tipe motor berhasil diperbarui']);
-    }
+    $motorType = MotorType::findOrFail($request->id);
+    $motorType->delete();
 
-    public function deleteMotorType(Request $request)
-    {
-        $request->validate([
-            'id' => 'required|exists:motor_types,id',
-        ]);
-
-        $motorType = MotorType::findOrFail($request->id);
-        $motorType->delete();
-
-        return redirect()->back()->with('success', 'Tipe motor berhasil dihapus');
-    }
-
+    return redirect()->back()->with('success', 'Tipe motor berhasil dihapus');
+}
 
     // APPAREL CATEGORY
     public function apparelCategoryIndex()
@@ -1005,113 +1193,233 @@ class AdminControllerSatu extends Controller
         return redirect()->back()->with('success', 'Kategori berhasil dihapus');
     }
 
-    // --- APPAREL ---
-    public function apparelsIndex()
-    {
-        $categories = ApparelCategory::all();
-        return view('pages.admin.allApparel', compact('categories'));
-    }
+    // --- KELOLA APPAREL ---
+public function apparelsIndex()
+{
+    $categories = ApparelCategory::all();
+    return view('pages.admin.allApparel', compact('categories'));
+}
 
-    public function apparelsData(Request $request)
-    {
-        $data = Apparel::with('category')->orderBy('created_at', 'asc');
+public function apparelsData(Request $request)
+{
+    $data = Apparel::with([
+        'category:id,name',
+        'images' => fn($q) => $q->orderBy('sort')->orderBy('id'),
+    ])->orderBy('created_at', 'asc');
 
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->editColumn('image', function ($row) {
-                return $row->image ? asset('storage/' . $row->image) : null;
-            })
-            ->addColumn('category', function ($row) {
-                return $row->category ? $row->category->name : '-';
-            })
-            ->rawColumns(['image'])
-            ->make(true);
-    }
+    return DataTables::of($data)
+        ->addIndexColumn()
+        ->editColumn('image', function ($row) {
+            // urutan prioritas sumber gambar
+            $src = $row->cover_image ?: $row->image ?: optional($row->images->first())->image;
+            $url = $src ? asset('storage/'.$src) : asset('no-image.png');
 
-    public function apparelsStore(Request $request)
-    {
-        $request->validate([
-            'name_apparel' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'category_id' => 'required|exists:apparel_categories,id',
-            'description' => 'nullable|string',
-            'dimensions' => 'nullable|string',
-            'weight' => 'nullable|string',
-            'color' => 'nullable|string',
-            'size' => 'nullable|string',
-            'part_number' => 'nullable|string',
-        ]);
+            $title    = e($row->name_apparel);
+            $category = e(optional($row->category)->name ?? '-');
 
-        $path = null;
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('apparels', 'public');
+            $desc  = $row->description ? '<div><strong>Deskripsi:</strong> '.e($row->description).'</div>' : '';
+            $size  = $row->size        ? '<div><strong>Ukuran:</strong> '.e($row->size).'</div>'             : '';
+            $color = $row->color       ? '<div><strong>Warna:</strong> '.e($row->color).'</div>'             : '';
+
+            // badge NEW seperti di Motor
+            $badge = $row->is_new
+                ? '<div style="position:absolute; right:6px; top:4px; color:#E11D2B; font-weight:700;">New !</div>'
+                : '';
+
+            // gambar di-center, teks di bawah (kaya sebelumnya)
+            return '
+                <div style="position:relative; text-align:center; margin-bottom:6px;">
+                    '.$badge.'
+                    <img src="'.$url.'" alt="'.$title.'"
+                         style="width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer"
+                         class="image-preview"
+                         data-image="'.$url.'"
+                         data-title="'.$title.'"
+                         data-category="'.$category.'">
+                </div>
+                <div style="font-size:14px;line-height:1.4;text-align:left;">'.$desc.$size.$color.'</div>
+            ';
+        })
+        ->addColumn('image_url', function ($row) {
+            $src = $row->cover_image ?: $row->image ?: optional($row->images->first())->image;
+            return $src ? asset('storage/'.$src) : asset('no-image.png');
+        })
+        ->addColumn('category', fn($row) => optional($row->category)->name ?? '-')
+        ->rawColumns(['image'])
+        ->make(true);
+}
+
+public function apparelsStore(Request $request)
+{
+    $request->validate([
+        'name_apparel' => 'required|string|max:255',
+        'category_id'  => 'required|exists:apparel_categories,id',
+        'description'  => 'nullable|string',
+        'material'     => 'nullable|string',
+        'dimensions'   => 'nullable|string',
+        'weight'       => 'nullable|string',
+        'color'        => 'nullable|string',
+        'size'         => 'nullable|string',
+        'part_number'  => 'nullable|string',
+        'stock'        => 'nullable|integer|min:0',
+        // file
+        'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'gallery.*'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        // NEW
+        'is_new'       => 'nullable|boolean',
+    ]);
+
+    $coverPath = $request->hasFile('cover_image')
+        ? $request->file('cover_image')->store('apparels/cover', 'public')
+        : null;
+
+    $singlePath = $request->hasFile('image')
+        ? $request->file('image')->store('apparels', 'public')
+        : null;
+
+    $apparel = Apparel::create([
+        'name_apparel' => $request->name_apparel,
+        'category_id'  => $request->category_id,
+        'description'  => $request->description,
+        'material'     => $request->material,
+        'dimensions'   => $request->dimensions,
+        'weight'       => $request->weight,
+        'color'        => $request->color,
+        'size'         => $request->size,
+        'part_number'  => $request->part_number,
+        'stock'        => $request->stock,
+        'cover_image'  => $coverPath,
+        'image'        => $singlePath, // fallback/legacy
+        'is_new'       => $request->boolean('is_new'), // <-- simpan flag NEW
+    ]);
+
+    if ($request->hasFile('gallery')) {
+        foreach ($request->file('gallery') as $idx => $file) {
+            $path = $file->store('apparels/gallery', 'public');
+            $apparel->images()->create([
+                'image'   => $path,
+                'caption' => $request->input("gallery_captions.$idx"),
+                'sort'    => $idx,
+            ]);
         }
-
-        Apparel::create([
-            'name_apparel' => $request->name_apparel,
-            'image' => $path,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'dimensions' => $request->dimensions,
-            'weight' => $request->weight,
-            'color' => $request->color,
-            'size' => $request->size,
-            'part_number' => $request->part_number,
-        ]);
-
-        return redirect()->back()->with('success', 'Apparel berhasil ditambahkan!');
     }
 
-    public function apparelsUpdate(Request $request, $id)
-    {
-        $apparel = Apparel::findOrFail($id);
+    return back()->with('success', 'Apparel berhasil ditambahkan!');
+}
 
-        $request->validate([
-            'name_apparel' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'category_id' => 'required|exists:apparel_categories,id',
-            'description' => 'nullable|string',
-            'dimensions' => 'nullable|string',
-            'weight' => 'nullable|string',
-            'color' => 'nullable|string',
-            'size' => 'nullable|string',
-            'part_number' => 'nullable|string',
-        ]);
+// JSON untuk modal edit
+public function apparelsEdit($id)
+{
+    $apparel = Apparel::with('images')->findOrFail($id);
+    return response()->json($apparel);
+}
 
-        if ($request->hasFile('image')) {
-            if ($apparel->image && Storage::disk('public')->exists($apparel->image)) {
-                Storage::disk('public')->delete($apparel->image);
-            }
-            $path = $request->file('image')->store('apparels', 'public');
-            $apparel->image = $path;
+public function apparelsUpdate(Request $request, $id)
+{
+    $apparel = Apparel::with('images')->findOrFail($id);
+
+    $request->validate([
+        'name_apparel' => 'required|string|max:255',
+        'category_id'  => 'required|exists:apparel_categories,id',
+        'description'  => 'nullable|string',
+        'material'     => 'nullable|string',
+        'dimensions'   => 'nullable|string',
+        'weight'       => 'nullable|string',
+        'color'        => 'nullable|string',
+        'size'         => 'nullable|string',
+        'part_number'  => 'nullable|string',
+        'stock'        => 'nullable|integer|min:0',
+        // file
+        'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        'gallery.*'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        // NEW
+        'is_new'       => 'nullable|boolean',
+    ]);
+
+    // cover (replace file lama bila ada)
+    if ($request->hasFile('cover_image')) {
+        if ($apparel->cover_image && Storage::disk('public')->exists($apparel->cover_image)) {
+            Storage::disk('public')->delete($apparel->cover_image);
         }
-
-        $apparel->update([
-            'name_apparel' => $request->name_apparel,
-            'category_id' => $request->category_id,
-            'description' => $request->description,
-            'dimensions' => $request->dimensions,
-            'weight' => $request->weight,
-            'color' => $request->color,
-            'size' => $request->size,
-            'part_number' => $request->part_number,
-        ]);
-
-        return redirect()->back()->with('success', 'Apparel berhasil diperbarui!');
+        $apparel->cover_image = $request->file('cover_image')->store('apparels/cover', 'public');
     }
 
-    public function apparelsDelete($id)
-    {
-        $apparel = Apparel::findOrFail($id);
-
+    // single image (legacy)
+    if ($request->hasFile('image')) {
         if ($apparel->image && Storage::disk('public')->exists($apparel->image)) {
             Storage::disk('public')->delete($apparel->image);
         }
-
-        $apparel->delete();
-        return redirect()->back()->with('success', 'Apparel berhasil dihapus!');
+        $apparel->image = $request->file('image')->store('apparels', 'public');
     }
 
+    $apparel->update([
+        'name_apparel' => $request->name_apparel,
+        'category_id'  => $request->category_id,
+        'description'  => $request->description,
+        'material'     => $request->material,
+        'dimensions'   => $request->dimensions,
+        'weight'       => $request->weight,
+        'color'        => $request->color,
+        'size'         => $request->size,
+        'part_number'  => $request->part_number,
+        'stock'        => $request->stock,
+        'is_new'       => $request->boolean('is_new'), // <-- update flag NEW
+    ]);
+
+    // Tambah gallery baru (append)
+    if ($request->hasFile('gallery')) {
+        $start = ($apparel->images()->max('sort') ?? 0) + 1;
+        foreach ($request->file('gallery') as $k => $file) {
+            $path = $file->store('apparels/gallery', 'public');
+            $apparel->images()->create([
+                'image'   => $path,
+                'caption' => $request->input("gallery_captions.$k"),
+                'sort'    => $start + $k,
+            ]);
+        }
+    }
+
+    return back()->with('success', 'Apparel berhasil diperbarui!');
+}
+
+public function apparelsDelete($id)
+{
+    $apparel = Apparel::with('images')->findOrFail($id);
+
+    if ($apparel->cover_image && Storage::disk('public')->exists($apparel->cover_image)) {
+        Storage::disk('public')->delete($apparel->cover_image);
+    }
+    if ($apparel->image && Storage::disk('public')->exists($apparel->image)) {
+        Storage::disk('public')->delete($apparel->image);
+    }
+    foreach ($apparel->images as $im) {
+        if ($im->image && Storage::disk('public')->exists($im->image)) {
+            Storage::disk('public')->delete($im->image);
+        }
+    }
+
+    $apparel->delete();
+    return back()->with('success', 'Apparel berhasil dihapus!');
+}
+
+// Hapus satu gambar gallery
+public function apparelsDeleteImage($imageId)
+{
+    $img = ApparelImage::findOrFail($imageId);
+
+    if ($img->image && Storage::disk('public')->exists($img->image)) {
+        Storage::disk('public')->delete($img->image);
+    }
+
+    $img->delete();
+    return response()->json(['status' => 'ok']);
+}
+
+    /* =========================
+       KELOLA CABANG (DEALER)
+   ========================== */
         // --- BRANCH LIST + DATATABLES ---
     public function branchesIndex(Request $request)
     {
@@ -1308,7 +1616,7 @@ class AdminControllerSatu extends Controller
         }
     }
 
-    // === BANNER ===
+    // === KELOLA BANNER ===
     /*------------------------------------------
     --------------------------------------------
     Banner Template Management
@@ -1782,19 +2090,20 @@ class AdminControllerSatu extends Controller
                 ->addColumn('motor_type_name', function($row){
                     return $row->motorType ? $row->motorType->name : '-';
                 })
+                // Format untuk tampilan tabel
                 ->editColumn('otr_price', function ($row) {
                     return 'Rp ' . number_format($row->otr_price, 0, ',', '.');
                 })
                 ->editColumn('minimum_dp', function ($row) {
                     return 'Rp ' . number_format($row->minimum_dp, 0, ',', '.');
                 })
-                ->addColumn('action', function($row){
-                    return '
-                        <button class="btn btn-sm btn-primary editBtn" data-id="'.$row->id.'">Edit</button>
-                        <button class="btn btn-sm btn-danger deleteBtn" data-id="'.$row->id.'">Hapus</button>
-                    ';
+                // Tambah data raw untuk kebutuhan edit
+                ->addColumn('otr_price_raw', function ($row) {
+                    return $row->otr_price;
                 })
-                ->rawColumns(['action'])
+                ->addColumn('minimum_dp_raw', function ($row) {
+                    return $row->minimum_dp;
+                })
                 ->make(true);
         }
 

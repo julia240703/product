@@ -26,33 +26,33 @@
         <button type="button" class="btn btn-success mb-3 btn-sm" data-bs-toggle="modal" data-bs-target="#addMotorModal">Tambah Motor</button>
 
         <div class="row mb-4">
-    <!-- Published -->
-    <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100 hover-card">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
-                <h5 class="fw-bold text-dark fs-4 mb-2">Published</h5>
-                <h1 class="fw-bold text-success mt-2">{{ $publishedCount }}</h1>
-                <a href="{{ route('admin.motors.published') }}" class="btn btn-outline-success mt-3 px-4 rounded-pill">
-                    <i class="bi bi-eye"></i> Lihat Data
-                </a>
+            <!-- Published -->
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0 h-100 hover-card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-check-circle-fill text-success display-4 mb-3"></i>
+                        <h5 class="fw-bold text-dark fs-4 mb-2">Published</h5>
+                        <h1 class="fw-bold text-success mt-2">{{ $publishedCount }}</h1>
+                        <a href="{{ route('admin.motors.published') }}" class="btn btn-outline-success mt-3 px-4 rounded-pill">
+                            <i class="bi bi-eye"></i> Lihat Data
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
             <!-- Unpublished -->
-    <div class="col-md-6">
-        <div class="card shadow-lg border-0 h-100 hover-card">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
-                <h5 class="fw-bold text-dark fs-4 mb-2">Unpublished</h5>
-                <h1 class="fw-bold text-danger mt-2">{{ $unpublishedCount }}</h1>
-                <a href="{{ route('admin.motors.unpublished') }}" class="btn btn-outline-danger mt-3 px-4 rounded-pill">
-                    <i class="bi bi-eye-slash"></i> Lihat Data
-                </a>
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0 h-100 hover-card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-x-circle-fill text-danger display-4 mb-3"></i>
+                        <h5 class="fw-bold text-dark fs-4 mb-2">Unpublished</h5>
+                        <h1 class="fw-bold text-danger mt-2">{{ $unpublishedCount }}</h1>
+                        <a href="{{ route('admin.motors.unpublished') }}" class="btn btn-outline-danger mt-3 px-4 rounded-pill">
+                            <i class="bi bi-eye-slash"></i> Lihat Data
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
         <!-- Modal Tambah Motor -->
         <div class="modal fade" id="addMotorModal" tabindex="-1" aria-labelledby="addMotorModalLabel" aria-hidden="true">
@@ -84,7 +84,7 @@
                             <div class="mb-3">
                                 <label for="add_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="add_category_id" class="form-select" required>
-                                    <option value="">-- Pilih Kategori --</option>
+                                    <option value="">Pilih Kategori</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
@@ -93,7 +93,7 @@
                             <div class="mb-3">
                                 <label for="add_type_id" class="form-label">Tipe Motor <span class="text-red">*</span></label>
                                 <select name="type_id" id="add_type_id" class="form-select" required>
-                                    <option value="">-- Pilih Tipe Motor --</option>
+                                    <option value="">Pilih Tipe Motor</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -109,12 +109,31 @@
                                 <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*" required>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
+                                <input type="file" class="form-control" name="feature_thumbnail" accept="image/*" required>
+                            </div>
+
+                            {{-- 360 --}}
+                            <div class="mb-3">
+                                <label class="form-label">Upload 360° (GIF) <small class="text-muted">(opsional)</small></label>
+                                <input type="file" class="form-control" name="spin_gif" accept="image/gif">
+                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°.</div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Status <span class="text-red">*</span></label>
                                 <select class="form-select" name="status" required>
                                     <option value="published">Published</option>
                                     <option value="unpublished">Unpublished</option>
                                 </select>
                             </div>
+
+                            <!-- NEW -->
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="add_is_new" name="is_new" value="1">
+                                <label class="form-check-label" for="add_is_new">Tandai sebagai <strong>NEW</strong></label>
+                            </div>
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
                                 <button type="submit" class="btn btn-success">Tambahkan</button>

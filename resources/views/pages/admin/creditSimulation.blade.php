@@ -44,7 +44,8 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="category_id" class="form-label">Kategori Motor <span class="text-danger">*</span></label>
-                                <select class="form-control" id="category_id" name="category_id" required>
+                                <select class="form-select" id="category_id" name="category_id" required>
+                                    <option value="">Pilih Kategori</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
@@ -52,7 +53,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="motor_type_id" class="form-label">Tipe Motor <span class="text-danger">*</span></label>
-                                <select class="form-control" id="motor_type_id" name="motor_type_id" required>
+                                <select class="form-select" id="motor_type_id" name="motor_type_id" required>
                                     <option value="">Pilih Tipe Motor</option>
                                 </select>
                             </div>
@@ -77,7 +78,7 @@
                                 <input type="number" step="0.01" class="form-control" id="interest_rate" name="interest_rate" required>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
                                 <button type="submit" class="btn btn-success">Tambahkan</button>
                             </div>
                         </form>
@@ -133,7 +134,7 @@
                                 <input type="number" step="0.01" class="form-control" id="interest_rate_edit" name="interest_rate" required>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
                                 <button type="submit" class="btn btn-success">Ubah</button>
                             </div>
                         </form>
@@ -251,11 +252,12 @@
             // Edit
             $(document).on('click', '.editBtn', function() {
                 var simulationData = dataTable.row($(this).closest('tr')).data();
+
                 $('#category_id_edit').val(simulationData.category_id);
                 $('#motor_type_id_edit').val(simulationData.motor_type_id);
                 $('#motorcycle_variant_edit').val(simulationData.motorcycle_variant);
-                $('#otr_price_edit').val(simulationData.otr_price);
-                $('#minimum_dp_edit').val(simulationData.minimum_dp);
+                $('#otr_price_edit').val(simulationData.otr_price_raw);       // gunakan nilai raw
+                $('#minimum_dp_edit').val(simulationData.minimum_dp_raw);     // gunakan nilai raw
                 $('#loan_term_edit').val(simulationData.loan_term);
                 $('#interest_rate_edit').val(simulationData.interest_rate);
 

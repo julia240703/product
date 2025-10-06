@@ -151,8 +151,8 @@ $(document).ready(function() {
         ajax: "{{ route('admin.motor-type.data') }}",
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'name', name: 'name' },
-            { data: 'tipe', name: 'tipe' },
+            { data: 'name',        name: 'motor_types.name' }, // <— map ke kolom tabel
+            { data: 'tipe',        name: 'categories.name' },  // <— map ke kolom join kategori
             {
                 data: null,
                 orderable: false,
@@ -181,7 +181,7 @@ $(document).ready(function() {
     });
 
     // Edit button
-        $(document).on('click', '.editBtn', function() {
+    $(document).on('click', '.editBtn', function() {
         var motorData = dataTable.row($(this).closest('tr')).data();
         $('#motorTypeId').val(motorData.id);
         $('#nama_edit').val(motorData.name);
@@ -189,7 +189,7 @@ $(document).ready(function() {
         $('#editModal').modal('show');
     });
 
-    // Update via Ajax
+    // Update via Ajax (kirim name & category_id sesuai controller)
     $('#updateBtn').on('click', function() {
         $.ajax({
             url: "{{ route('admin.motor-type.update') }}",
@@ -197,15 +197,19 @@ $(document).ready(function() {
             data: {
                 _token: '{{ csrf_token() }}',
                 id: $('#motorTypeId').val(),
-                nama: $('#nama_edit').val(),
-                kategori_id: $('#kategori_id_edit').val(),
+                name: $('#nama_edit').val(),
+                category_id: $('#kategori_id_edit').val(),
+                // _method: 'PUT'
             },
             success: function(response) {
                 $('#editModal').modal('hide');
-                dataTable.ajax.reload();
+                dataTable.ajax.reload(null, false);
             },
             error: function(xhr) {
-                alert("Update error: " + xhr.statusText);
+                const r = xhr.responseJSON || {};
+                const msg = r.message || xhr.statusText;
+                const firstErr = r.errors ? Object.values(r.errors)[0][0] : '';
+                alert("Update error: " + msg + (firstErr ? "\n" + firstErr : ""));
             }
         });
     });

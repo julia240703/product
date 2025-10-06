@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'google_maps' => [
+        'key'     => env('GOOGLE_MAPS_KEY'),        // API key kamu
+        'enabled' => env('GOOGLE_MAPS_ENABLED', true), // optional toggle
+    ],
+
 ];

@@ -224,19 +224,29 @@ Route::middleware(['auth', 'user-access:manager'])->group(function () {
 */
 
 Route::get('/', [PublicControllerSatu::class, 'home'])->name('home');
+Route::get('/category/{name}', [PublicControllerSatu::class, 'home'])->name('home.category');
 Route::get('/motor/{id}', [PublicControllerSatu::class, 'motorDetail'])->name('motor.detail');
 Route::get('/motors/category/{name}', [PublicControllerSatu::class, 'motorsByCategory'])->name('motors.by.category');
+Route::get('/produk', [PublicControllerSatu::class, 'produk'])->name('produk');
+Route::get('/produk/{categoryName}', [PublicControllerSatu::class, 'produk'])->name('produk.category');
 Route::get('/compare', [PublicControllerSatu::class, 'compare'])->name('motors.compare');
-Route::get('/accessories', [PublicControllerSatu::class, 'accessories'])->name('accessories.index');
-Route::get('/apparels', [PublicControllerSatu::class, 'apparels'])->name('apparels.index');
-Route::get('/branches', [PublicControllerSatu::class, 'branches'])->name('branches.index');
+Route::prefix('bandingkan-motor')->name('compare.')->group(function () {
+    Route::get('/', [PublicControllerSatu::class, 'compareMenu'])->name('menu');
+    Route::get('/pilih', [PublicControllerSatu::class, 'comparePick'])->name('pick');
+    Route::post('/pilih', [PublicControllerSatu::class, 'compareStore'])->name('store');
+    Route::delete('/hapus', [PublicControllerSatu::class, 'compareRemove'])->name('remove');
+    Route::get('/hasil',    [PublicControllerSatu::class, 'compareResult'])->name('result');
+});
+Route::get('/accessories', [PublicControllerSatu::class, 'accessories'])->name('accessories');
+Route::get('/accessories/motor/{id}', [PublicControllerSatu::class, 'accessoriesMotorDetail'])->name('accessories.motor');
+Route::get('/accessories/detail/{id}', [PublicControllerSatu::class, 'accessoryDetail'])->name('accessory.detail');
+Route::get('/accessories/general/{id}', [PublicControllerSatu::class, 'generalAccessoryDetail'])->name('accessories.general.detail');
+Route::get('/apparels', [PublicControllerSatu::class, 'apparels'])->name('apparels');
+Route::get('/apparels/detail/{id}', [PublicControllerSatu::class, 'apparelDetail'])->name('apparel.detail');
+Route::get('/parts', [PublicControllerSatu::class, 'parts'])->name('parts');
+Route::get('/branches', [PublicControllerSatu::class, 'branches'])->name('branches');
 Route::get('/price-list', [PublicControllerSatu::class, 'priceList'])->name('price.list');
-
-Route::get('/test-ride', [PublicControllerSatu::class, 'showTestRideForm'])->name('test-ride.form');
-Route::post('/test-ride', [PublicControllerSatu::class, 'submitTestRide'])->name('test-ride.submit');
-
-Route::get('/credit-simulation', [PublicControllerSatu::class, 'showCreditForm'])->name('credit.form');
-Route::post('/credit-simulation', [PublicControllerSatu::class, 'submitCreditSimulation'])->name('credit.submit');
+Route::get('/simulasi-kredit', [PublicControllerSatu::class, 'creditSimulator'])->name('credit.sim');
 
 /*
 |--------------------------------------------------------------------------
@@ -281,6 +291,17 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::put('/{motor}/accessories/{id}', [AdminControllerSatu::class, 'accessoriesUpdate'])->name('accessories.update');
     Route::delete('/{motor}/accessories/{id}', [AdminControllerSatu::class, 'accessoriesDelete'])->name('accessories.delete');
 
+    // ===== GENERAL ACCESSORIES (dipisah agar tidak bentrok) =====
+    Route::prefix('general-accessories')->name('accessories.general.')->group(function () {
+        Route::get('/',          [AdminControllerSatu::class, 'accessoriesGeneralIndex'])->name('index');
+        Route::get('/data',      [AdminControllerSatu::class, 'accessoriesGeneralData'])->name('data');
+        Route::post('/',         [AdminControllerSatu::class, 'accessoriesGeneralStore'])->name('store');
+        Route::get('/{id}/edit', [AdminControllerSatu::class, 'accessoriesGeneralEdit'])->name('edit');
+        Route::put('/{id}',      [AdminControllerSatu::class, 'accessoriesGeneralUpdate'])->name('update');
+        Route::delete('/{id}',   [AdminControllerSatu::class, 'accessoriesGeneralDelete'])->name('delete');
+        Route::delete('/images/{image}', [AdminControllerSatu::class, 'accessoriesGeneralDeleteImage'])->name('images.delete');
+    });
+    
     // Spareparts
     Route::get('/{motor}/spareparts', [AdminControllerSatu::class, 'sparepartsIndex'])->name('spareparts.index');
     Route::post('/{motor}/spareparts', [AdminControllerSatu::class, 'sparepartsStore'])->name('spareparts.store');
@@ -303,11 +324,12 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
 
     // Apparels
     Route::get('apparels', [AdminControllerSatu::class, 'apparelsIndex'])->name('apparels.index');
-    Route::post('/apparels', [AdminControllerSatu::class, 'apparelsStore'])->name('apparels.store');
-    Route::get('/apparels/{id}/edit', [AdminControllerSatu::class, 'apparelsEdit'])->name('apparels.edit');
-    Route::put('/apparels/{id}/update', [AdminControllerSatu::class, 'apparelsUpdate'])->name('apparels.update');
-    Route::delete('/apparels/delete/{id}', [AdminControllerSatu::class, 'apparelsDelete'])->name('apparels.delete');
-    Route::get('/apparels/data', [AdminControllerSatu::class, 'apparelsData'])->name('apparels.data');
+    Route::get('apparels/data', [AdminControllerSatu::class, 'apparelsData'])->name('apparels.data');
+    Route::post('apparels', [AdminControllerSatu::class, 'apparelsStore'])->name('apparels.store');
+    Route::get('apparels/{id}/edit', [AdminControllerSatu::class, 'apparelsEdit'])->name('apparels.edit');
+    Route::put('apparels/{id}/update', [AdminControllerSatu::class, 'apparelsUpdate'])->name('apparels.update');
+    Route::delete('apparels/delete/{id}', [AdminControllerSatu::class, 'apparelsDelete'])->name('apparels.delete');
+    Route::delete('apparels/images/{image}', [AdminControllerSatu::class, 'apparelsDeleteImage'])->name('apparels.images.delete');
 
     // Branches
     Route::get('branches', [AdminControllerSatu::class, 'branchesIndex'])->name('branches.index');

@@ -55,7 +55,7 @@
                             <div class="mb-3">
                                 <label for="add_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="add_category_id" class="form-select" required>
-                                    <option value="">-- Pilih Kategori --</option>
+                                    <option value="">Pilih Kategori</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
@@ -64,7 +64,7 @@
                             <div class="mb-3">
                                 <label for="add_type_id" class="form-label">Tipe Motor <span class="text-red">*</span></label>
                                 <select name="type_id" id="add_type_id" class="form-select" required>
-                                    <option value="">-- Pilih Tipe Motor --</option>
+                                    <option value="">Pilih Tipe Motor</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -80,12 +80,31 @@
                                 <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*" required>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
+                                <input type="file" class="form-control" name="feature_thumbnail" accept="image/*" required>
+                            </div>
+
+                            {{-- 360 --}}
+                            <div class="mb-3">
+                                <label class="form-label">Upload 360° (GIF) <small class="text-muted">(opsional)</small></label>
+                                <input type="file" class="form-control" name="spin_gif" accept="image/gif">
+                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°.</div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Status <span class="text-red">*</span></label>
                                 <select class="form-select" name="status" required>
                                     <option value="published">Published</option>
                                     <option value="unpublished">Unpublished</option>
                                 </select>
                             </div>
+
+                            <!-- NEW -->
+                            <div class="mb-3 form-check">
+                                <input class="form-check-input" type="checkbox" id="add_is_new" name="is_new" value="1">
+                                <label class="form-check-label" for="add_is_new">Tandai sebagai <strong>NEW</strong></label>
+                            </div>
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
                                 <button type="submit" class="btn btn-success">Tambahkan</button>
@@ -128,7 +147,7 @@
                             <div class="mb-3">
                                 <label for="edit_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="edit_category_id" class="form-select" required>
-                                    <option value="">-- Pilih Kategori --</option>
+                                    <option value="">Pilih Kategori</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
@@ -137,7 +156,7 @@
                             <div class="mb-3">
                                 <label for="edit_type_id" class="form-label">Tipe Motor <span class="text-red">*</span></label>
                                 <select name="type_id" id="edit_type_id" class="form-select" required>
-                                    <option value="">-- Pilih Tipe Motor --</option>
+                                    <option value="">Pilih Tipe Motor</option>
                                 </select>
                             </div>
                             <div class="mb-3">
@@ -155,15 +174,36 @@
                                 <div id="current-accessory-thumbnail" class="mt-2"></div>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
+                                <input type="file" class="form-control" name="feature_thumbnail" id="edit_feature_thumbnail" accept="image/*">
+                                <div id="current-feature-thumbnail" class="mt-2"></div>
+                            </div>
+
+                            {{-- 360 --}}
+                            <div class="mb-3">
+                                <label class="form-label">Upload 360° (GIF)</label>
+                                <input type="file" class="form-control" name="spin_gif" id="edit_spin_gif" accept="image/gif">
+                                <div id="current-spin" class="mt-2"></div>
+                                <div class="form-text">Format .gif. Kosongkan jika tidak ingin mengubah.</div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label class="form-label">Status <span class="text-red">*</span></label>
                                 <select class="form-select" name="status" id="edit_status" required>
                                     <option value="published">Published</option>
                                     <option value="unpublished">Unpublished</option>
                                 </select>
                             </div>
+
+                            <!-- NEW -->
+                            <div class="mb-3 form-check">
+                                <input class="form-check-input" type="checkbox" id="edit_is_new" name="is_new" value="1">
+                                <label class="form-check-label" for="edit_is_new">Tandai sebagai <strong>NEW</strong></label>
+                            </div>
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
-                                <button type="submit" class="btn btn-success">Ubah</button>
+                                <button type="submit" class="btn btn-success" id="updateBtn">Ubah</button>
                             </div>
                         </div>
                     </div>
@@ -171,27 +211,26 @@
             </div>
         </div>
 
-        <!-- Modal Hapus Motor -->
-        <div class="modal fade" id="deleteMotorModal" tabindex="-1" aria-labelledby="deleteMotorModalLabel" aria-hidden="true">
+        <!-- Modal Delete -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="deleteMotorModalLabel">Konfirmasi Hapus Motor</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                <form method="POST" id="deleteForm">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Konfirmasi Hapus Motor</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Apakah kamu yakin ingin menghapus <strong id="delete_motor_name"></strong>?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                        </div>
                     </div>
-                    <div class="modal-body">
-                        <form id="deleteMotorForm" method="POST">
-                            @csrf
-                            @method('DELETE')
-                            <input type="hidden" name="motor_id" id="delete_motor_id">
-                            <p>Apakah kamu yakin ingin menghapus Motor <strong id="delete_motor_name"></strong>?</p>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-danger">Ya, Hapus</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -247,6 +286,7 @@
                     orderable: false,
                     searchable: false,
                     render: function(data) {
+                        let baseUrl = "{{ asset('storage') }}";
                         return `
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-primary me-1 editBtn" 
@@ -259,8 +299,11 @@
                                     data-type_id="${data.type_id}" 
                                     data-description="${data.description}" 
                                     data-status="${data.status}"
-                                    data-thumbnail="${data.thumbnail ? '{{ asset('storage') }}/' + data.thumbnail : ''}" 
-                                    data-accessory_thumbnail="${data.accessory_thumbnail ? '{{ asset('storage') }}/' + data.accessory_thumbnail : ''}">
+                                    data-is_new="${data.is_new ? 1 : 0}"
+                                    data-thumbnail="${data.thumbnail ? baseUrl + '/' + data.thumbnail : ''}" 
+                                    data-accessory_thumbnail="${data.accessory_thumbnail ? baseUrl + '/' + data.accessory_thumbnail : ''}"
+                                    data-feature_thumbnail="${data.feature_thumbnail ? baseUrl + '/' + data.feature_thumbnail : ''}"
+                                    data-spin_gif="${data.spin_gif ? (data.spin_gif.startsWith('http') ? data.spin_gif : baseUrl + '/' + data.spin_gif) : ''}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 <button class="btn btn-sm btn-danger deleteBtn" 
@@ -275,16 +318,14 @@
             ]
         });
 
-        // === Fungsi load tipe motor sesuai kategori ===
         function loadTypes(categoryId, targetSelect, selectedTypeId = null) {
-            targetSelect.empty().append('<option value="">Memuat...</option>');
             if (categoryId) {
                 $.ajax({
                     url: "{{ route('admin.motors.getTypes', ['category_id' => ':id']) }}".replace(':id', categoryId),
                     type: 'GET',
                     dataType: 'json',
                     success: function(data) {
-                        targetSelect.empty().append('<option value="">-- Pilih Tipe Motor --</option>');
+                        targetSelect.empty().append('<option value="">Pilih Tipe Motor</option>');
                         if (data.length > 0) {
                             data.forEach(function(type) {
                                 let selected = (selectedTypeId && selectedTypeId == type.id) ? 'selected' : '';
@@ -302,17 +343,17 @@
                     }
                 });
             } else {
-                targetSelect.empty().append('<option value="">-- Pilih Kategori Terlebih Dahulu --</option>');
+                targetSelect.empty().append('<option value="">Pilih Kategori Terlebih Dahulu</option>');
             }
         }
 
-        // === Event Dependent Dropdown Tambah ===
+        // Tambah
         $('#add_category_id').on('change', function() {
             const categoryId = $(this).val();
             loadTypes(categoryId, $('#add_type_id'));
         });
 
-        // === Event Dependent Dropdown Edit ===
+        // Edit
         $('#edit_category_id').on('change', function() {
             const categoryId = $(this).val();
             loadTypes(categoryId, $('#edit_type_id'));
@@ -321,7 +362,7 @@
         // === Edit Button Click ===
         $(document).on('click', '.editBtn', function() {
             var motorData = dataTable.row($(this).closest('tr')).data();
-            console.log('Motor Data:', motorData); // Debug: Periksa data yang diterima
+
             $('#edit_motor_id').val(motorData.id);
             $('#edit_name').val(motorData.name);
             $('#edit_motor_code_otr').val(motorData.motor_code_otr);
@@ -330,71 +371,50 @@
             $('#edit_description').val(motorData.description);
             $('#edit_category_id').val(motorData.category_id).trigger('change');
             loadTypes(motorData.category_id, $('#edit_type_id'), motorData.type_id);
-            $('#edit_status').val(motorData.status); 
+            $('#edit_status').val(motorData.status);
+            $('#edit_is_new').prop('checked', (motorData.is_new == 1 || motorData.is_new === true));
 
-            // === Thumbnail Preview ===
+            // 360 (GIF upload) - show preview if exists
+            const gifUrl =
+                motorData.spin_gif
+                    ? (motorData.spin_gif.startsWith('http') ? motorData.spin_gif : "{{ asset('storage') }}/" + motorData.spin_gif)
+                    : '';
+            $('#edit_spin_gif').val('');
+            if (gifUrl) {
+                $('#current-spin').html(`
+                    <label class="form-label">360° Saat Ini:</label><br>
+                    <img src="${gifUrl}" style="max-width:180px;border-radius:8px;border:1px solid #ddd;">
+                `);
+            } else {
+                $('#current-spin').html('<label class="form-label">360° Saat Ini: Tidak ada</label>');
+            }
+
+            // Thumbnails preview
             if (motorData.thumbnail) {
-                console.log('Thumbnail URL:', motorData.thumbnail); // Debug: Periksa URL
                 $('#current-thumbnail').html(`
                     <label class="form-label">Thumbnail Saat Ini:</label><br>
-                    <img src="${motorData.thumbnail}" 
-                         style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;"
-                         class="img-preview" onload="console.log('Thumbnail loaded successfully');" onerror="console.log('Thumbnail failed to load');">
+                    <img src="{{ asset('storage') }}/${motorData.thumbnail}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
                 `);
-            } else {
-                $('#current-thumbnail').html('<label class="form-label">Thumbnail Saat Ini: Tidak ada</label>');
-                console.log('No thumbnail available');
-            }
+            } else { $('#current-thumbnail').html('<label class="form-label">Thumbnail Saat Ini: Tidak ada</label>'); }
 
-            // === Accessory Thumbnail Preview ===
             if (motorData.accessory_thumbnail) {
-                console.log('Accessory Thumbnail URL:', motorData.accessory_thumbnail); // Debug: Periksa URL
                 $('#current-accessory-thumbnail').html(`
                     <label class="form-label">Gambar Aksesoris Motor Saat Ini:</label><br>
-                    <img src="${motorData.accessory_thumbnail}" 
-                         style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;"
-                         class="img-preview" onload="console.log('Accessory thumbnail loaded successfully');" onerror="console.log('Accessory thumbnail failed to load');">
+                    <img src="{{ asset('storage') }}/${motorData.accessory_thumbnail}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
                 `);
-            } else {
-                $('#current-accessory-thumbnail').html('<label class="form-label">Gambar Aksesoris Motor Saat Ini: Tidak ada</label>');
-                console.log('No accessory thumbnail available');
-            }
+            } else { $('#current-accessory-thumbnail').html('<label class="form-label">Gambar Aksesoris Motor Saat Ini: Tidak ada</label>'); }
 
-            // === Handle new file upload ===
-            $('#edit_thumbnail').val(''); // Clear file input
-            $('#edit_accessory_thumbnail').val(''); // Clear file input
+            if (motorData.feature_thumbnail) {
+                $('#current-feature-thumbnail').html(`
+                    <label class="form-label">Gambar Fitur Motor Saat Ini:</label><br>
+                    <img src="{{ asset('storage') }}/${motorData.feature_thumbnail}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;">
+                `);
+            } else { $('#current-feature-thumbnail').html('<label class="form-label">Gambar Fitur Motor Saat Ini: Tidak ada</label>'); }
 
-            $('#edit_thumbnail').off('change').on('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#current-thumbnail').html(`
-                            <label class="form-label">Thumbnail Baru:</label><br>
-                            <img src="${e.target.result}" 
-                                 style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;"
-                                 class="img-preview">
-                        `);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            $('#edit_accessory_thumbnail').off('change').on('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#current-accessory-thumbnail').html(`
-                            <label class="form-label">Gambar Aksesoris Motor Baru:</label><br>
-                            <img src="${e.target.result}" 
-                                 style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;"
-                                 class="img-preview">
-                        `);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+            // Reset file inputs
+            $('#edit_thumbnail').val('');
+            $('#edit_accessory_thumbnail').val('');
+            $('#edit_feature_thumbnail').val('');
 
             const baseEditUrl = "{{ route('admin.motors.update', ['id' => 'DUMMY']) }}".replace('DUMMY', motorData.id);
             $('#editMotorForm').attr('action', baseEditUrl);
@@ -402,23 +422,22 @@
             $('#editMotorModal').modal('show');
         });
 
-        // === Delete Button Click ===
+        // Delete
         $(document).on('click', '.deleteBtn', function() {
-            const motorId = $(this).data('id');
-            const motorName = $(this).data('name');
-            $('#delete_motor_id').val(motorId);
-            $('#delete_motor_name').text(motorName);
-            const baseDeleteUrl = "{{ route('admin.motors.delete', ['id' => 'DUMMY']) }}".replace('DUMMY', motorId);
-            $('#deleteMotorForm').attr('action', baseDeleteUrl);
-            $('#deleteMotorModal').modal('show');
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            $('#delete_motor_name').text(name);
+            $('#deleteForm').attr('action', '{{ route('admin.motors.delete', ['id' => ':id']) }}'.replace(':id', id));
+            $('#deleteModal').modal('show');
         });
 
-        // === Add Button Click ===
-        $(document).on('click', '.addBtn', function() {
-            $('#addMotorForm')[0].reset();
-            const baseAddUrl = "{{ route('admin.motors.store') }}";
-            $('#addMotorForm').attr('action', baseAddUrl);
-            $('#addMotorModal').modal('show');
+        // View image
+        $(document).on('click', '.image-preview', function() {
+            const imageSrc = $(this).data('image');
+            const title = $(this).data('title');
+            $('#modalImage').attr('src', imageSrc);
+            $('#imageTitle').text(title);
+            $('#viewImageModal').modal('show');
         });
     });
     </script>
