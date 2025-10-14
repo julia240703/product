@@ -23,9 +23,11 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-success mb-3 btn-sm" data-bs-toggle="modal" data-bs-target="#addMotorModal">Tambah Motor</button>
+        <button type="button" class="btn btn-success mb-3 btn-sm" data-bs-toggle="modal" data-bs-target="#addMotorModal">
+            Tambah Motor
+        </button>
 
-        <!-- Modal Tambah Motor -->
+        {{-- ========================= MODAL TAMBAH ========================= --}}
         <div class="modal fade" id="addMotorModal" tabindex="-1" aria-labelledby="addMotorModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -52,6 +54,14 @@
                                 <label class="form-label">WMS Code <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="wms_code" required>
                             </div>
+
+                            {{-- HARGA OTR --}}
+                            <div class="mb-3">
+                                <label class="form-label">Harga OTR (Rp)</label>
+                                <input type="number" min="0" step="1" class="form-control" name="price" placeholder="Contoh: 19000000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="add_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="add_category_id" class="form-select" required>
@@ -99,7 +109,6 @@
                                 </select>
                             </div>
 
-                            <!-- NEW -->
                             <div class="mb-3 form-check">
                                 <input class="form-check-input" type="checkbox" id="add_is_new" name="is_new" value="1">
                                 <label class="form-check-label" for="add_is_new">Tandai sebagai <strong>NEW</strong></label>
@@ -115,7 +124,7 @@
             </div>
         </div>
 
-        <!-- Modal Edit Motor -->
+        {{-- ========================= MODAL EDIT ========================= --}}
         <div class="modal fade" id="editMotorModal" tabindex="-1" aria-labelledby="editMotorModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <form method="POST" id="editMotorForm" enctype="multipart/form-data">
@@ -144,6 +153,14 @@
                                 <label class="form-label">WMS Code <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="wms_code" id="edit_wms_code" required>
                             </div>
+
+                            {{-- HARGA OTR --}}
+                            <div class="mb-3">
+                                <label class="form-label">Harga OTR (Rp)</label>
+                                <input type="number" min="0" step="1" class="form-control" name="price" id="edit_price" placeholder="Contoh: 19000000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="edit_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="edit_category_id" class="form-select" required>
@@ -195,7 +212,6 @@
                                 </select>
                             </div>
 
-                            <!-- NEW -->
                             <div class="mb-3 form-check">
                                 <input class="form-check-input" type="checkbox" id="edit_is_new" name="is_new" value="1">
                                 <label class="form-check-label" for="edit_is_new">Tandai sebagai <strong>NEW</strong></label>
@@ -211,7 +227,7 @@
             </div>
         </div>
 
-        <!-- Modal Delete -->
+        {{-- ========================= MODAL DELETE ========================= --}}
         <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <form method="POST" id="deleteForm">
@@ -234,25 +250,7 @@
             </div>
         </div>
 
-        <!-- Modal View Image -->
-        <div class="modal fade" id="viewImageModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Lihat Gambar</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <img id="modalImage" src="" alt="Preview" class="img-fluid rounded" style="max-height: 500px;">
-                        <div class="mt-2">
-                            <p id="imageTitle" class="mb-1 fw-bold"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- DataTable -->
+        {{-- ========================= DATATABLE ========================= --}}
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -368,13 +366,16 @@
             $('#edit_motor_code_otr').val(motorData.motor_code_otr);
             $('#edit_motor_code_credit').val(motorData.motor_code_credit);
             $('#edit_wms_code').val(motorData.wms_code);
+
+            // harga
+            $('#edit_price').val(motorData.price ? motorData.price : '');
+
             $('#edit_description').val(motorData.description);
             $('#edit_category_id').val(motorData.category_id).trigger('change');
             loadTypes(motorData.category_id, $('#edit_type_id'), motorData.type_id);
             $('#edit_status').val(motorData.status);
             $('#edit_is_new').prop('checked', (motorData.is_new == 1 || motorData.is_new === true));
 
-            // 360 (GIF upload) - show preview if exists
             const gifUrl =
                 motorData.spin_gif
                     ? (motorData.spin_gif.startsWith('http') ? motorData.spin_gif : "{{ asset('storage') }}/" + motorData.spin_gif)
@@ -389,7 +390,6 @@
                 $('#current-spin').html('<label class="form-label">360° Saat Ini: Tidak ada</label>');
             }
 
-            // Thumbnails preview
             if (motorData.thumbnail) {
                 $('#current-thumbnail').html(`
                     <label class="form-label">Thumbnail Saat Ini:</label><br>
@@ -411,7 +411,6 @@
                 `);
             } else { $('#current-feature-thumbnail').html('<label class="form-label">Gambar Fitur Motor Saat Ini: Tidak ada</label>'); }
 
-            // Reset file inputs
             $('#edit_thumbnail').val('');
             $('#edit_accessory_thumbnail').val('');
             $('#edit_feature_thumbnail').val('');

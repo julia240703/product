@@ -1731,8 +1731,6 @@
     max-width:none !important;
   }
 
-  
-
   /* ===== GRID AKSESORIS: 4 kolom saat sidebar buka, 5 kolom saat sidebar ditutup ===== */
 
   /* 1) LIST / NON-DETAIL AKSESORIS (pakai grid) – batasi ke non-detail saja */
@@ -2293,29 +2291,6 @@ body.sidebar-collapsed:not(.accd-detail)
   }
 }
 
-/* === Kartu Apparel & Aksesoris (General) — foto rounded & sedikit lebih besar === */
-.page-apparels .acc-motor-card .acc-motor-img,
-.page-accessories .acc-motor-card .acc-motor-img{
-  display:flex; align-items:center; justify-content:center;
-  border-radius:12px;        /* bikin melengkung */
-  overflow:hidden;           /* pastikan sudut gambar ikut melengkung */
-}
-
-.page-apparels .acc-motor-card .acc-motor-img img,
-.page-accessories .acc-motor-card .acc-motor-img img{
-  height:200px;              /* > dari 180px → jadi sedikit lebih besar */
-  max-height:220px;
-  width:auto; max-width:100%;
-  object-fit:contain;        /* tidak crop gambar; ubah ke 'cover' kalau mau memenuhi kotak */
-  border-radius:12px;        /* cadangan kalau wrapper tidak memotong sudut */
-}
-
-/* (Opsional) kalau kolom gambar terasa sempit, lebarin dikit kolom kiri */
-.page-apparels .acc-motor-card,
-.page-accessories .acc-motor-card{
-  grid-template-columns: 240px 1fr;  /* semula ~220px, bikin ruang foto lebih lega */
-}
-
 /* ======= BANDINGKAN MOTOR — STYLE UTAMA ======= */
 /* Header abu-abu */
 .cmp-hero{
@@ -2438,8 +2413,23 @@ font-size: 16px;
 letter-spacing: .2px;
 }
 
-/* Hanya halaman ini yang tidak scroll global */
-#cmpPickPage{ height:100vh; overflow:hidden; }
+/* === FIX: jangan potong kiri–kanan di halaman Pilih Model === */
+#cmpPickPage{
+  min-height: 100vh;           /* ganti height kaku → min-height */
+  overflow-y: hidden;          /* tahan scroll global di sumbu Y */
+  overflow-x: visible !important; /* IZINKAN gutter .row tampil */
+}
+
+/* jaga-jaga: pastikan konten kanan tidak ikut memotong */
+#cmpPickPage .cmp-right-scroll{
+  overflow-x: visible !important;
+}
+
+/* opsional: beri ruang aman tipis supaya grid tak nempel tepi */
+#cmpPickPage .cmp-right-scroll{
+  padding-left: 16px;
+  padding-right: 16px;
+}
 
 /* Panel kiri sticky persis di bawah header/subtitle */
 .cmp-filter-stick{
@@ -3685,6 +3675,107 @@ margin-bottom: calc(var(--cmpFooterH, 60px) + 24px) !important;
 
   /* sedikit rapetin jarak antar kolom */
   .dealer-flex{ gap:12px 12px; }
+}
+
+/* ===== 1080×1920 portrait — SAAT SIDEBAR KETUTUP: paksa 1 baris ===== */
+@media (max-width:1080px) and (orientation:portrait){
+  /* pakai salah satu selector yang cocok di project-mu — saya tulis dua */
+  body.sidebar-collapsed .dealer-flex,
+  .sidebar:not(.open) ~ .main-wrapper .dealer-flex{
+    flex-wrap: nowrap !important;      /* semua item 1 baris */
+    align-items: flex-end !important;
+    gap: 12px 12px !important;
+  }
+
+  body.sidebar-collapsed .dealer-field,
+  .sidebar:not(.open) ~ .main-wrapper .dealer-field{
+    flex: 1 1 0 !important;            /* kolom bisa menyusut */
+    min-width: 0 !important;
+  }
+
+  /* "Nama Dealer" ambil sisa ruang sebelum tombol */
+  body.sidebar-collapsed .dealer-field:last-of-type,
+  .sidebar:not(.open) ~ .main-wrapper .dealer-field:last-of-type{
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  /* kolom tombol nempel kanan, tidak turun */
+  body.sidebar-collapsed .dealer-btn-wrap,
+  .sidebar:not(.open) ~ .main-wrapper .dealer-btn-wrap{
+    margin-left: auto !important;
+    flex: 0 0 auto !important;
+    align-self: flex-end !important;
+    white-space: nowrap !important;
+  }
+
+  /* tombol kompak biar muat */
+  body.sidebar-collapsed .dealer-search-btn,
+  body.sidebar-collapsed .dealer-clear-btn,
+  .sidebar:not(.open) ~ .main-wrapper .dealer-search-btn,
+  .sidebar:not(.open) ~ .main-wrapper .dealer-clear-btn{
+    min-width: 0 !important;
+    width: auto !important;
+    padding: 0 14px !important;
+    height: 52px !important;
+  }
+}
+
+/* === Dealer: rapat ke footer, tanpa jarak === */
+:root{ --footer-fixed-h: 80px; } /* biarkan sesuai punyamu */
+
+/* Hapus “ruang aman” yang bikin jeda bawah */
+.app-main{
+  overflow: hidden;
+  padding-bottom: 0 !important;   /* buang padding bawah */
+}
+
+/* Buang spacer after yang sempat ditambah */
+.dealer-page::after{ content:none !important; display:none !important; }
+
+/* Page dealer = tinggi bersih viewport minus footer, tanpa margin/padding bawah */
+.dealer-page{
+  height: calc(100vh - var(--footer-fixed-h)) !important;
+  overflow: hidden;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Area list+map isi sisa tinggi persis sampai garis footer */
+.dealer-split{
+  /* kalau header/hero+filter punya tinggi tetap, set var ini */
+  --dealer-top-h: 160px;                  /* SESUAIKAN tinggi bagian atasmu */
+  height: calc(100vh - var(--footer-fixed-h) - var(--dealer-top-h)) !important;
+  overflow: hidden;
+  margin-bottom: 0 !important;
+  min-height: 0;
+}
+
+/* Hanya list yang scroll; rapat ke bawah (tanpa padding/margin) */
+.dealer-list-pane{
+  height: 100%;
+  overflow: auto;
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Map isi penuh kolomnya; tidak ada min-height yang bikin jeda */
+.dealer-map-canvas{
+  height: 100% !important;
+  min-height: 0 !important;
+  display: block;
+}
+
+/* Responsif tumpuk vertikal: tetap rapat ke footer */
+@media (max-width: 992px){
+  .dealer-split{
+    grid-template-columns: 1fr;
+    grid-auto-rows: 50% 50%;
+    height: calc(100vh - var(--footer-fixed-h) - var(--dealer-top-h)) !important;
+  }
 }
 
 /* =========================
@@ -5031,4 +5122,150 @@ html.is-1920-100 body.sidebar-collapsed
 @media (min-width:1400px){
   body:not(.sidebar-collapsed) .accd-grid{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
   body.sidebar-collapsed .accd-grid{ grid-template-columns: repeat(4, minmax(0,1fr)) !important; }
+}
+
+/* === Samakan KARTU Parts dengan Accessories & Apparels === */
+/* wrapper gambar di kartu */
+.page-apparels .acc-motor-card .acc-motor-img,
+.page-accessories .acc-motor-card .acc-motor-img,
+.page-parts .acc-motor-card .acc-motor-img{
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+/* ukuran gambar di kartu */
+.page-apparels .acc-motor-card .acc-motor-img img,
+.page-accessories .acc-motor-card .acc-motor-img img,
+.page-parts .acc-motor-card .acc-motor-img img{
+  height:200px;
+  max-height:220px;
+  width:auto; max-width:100%;
+  object-fit:contain;
+  border-radius:12px;
+}
+
+/* lebar kolom kiri (grid) — biar foto lega */
+.page-apparels .acc-motor-card,
+.page-accessories .acc-motor-card,
+.page-parts .acc-motor-card{
+  display:grid;
+  grid-template-columns: 240px 1fr;
+  align-items:center;
+  gap:24px;
+}
+
+/* judul & info side boleh menyusut (agar tombol tidak keluar) */
+.page-parts .acc-motor-info{ min-width:0; }
+
+/* tombol detail: ukurannya disamakan & tidak melebihi kolom */
+.page-parts .acc-motor-cta{
+  display:inline-flex; align-items:center; justify-content:space-between;
+  width:260px;                 /* desktop = sama dengan accessories */
+  height:48px;
+  padding:0 16px;
+  max-width:100%;              /* jaga-jaga kalau kolom sempit */
+  white-space:nowrap;
+}
+
+/* Portrait 1080×1920 (atau layar tinggi) — pakai ukuran tombol accessories */
+@media (max-width:1200px) and (min-height:1200px) and (orientation:portrait){
+  .page-parts .acc-motor-card{ gap:16px; padding:16px 18px; }
+  .page-parts .acc-motor-card{ grid-template-columns:160px 1fr; }
+  .page-parts .acc-motor-cta{
+    width:220px;               /* sama seperti accessories di portrait */
+    height:40px;
+    padding:0 14px;
+  }
+  .page-parts .acc-motor-img img{
+    height:160px; max-height:180px;   /* biar komposisi rapi di portrait */
+  }
+}
+
+/* Mobile umum */
+@media (max-width: 992px){
+  .page-parts .acc-motor-card{ grid-template-columns:1fr; gap:16px; }
+  .page-parts .acc-motor-cta{ width:100%; }
+}
+
+/* Tambahan kecil untuk badge & pill nama tipe */
+.type-badge{
+  display:inline-block; padding:4px 10px; border-radius:999px;
+  font-size:12px; background:#EFEFEF; color:#111; border:1px solid #ddd;
+}
+
+.type-pill{
+  display:inline-block; padding:8px 16px; border-radius:999px;
+  background:#fff; border:2px solid #dc3545; color:#dc3545; font-weight:700;
+}
+
+/* ==== Parts Detail — perbaikan final ==== */
+
+/* 1) Jangan jadikan <main> scroller di halaman PDF. Biarkan body yang scroll. */
+main:has(.pdf-frame){
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* 2) Kembalikan layout konten ke blok biasa (bukan flex) agar tinggi tidak kolaps */
+.accd-detail{
+  display: block !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+/* 3) Parent viewer jangan paksa flex/tinggi 0; biarkan mengikuti isi */
+.card.pdf-viewer{
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  border: 0;
+}
+
+/* 4) Iframe punya tinggi eksplisit supaya selalu terlihat */
+.pdf-frame{
+  display: block;
+  width: 100% !important;
+  height: 80vh !important;      /* boleh 75–85vh sesuai selera */
+  border: 0;
+  border-radius: 12px;
+}
+
+/* 5) Sidebar tetap “nempel” saat body yang scroll */
+body:has(.pdf-frame) .sidebar{
+  position: sticky;    /* jika sticky tidak bekerja di layoutmu, ganti ke fixed */
+  top: 0;
+  height: 100vh;
+}
+
+/* 1080×1920 portrait — gambar varian lebih besar, dots tetap dekat */
+@media (max-width:1100px) and (min-height:1880px) and (orientation:portrait){
+
+  .motor-colors .variant-viewport{
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 6px !important;   /* rapetin ruang setelah gambar */
+  }
+  .motor-colors .variant-track{ margin-bottom: 0 !important; }
+  .motor-colors .variant-item{ margin-bottom: 0 !important; }
+  .motor-colors .variant-name{ margin-top: 6px !important; }
+
+  /* === PERBESAR GAMBAR DI SINI === */
+  .motor-colors .variant-img{
+    max-height: 320px !important;    /* coba 320–360px sesuai selera */
+    width: auto !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  /* dots tetap dekat meski gambar membesar */
+  .motor-colors .color-selector{
+    margin-top: 4px !important;
+    position: relative;
+    top: -10px !important;           /* kalau masih jauh: -12 / -16 */
+    gap: 14px !important;
+  }
+
+  .motor-colors.mb-5{ margin-bottom: 16px !important; }
 }

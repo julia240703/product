@@ -27,61 +27,56 @@
             </div>
         </div>
 
-        <button type="button" class="btn btn-success mb-3 btn-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-            Tambah Sparepart
+        {{-- Alerts (pakai key khusus agar tidak dobel sama layout) --}}
+        @if(session('success_parts'))
+            <div id="success-message" class="alert alert-success">{{ session('success_parts') }}</div>
+        @endif
+        @if($errors->any())
+            <div id="error-message" class="alert alert-danger">
+                @foreach($errors->all() as $e) <div>{{ $e }}</div> @endforeach
+            </div>
+        @endif
+
+        {{-- CTA Upload / Ganti --}}
+        <button type="button"
+                class="btn btn-success mb-3 btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#addModal">
+            {{ $motor->parts_pdf ? 'Ganti Katalog PDF' : 'Upload Katalog PDF' }}
         </button>
 
-        <!-- Modal Tambah -->
+        {{-- Modal Upload/Ganti PDF --}}
         <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addSparepartLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addSparepartLabel">Tambah Sparepart Motor</h5>
+                        <h5 class="modal-title" id="addSparepartLabel">
+                            {{ $motor->parts_pdf ? 'Ganti Katalog PDF' : 'Upload Katalog PDF' }}
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
                     <div class="modal-body">
-                        <form method="POST" action="{{ route('admin.spareparts.store', $motor->id) }}" enctype="multipart/form-data">
+                        <form method="POST"
+                              action="{{ route('admin.spareparts.store', $motor->id) }}"
+                              enctype="multipart/form-data">
                             @csrf
                             <div class="mb-3">
-                                <label for="name" class="form-label">Nama Sparepart <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="name" name="name" required>
+                                <label for="parts_pdf" class="form-label">File PDF <span class="text-danger">*</span></label>
+                                <input type="file"
+                                       class="form-control"
+                                       id="parts_pdf"
+                                       name="parts_pdf"
+                                       accept="application/pdf"
+                                       required>
+                                <div class="form-text">
+                                    Format: PDF • Maks 50MB. Mengunggah file baru akan <strong>mengganti</strong> file yang ada.
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="image" class="form-label">Gambar <span class="text-danger">*</span></label>
-                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                            </div>
-                            <div class="mb-3">
-                                <label for="category" class="form-label">Kategori <span class="text-danger">*</span></label>
-                                <select class="form-control" id="category" name="category" required>
-                                    <option value="">Pilih Kategori</option>
-                                    <option value="electric">Electric</option>
-                                    <option value="engine">Engine</option>
-                                    <option value="frame">Frame</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="price" class="form-label">Harga <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="price" name="price" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="description" class="form-label">Deskripsi</label>
-                                <textarea class="form-control" id="description" name="description"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="dimension" class="form-label">Dimensi <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="dimension" name="dimension" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="weight" class="form-label">Berat (gram) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="weight" name="weight" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="part_number" class="form-label">Part Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="part_number" name="part_number" required>
-                            </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer px-0">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
-                                <button type="submit" class="btn btn-success">Tambahkan</button>
+                                <button type="submit" class="btn btn-success">
+                                    {{ $motor->parts_pdf ? 'Simpan Perubahan' : 'Unggah' }}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -89,217 +84,120 @@
             </div>
         </div>
 
-        <!-- Modal Edit -->
-        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editSparepartLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editSparepartLabel">Ubah Data Sparepart Motor</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editSparepartForm" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-                            <div class="mb-3">
-                                <label for="name_edit" class="form-label">Nama Sparepart <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="name_edit" name="name" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="image_edit" class="form-label">Gambar <span class="text-danger">*</span></label>
-                                <input type="file" class="form-control" id="image_edit" name="image" accept="image/*">
-                                <div id="current-image" class="mt-2"></div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="category_edit" class="form-label">Kategori <span class="text-danger">*</span></label>
-                                <select class="form-control" id="category_edit" name="category" required>
-                                    <option value="">Pilih Kategori</option>
-                                    <option value="electric">Electric</option>
-                                    <option value="engine">Engine</option>
-                                    <option value="frame">Frame</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="price_edit" class="form-label">Harga <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="price_edit" name="price" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="description_edit" class="form-label">Deskripsi</label>
-                                <textarea class="form-control" id="description_edit" name="description"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="dimension_edit" class="form-label">Dimensi <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="dimension_edit" name="dimension" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="weight_edit" class="form-label">Berat (gram) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="weight_edit" name="weight" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="part_number_edit" class="form-label">Part Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="part_number_edit" name="part_number" required>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
-                                <button type="submit" class="btn btn-success">Ubah</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Modal Hapus -->
-        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteSparepartLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="deleteSparepartLabel">Konfirmasi Hapus Sparepart</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Apakah kamu yakin ingin menghapus sparepart <strong id="delete_sparepart_name"></strong>?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal View Image -->
-        <div class="modal fade" id="viewImageModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Lihat Gambar</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <img id="modalImage" src="" alt="Preview" class="img-fluid rounded" style="max-height: 500px;">
-                        <div class="mt-2">
-                            <p id="imageTitle" class="mb-1 fw-bold"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Table -->
+        {{-- Kartu Status + Aksi --}}
         <div class="card">
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="display" id="sparepart-table" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nama Sparepart</th>
-                                <th>Gambar</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="p-3 border rounded h-100">
+                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                <div>
+                                    <div class="fw-bold">Status Katalog Motor</div>
+                                    <div class="text-muted" style="font-size:13px;">{{ $motor->name }}</div>
+                                </div>
+                                @if($motor->parts_pdf_url)
+                                    <span class="badge bg-success">Sudah diunggah</span>
+                                @else
+                                    <span class="badge bg-secondary">Belum ada</span>
+                                @endif
+                            </div>
+
+                            @if($motor->parts_pdf_url)
+                                <div class="mb-3">
+                                    <a class="btn btn-primary btn-sm me-2" target="_blank" href="{{ $motor->parts_pdf_url }}">
+                                        <i class="fa-solid fa-file-pdf me-1"></i> Buka di Tab Baru
+                                    </a>
+
+                                    <button class="btn btn-outline-success btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#addModal">
+                                        <i class="fa-solid fa-rotate me-1"></i> Ganti PDF
+                                    </button>
+                                </div>
+
+                                {{-- Tombol hapus memicu modal konfirmasi --}}
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm deletePdfBtn"
+                                        data-action="{{ route('admin.spareparts.delete', [$motor->id, 0]) }}"
+                                        data-name="{{ $motor->name }}">
+                                    <i class="fa-solid fa-trash me-1"></i> Hapus PDF
+                                </button>
+                            @else
+                                <div class="text-muted">
+                                    Belum ada PDF diunggah. Klik tombol <strong>Upload Katalog PDF</strong> di atas.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="p-0">
+                            <div class="fw-bold mb-2">Pratinjau</div>
+                            @if($motor->parts_pdf_url)
+                                <iframe src="{{ $motor->parts_pdf_url }}"
+                                        style="width:100%; height:70vh; border:1px solid #e3e3e3; border-radius:8px;">
+                                </iframe>
+                            @else
+                                <div class="text-muted">
+                                    Pratinjau akan tampil setelah PDF diunggah.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div> {{-- /row --}}
             </div>
         </div>
+    </div>
 
-        <!-- Script -->
-        <script>
-$(document).ready(function() {
-    var dataTable = $('#sparepart-table').DataTable({
-        responsive: true,
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('admin.spareparts.index', $motor->id) }}",
-        columns: [
-            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'name', name: 'name' },
-            { 
-                data: 'image', 
-                name: 'image',
-                className: "text-center",
-                render: function(data, type, row) {
-                    return data 
-                        ? `<img src="${data}" style="width:50px;height:50px;object-fit:cover;cursor:pointer;" class="rounded image-preview" data-image="${data}" data-title="${row.name || ''}">`
-                        : '<span class="text-muted">Tidak ada gambar</span>';
+    {{-- Modal Konfirmasi Hapus PDF --}}
+    <div class="modal fade" id="deletePdfModal" tabindex="-1" aria-labelledby="deletePdfLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="deletePdfForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deletePdfLabel">Konfirmasi Hapus Katalog</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body">
+                        Apakah kamu yakin ingin menghapus katalog PDF untuk motor
+                        <strong id="pdfMotorName">-</strong>?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Script kecil --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // reset input saat modal upload dibuka
+            document.addEventListener('shown.bs.modal', function(e){
+                if (e.target?.id === 'addModal') {
+                    const input = document.getElementById('parts_pdf');
+                    if (input) input.value = '';
                 }
-            },
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: function(data) {
-                    return `
-                        <div class="btn-group">
-                            <button class="btn btn-sm btn-primary me-1 editBtn" data-id="${data.id}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger deleteBtn" data-id="${data.id}" data-name="${data.name}">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                }
-            }
-        ]
-    });
+            });
 
-    // ========== EDIT ==========
-    $(document).on('click', '.editBtn', function() {
-        var sparepartData = dataTable.row($(this).closest('tr')).data();
-        $('#name_edit').val(sparepartData.name);
-        $('#category_edit').val(sparepartData.category);
-        $('#price_edit').val(sparepartData.price);
-        $('#description_edit').val(sparepartData.description);
-        $('#dimension_edit').val(sparepartData.dimension);
-        $('#weight_edit').val(sparepartData.weight);
-        $('#part_number_edit').val(sparepartData.part_number);
-        
-        if (sparepartData.image) {
-            $('#current-image').html(`
-                <label class="form-label">Gambar Saat Ini:</label><br>
-                <img src="${sparepartData.image}" alt="Current Image" style="width: 100px; height: 100px; object-fit: cover;" class="rounded">
-            `);
-        } else {
-            $('#current-image').empty();
-        }
+            // trigger modal konfirmasi hapus
+            document.body.addEventListener('click', function (e) {
+                const btn = e.target.closest('.deletePdfBtn');
+                if (!btn) return;
 
-        // Set dynamic action for edit form
-        const editForm = $('#editSparepartForm');
-        const baseEditUrl = "{{ route('admin.spareparts.update', ['motor' => $motor->id, 'id' => 'DUMMY']) }}".replace('DUMMY', sparepartData.id);
-        editForm.attr('action', baseEditUrl);
+                const action = btn.getAttribute('data-action');
+                const name   = btn.getAttribute('data-name') || '';
 
-        $('#editModal').modal('show');
-    });
+                document.getElementById('deletePdfForm').setAttribute('action', action);
+                document.getElementById('pdfMotorName').textContent = name.toUpperCase();
 
-    // ========== DELETE ==========
-    $(document).on('click', '.deleteBtn', function() {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        $('#delete_sparepart_name').text(name);
-        const form = $('#deleteForm');
-        const baseUrl = "{{ route('admin.spareparts.delete', ['motor' => $motor->id, 'id' => 'DUMMY']) }}".replace('DUMMY', id);
-        form.attr('action', baseUrl);
-        $('#deleteModal').modal('show');
-    });
-
-    // ========== VIEW IMAGE ==========
-    $(document).on('click', '.image-preview', function() {
-        $('#modalImage').attr('src', $(this).data('image'));
-        $('#imageTitle').text($(this).data('title'));
-        $('#viewImageModal').modal('show');
-    });
-
-    // Reset form saat modal ditutup
-    $('.modal').on('hidden.bs.modal', function () {
-        $(this).find('form')[0]?.reset();
-        $('#current-image').empty();
-    });
-});
-</script>
+                const modal = new bootstrap.Modal(document.getElementById('deletePdfModal'));
+                modal.show();
+            });
+        });
+    </script>
 @endsection

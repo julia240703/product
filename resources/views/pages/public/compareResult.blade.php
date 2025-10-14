@@ -1,8 +1,9 @@
 @extends('layouts.appPublic')
 
 @section('content')
-  {{-- Back bar --}}
   @php
+    use Illuminate\Support\Str;
+
     $prev    = url()->previous();
     $current = url()->current();
     $backUrl = $prev && $prev !== $current ? $prev : route('compare.pick');
@@ -23,24 +24,22 @@
     <div class="accd-back-rule"></div>
   </div>
 
-  {{-- Hero --}}
   <section class="cmp-hero mb-4">
     <h2 class="cmp-ttl">Perbandingan Motor</h2>
     <p class="cmp-sub">Anda perlu bantuan untuk memutuskan? Sekarang Anda dapat
       membandingkan motor favorit Anda satu sama lain.</p>
   </section>
 
-  {{-- Grid ringkas motor terpilih + 1 tombol pilih model (selalu di urutan selanjutnya) --}}
   @php
     $selectedOnly = ($motors->count() ?? 0);
     $gridMod      = in_array($selectedOnly, [2,4]) ? 'is-2' : 'is-3';
 
-    // Cari slot kosong pertama dari kiri (0..5)
-    $buttonIndex = null;
+    // Slot kosong pertama → untuk FAB “+”
+    $nextSlot = null;
     if ($selectedOnly < 6) {
-      for ($j = 0; $j < 6; $j++) {
-        $mid = $slots[$j] ?? null;
-        if (!$mid || !isset($motorMap[$mid])) { $buttonIndex = $j; break; }
+      for ($i = 0; $i < 6; $i++) {
+        $mid = $slots[$i] ?? null;
+        if (!$mid || !isset($motorMap[$mid])) { $nextSlot = $i; break; }
       }
     }
   @endphp
@@ -61,34 +60,28 @@
 
             <div class="cmp-fig-img"><img src="{{ $m->image_url }}" alt="{{ $m->name }}"></div>
             <h3 class="cmp-fig-name">{{ $m->name }}</h3>
-            <div class="cmp-fig-price">Rp {{ number_format($m->price ?? 0,0,',','.') }}</div>
+            <div class="cmp-fig-price">{{ $m->display_price ?? '—' }}</div>
             <a class="cmp-fig-detail" href="{{ $m->detail_url }}">Produk Detail</a>
-          </article>
-        </div>
-
-      @elseif(!is_null($buttonIndex) && $i === $buttonIndex)
-        {{-- HANYA 1 tombol "Pilih Model" di slot kosong pertama --}}
-        <div class="cmp-fig-item">
-          <article class="cmp-fig-card" style="display:flex;align-items:center;justify-content:center;min-height:360px;">
-            <a class="cmp-slot" href="{{ route('compare.pick', ['slot' => $i]) }}">
-              <span class="cmp-plus">+</span> Pilih Model
-            </a>
           </article>
         </div>
       @endif
     @endfor
   </div>
 
-  {{-- Tabel spesifikasi (accordion) --}}
+  {{-- Tabel spesifikasi --}}
   @foreach($categories as $cat)
+    @php
+      $slug  = Str::slug($cat) ?: 'kategori-'.$loop->index;
+      $bodyId = 'spec-body-'.$slug;
+    @endphp
     <section class="cmp-spec-block">
-      <div class="cmp-spec-head" data-acc role="button" tabindex="0"
-           aria-controls="spec-body-{{ Str::slug($cat) }}" aria-expanded="false">
+      <div class="cmp-spec-head is-open" data-acc role="button" tabindex="0"
+           aria-controls="{{ $bodyId }}" aria-expanded="true">
         <h4 class="m-0">{{ $cat }}</h4>
-        <span class="ico" aria-hidden="true">+</span>
+        <span class="ico" aria-hidden="true">–</span>
       </div>
 
-      <div id="spec-body-{{ Str::slug($cat) }}" class="cmp-spec-body" hidden>
+      <div id="{{ $bodyId }}" class="cmp-spec-body open">
         <div class="cmp-spec-table-wrap">
           @php
             $attrW = 25;
@@ -111,7 +104,7 @@
                   <th>
                     <div class="cmp-hcell cmp-hcell--left">
                       <span class="cmp-spec-name" title="{{ $m->name }}">{{ $m->name }}</span>
-                      <span class="cmp-spec-price">Rp {{ number_format($m->price ?? 0, 0, ',', '.') }}</span>
+                      <span class="cmp-spec-price">{{ $m->display_price ?? '—' }}</span>
 
                       @php $detailUrl = $m->detail_url ?? null; @endphp
                       @if($detailUrl)
@@ -143,6 +136,43 @@
     </section>
   @endforeach
 
+  {{-- FAB “+” tengah kanan (muncul jika masih ada slot kosong) --}}
+  @if(!is_null($nextSlot))
+    <a href="{{ route('compare.pick', ['slot' => $nextSlot]) }}"
+       class="cmp-fab cmp-fab--mid"
+       aria-label="Tambah model">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5"  x2="12" y2="19"/>
+        <line x1="5"  y1="12" x2="19" y2="12"/>
+      </svg>
+    </a>
+  @endif
+
+@push('styles')
+<style>
+  .cmp-fab{
+    position: fixed;
+    right: 24px;
+    width: 56px; height: 56px;
+    border-radius: 9999px;
+    background: #111; color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    z-index: 1030;
+    text-decoration: none;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .cmp-fab--mid{ top: 50%; transform: translateY(-50%); }
+  .cmp-fab:hover{ background:#e11d48; transform: translateY(-50%) scale(1.02); }
+  .cmp-fab:active{ transform: translateY(-50%) scale(.98); }
+  @media (max-width: 768px){
+    .cmp-fab{ right: 16px; width: 52px; height: 52px; }
+    .cmp-fab--mid{ top: auto; bottom: 20px; transform: none; }
+  }
+</style>
+@endpush
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
@@ -150,17 +180,20 @@ document.addEventListener('DOMContentLoaded', function(){
     const body = document.getElementById(head.getAttribute('aria-controls'));
     const icon = head.querySelector('.ico');
 
-    function toggle(open){
+    function setState(open){
       head.classList.toggle('is-open', open);
       head.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (open) { body.removeAttribute('hidden'); body.classList.add('open'); }
-      else      { body.setAttribute('hidden','');   body.classList.remove('open'); }
+      if (open) { body.classList.add('open'); body.removeAttribute('hidden'); }
+      else      { body.classList.remove('open'); body.setAttribute('hidden',''); }
       if (icon) icon.textContent = open ? '–' : '+';
     }
 
-    head.addEventListener('click', () => toggle(body.hasAttribute('hidden')));
+    const initiallyOpen = !body.hasAttribute('hidden');
+    setState(initiallyOpen);
+
+    head.addEventListener('click', () => setState(body.hasAttribute('hidden')));
     head.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(body.hasAttribute('hidden')); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setState(body.hasAttribute('hidden')); }
     });
   });
 });

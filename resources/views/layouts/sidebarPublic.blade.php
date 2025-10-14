@@ -18,7 +18,7 @@
       <i class="fas fa-tools"></i> Aksesoris
     </a>
     <a class="nav-link {{ request()->routeIs('parts') ? 'active' : '' }}" href="{{ route('parts') }}">
-      <i class="fas fa-cogs"></i> Parts
+      <i class="fas fa-cogs"></i> Katalog Part
     </a>
     <a class="nav-link {{ request()->routeIs('apparels') ? 'active' : '' }}" href="{{ route('apparels') }}">
       <i class="fas fa-tshirt"></i> Apparel

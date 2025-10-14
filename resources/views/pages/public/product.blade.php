@@ -23,17 +23,18 @@
         </div>
       </div>
 
-      {{-- ===== List Produk ===== --}}
+      {{-- ===== List Tipe ===== --}}
       <div class="row mt-4 product-grid">
-        @if($motors->isNotEmpty())
-          {{-- Jika kategori = SEMUA, tampilkan per kategori mengikuti urutan $categories (tombol di atas) --}}
+        @if($types->isNotEmpty())
+
+          {{-- Jika kategori = SEMUA, tampilkan dikelompokkan per kategori (urutan mengikuti tombol di atas) --}}
           @if(empty($categoryName))
             @php
-              $motorsByCat = $motors->groupBy('category_id');
+              $typesByCat = $types->groupBy('category_id');
             @endphp
 
             @foreach($categories as $cat)
-              @php $items = $motorsByCat->get($cat->id, collect()); @endphp
+              @php $items = $typesByCat->get($cat->id, collect()); @endphp
               @if($items->isNotEmpty())
                 {{-- Judul kategori --}}
                 <div class="col-12 mb-3">
@@ -41,29 +42,31 @@
                   <hr class="category-divider">
                 </div>
 
-                @foreach($items as $motor)
+                @foreach($items as $type)
                   <div class="col-md-6 mb-4 product-col">
                     <div class="product-card d-flex" style="position:relative;">
-                      @if($motor->is_new)
-                        <div style="position:absolute; right:12px; top:12px; background:#dc2626; color:#fff; padding:4px 10px; border-radius:9999px; font-size:12px; font-weight:700; z-index:5; pointer-events:none;">
-                          New !
-                        </div>
-                      @endif
-
                       <div class="product-image-left">
                         <img
-                          src="{{ method_exists($motor,'getThumbUrlAttribute') ? $motor->thumb_url : asset('storage/' . ($motor->thumbnail ?? '')) }}"
-                          alt="{{ $motor->name }}"
+                          src="{{ $type->image_url }}"
+                          alt="{{ $type->name }}"
                           class="img-fluid"
                           style="max-height: 180px; object-fit: contain;">
                       </div>
 
                       <div class="product-info-right">
-                        <h5 class="product-title">{{ $motor->name }}</h5>
+                        <h5 class="product-title">{{ $type->name }}</h5>
                         <p class="product-subtitle"><em>Harga Mulai</em></p>
-                        <p class="product-price">Rp {{ number_format($motor->price ?? 0, 0, ',', '.') }}</p>
+
+                        {{-- di semua tempat yang sebelumnya pakai display_price_from --}}
+@if(!empty($type->display_price_from_fmt))
+  <p class="product-price">{{ $type->display_price_from_fmt }}</p>
+@else
+  <p class="product-price">Hubungi dealer</p>
+@endif
+
                         <div class="d-flex justify-content-end gap-2 mt-2 me-3">
-                          <a href="{{ route('motor.detail', $motor->id) }}" class="btn btn-outline-danger">Detail</a>
+                          {{-- Gate: varian=1 langsung ke detail; >=2 ke halaman pilih varian --}}
+                          <a href="{{ route('type.show', $type->id) }}" class="btn btn-outline-danger">Detail</a>
                           <a href="{{ route('compare.menu') }}" class="btn btn-dark">Bandingkan</a>
                         </div>
                       </div>
@@ -73,39 +76,40 @@
               @endif
             @endforeach
 
-            {{-- Opsi: produk tanpa kategori / kategori tak terdaftar → taruh paling akhir --}}
+            {{-- tipe tanpa kategori terdaftar (fallback) --}}
             @php
               $knownIds = $categories->pluck('id');
-              $others   = $motors->whereNotIn('category_id', $knownIds);
+              $others   = $types->whereNotIn('category_id', $knownIds);
             @endphp
             @if($others->isNotEmpty())
               <div class="col-12 mb-3">
                 <h3 class="category-heading">Lainnya</h3>
                 <hr class="category-divider">
               </div>
-              @foreach($others as $motor)
+              @foreach($others as $type)
                 <div class="col-md-6 mb-4 product-col">
                   <div class="product-card d-flex" style="position:relative;">
-                    @if($motor->is_new)
-                      <div style="position:absolute; right:12px; top:12px; background:#dc2626; color:#fff; padding:4px 10px; border-radius:9999px; font-size:12px; font-weight:700; z-index:5; pointer-events:none;">
-                        New !
-                      </div>
-                    @endif
-
                     <div class="product-image-left">
                       <img
-                        src="{{ method_exists($motor,'getThumbUrlAttribute') ? $motor->thumb_url : asset('storage/' . ($motor->thumbnail ?? '')) }}"
-                        alt="{{ $motor->name }}"
+                        src="{{ $type->image_url }}"
+                        alt="{{ $type->name }}"
                         class="img-fluid"
                         style="max-height: 180px; object-fit: contain;">
                     </div>
 
                     <div class="product-info-right">
-                      <h5 class="product-title">{{ $motor->name }}</h5>
+                      <h5 class="product-title">{{ $type->name }}</h5>
                       <p class="product-subtitle"><em>Harga Mulai</em></p>
-                      <p class="product-price">Rp {{ number_format($motor->price ?? 0, 0, ',', '.') }}</p>
+
+                      {{-- di semua tempat yang sebelumnya pakai display_price_from --}}
+@if(!empty($type->display_price_from_fmt))
+  <p class="product-price">{{ $type->display_price_from_fmt }}</p>
+@else
+  <p class="product-price">Hubungi dealer</p>
+@endif
+
                       <div class="d-flex justify-content-end gap-2 mt-2 me-3">
-                        <a href="{{ route('motor.detail', $motor->id) }}" class="btn btn-outline-danger">Detail</a>
+                        <a href="{{ route('type.show', $type->id) }}" class="btn btn-outline-danger">Detail</a>
                         <a href="{{ route('compare.menu') }}" class="btn btn-dark">Bandingkan</a>
                       </div>
                     </div>
@@ -116,29 +120,30 @@
 
           @else
             {{-- Jika kategori spesifik dipilih --}}
-            @foreach($motors as $motor)
+            @foreach($types as $type)
               <div class="col-md-6 mb-4 product-col">
                 <div class="product-card d-flex" style="position:relative;">
-                  @if($motor->is_new)
-                    <div style="position:absolute; right:12px; top:12px; background:#dc2626; color:#fff; padding:4px 10px; border-radius:9999px; font-size:12px; font-weight:700; z-index:5; pointer-events:none;">
-                      New !
-                    </div>
-                  @endif
-
                   <div class="product-image-left">
                     <img
-                      src="{{ method_exists($motor,'getThumbUrlAttribute') ? $motor->thumb_url : asset('storage/' . ($motor->thumbnail ?? '')) }}"
-                      alt="{{ $motor->name }}"
+                      src="{{ $type->image_url }}"
+                      alt="{{ $type->name }}"
                       class="img-fluid"
                       style="max-height: 180px; object-fit: contain;">
                   </div>
 
                   <div class="product-info-right">
-                    <h5 class="product-title">{{ $motor->name }}</h5>
+                    <h5 class="product-title">{{ $type->name }}</h5>
                     <p class="product-subtitle"><em>Harga Mulai</em></p>
-                    <p class="product-price">Rp {{ number_format($motor->price ?? 0, 0, ',', '.') }}</p>
+
+                    {{-- di semua tempat yang sebelumnya pakai display_price_from --}}
+@if(!empty($type->display_price_from_fmt))
+  <p class="product-price">{{ $type->display_price_from_fmt }}</p>
+@else
+  <p class="product-price">Hubungi dealer</p>
+@endif
+
                     <div class="d-flex justify-content-end gap-2 mt-2 me-3">
-                      <a href="{{ route('motor.detail', $motor->id) }}" class="btn btn-outline-danger">Detail</a>
+                      <a href="{{ route('type.show', $type->id) }}" class="btn btn-outline-danger">Detail</a>
                       <a href="{{ route('compare.menu') }}" class="btn btn-dark">Bandingkan</a>
                     </div>
                   </div>
@@ -146,6 +151,7 @@
               </div>
             @endforeach
           @endif
+
         @else
           <p class="text-center">Tidak ada produk yang tersedia.</p>
         @endif

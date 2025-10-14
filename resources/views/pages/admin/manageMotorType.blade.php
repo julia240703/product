@@ -39,12 +39,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addMotorTypeForm" method="POST" action="{{ route('admin.motor-type.store') }}">
+                    <form id="addMotorTypeForm" method="POST" action="{{ route('admin.motor-type.store') }}" enctype="multipart/form-data">
                         @csrf
                         <div class="mb-3">
                             <label for="nama" class="form-label">Nama Motor <span class="text-red">*</span></label>
                             <input class="form-control" id="nama" name="name" required />
                         </div>
+
                         <div class="mb-3">
                             <label for="kategori_id" class="form-label">Tipe (Kategori) <span class="text-red">*</span></label>
                             <select class="form-select" id="kategori_id" name="category_id" required>
@@ -54,6 +55,16 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Cover Image</label>
+                            <input type="file" class="form-control" name="cover_image" id="cover_add" accept="image/*">
+                            <div class="small text-muted mt-1">jpg/jpeg/png/webp, maks 2MB.</div>
+                            <div class="mt-2">
+                                <img id="preview_add" src="{{ asset('no-image.png') }}" alt="Preview" style="height:64px;border-radius:8px">
+                            </div>
+                        </div>
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
                             <button type="submit" class="btn btn-success">Tambahkan</button>
@@ -73,23 +84,36 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editForm">
-                        <input type="hidden" id="motorTypeId">
+                    <form id="editForm" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" id="motorTypeId" name="id">
+
                         <div class="mb-3">
                             <label for="nama_edit" class="form-label">Nama Motor <span class="text-red">*</span></label>
-                            <input class="form-control" id="nama_edit" name="nama_edit" required />
+                            <input class="form-control" id="nama_edit" name="name" required />
                         </div>
+
                         <div class="mb-3">
                             <label for="kategori_id_edit" class="form-label">Tipe (Kategori) <span class="text-red">*</span></label>
-                            <select class="form-select" id="kategori_id_edit" name="kategori_id_edit" required>
+                            <select class="form-select" id="kategori_id_edit" name="category_id" required>
                                 <option value="">Pilih Tipe</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Cover Image (opsional ganti)</label>
+                            <input type="file" class="form-control" name="cover_image" id="cover_edit" accept="image/*">
+                            <div class="small text-muted mt-1">Biarkan kosong jika tidak diganti.</div>
+                            <div class="mt-2">
+                                <img id="preview_edit" src="{{ asset('no-image.png') }}" alt="Preview" style="height:64px;border-radius:8px">
+                            </div>
+                        </div>
                     </form>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
                     <button type="button" class="btn btn-success" id="updateBtn">Ubah</button>
@@ -130,6 +154,7 @@
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Cover</th>
                             <th>Nama Motor</th>
                             <th>Tipe</th>
                             <th>Aksi</th>
@@ -144,6 +169,25 @@
 <!-- DataTables Script -->
 <script>
 $(document).ready(function() {
+    const baseStorage = "{{ asset('storage') }}/";
+    const noImg = "{{ asset('no-image.png') }}";
+
+    // preview add
+    $('#cover_add').on('change', function(e){
+        const f = e.target.files?.[0]; if(!f) return;
+        const rd = new FileReader();
+        rd.onload = ev => $('#preview_add').attr('src', ev.target.result);
+        rd.readAsDataURL(f);
+    });
+
+    // preview edit
+    $('#cover_edit').on('change', function(e){
+        const f = e.target.files?.[0]; if(!f) return;
+        const rd = new FileReader();
+        rd.onload = ev => $('#preview_edit').attr('src', ev.target.result);
+        rd.readAsDataURL(f);
+    });
+
     var dataTable = $('#motor-type-table').DataTable({
         responsive: true,
         processing: true,
@@ -151,8 +195,24 @@ $(document).ready(function() {
         ajax: "{{ route('admin.motor-type.data') }}",
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-            { data: 'name',        name: 'motor_types.name' }, // <— map ke kolom tabel
-            { data: 'tipe',        name: 'categories.name' },  // <— map ke kolom join kategori
+
+            // COVER: gunakan 'thumb' dari server jika ada; fallback ke cover_image
+            {
+                data: 'thumb',
+                name: 'cover_image',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row){
+                    // jika server kirim 'thumb' siap pakai, pakai itu
+                    if (data) return data;
+                    const src = row.cover_image ? (baseStorage + row.cover_image) : noImg;
+                    return `<img src="${src}" alt="cover" style="height:48px;border-radius:8px">`;
+                }
+            },
+
+            { data: 'name', name: 'motor_types.name' },     // Nama MotorType
+            { data: 'tipe', name: 'categories.name' },      // Nama Kategori
+
             {
                 data: null,
                 orderable: false,
@@ -161,13 +221,14 @@ $(document).ready(function() {
                     return `
                         <button class="btn btn-sm btn-primary editBtn"
                             data-id="${data.id}"
-                            data-name="${data.name}"
-                            data-category_id="${data.category_id}">
+                            data-name="${$('<div>').text(data.name).html()}"
+                            data-category_id="${data.category_id}"
+                            data-cover="${data.cover_image || ''}">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button class="btn btn-sm btn-danger deleteBtn"
                             data-id="${data.id}"
-                            data-name="${data.name}">
+                            data-name="${$('<div>').text(data.name).html()}">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     `;
@@ -180,27 +241,32 @@ $(document).ready(function() {
         }
     });
 
-    // Edit button
+    // Edit button → isi form + preview
     $(document).on('click', '.editBtn', function() {
         var motorData = dataTable.row($(this).closest('tr')).data();
         $('#motorTypeId').val(motorData.id);
         $('#nama_edit').val(motorData.name);
         $('#kategori_id_edit').val(motorData.category_id);
+
+        const src = motorData.cover_image ? (baseStorage + motorData.cover_image) : noImg;
+        $('#preview_edit').attr('src', src);
+
         $('#editModal').modal('show');
     });
 
-    // Update via Ajax (kirim name & category_id sesuai controller)
+    // Update via Ajax (FormData agar bisa upload file)
     $('#updateBtn').on('click', function() {
+        const form = document.getElementById('editForm');
+        const fd = new FormData(form);
+        fd.set('id', $('#motorTypeId').val()); // pastikan id ikut
+        fd.append('_token', '{{ csrf_token() }}');
+
         $.ajax({
             url: "{{ route('admin.motor-type.update') }}",
             method: "POST",
-            data: {
-                _token: '{{ csrf_token() }}',
-                id: $('#motorTypeId').val(),
-                name: $('#nama_edit').val(),
-                category_id: $('#kategori_id_edit').val(),
-                // _method: 'PUT'
-            },
+            data: fd,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#editModal').modal('hide');
                 dataTable.ajax.reload(null, false);
@@ -217,7 +283,7 @@ $(document).ready(function() {
     // Delete button
     $(document).on('click', '.deleteBtn', function() {
         const id = $(this).data('id');
-        const name = $(this).closest('tr').find('td:eq(1)').text();
+        const name = $(this).closest('tr').find('td:eq(2)').text(); // kolom "Nama Motor" sekarang index 2
         $('#delete_motor_type_id').val(id);
         $('#delete_motor_type_name').text(name);
         $('#deleteModal').modal('show');

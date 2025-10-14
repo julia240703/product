@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PDF Viewer</title>
+
+  <style>
+    *{ box-sizing:border-box }
+
+    :root{ --vh:100vh; --topbar-h:56px; }  /* tinggi toolbar fix */
+
+    /* <<< KUNCI: hilangkan scrollbar di level page (iframe) >>> */
+    html,body{
+      height:100%;
+      margin:0;
+      overflow:hidden;                     /* tidak ada scroll “tengah” */
+      background:#f6f7f9;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans","Helvetica Neue",sans-serif;
+    }
+
+    .topbar{
+      height:var(--topbar-h);
+      display:flex; align-items:center; gap:12px;
+      padding:0 14px;                      /* padding vertikal nol → tinggi tepat */
+      border-bottom:1px solid #e5e7eb;
+      background:#fff; position:sticky; top:0; z-index:10;
+    }
+    .ttl{font-weight:600;font-size:14px;color:#111827;margin-right:auto}
+    .btn{display:inline-flex;align-items:center;justify-content:center;height:32px;min-width:32px;padding:0 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer}
+
+    /* <<< Hanya area ini yang boleh scroll >>> */
+    .viewer{
+      height:calc(100vh - var(--topbar-h));   /* atau: calc(var(--vh) - var(--topbar-h)) */
+      overflow:auto;
+      background:#edeff2;
+      padding:16px;
+    }
+
+    .page{display:block;margin:0 auto 16px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    canvas{display:block;max-width:100%;height:auto}
+    .msg{margin:16px;padding:16px;background:#fff;border-radius:12px}
+    .error{color:#b91c1c}
+    code{background:#f1f5f9;padding:.1rem .25rem;border-radius:.25rem}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="ttl"></div>
+    <button class="btn" id="zoomOut">−</button>
+    <button class="btn" id="zoomIn">+</button>
+    <button class="btn" id="fit">⤢</button>
+  </div>
+
+  <div class="viewer" id="viewer"></div>
+
+  <!-- HANYA pdf.js build utama -->
+  <script src="../build/pdf.js"></script>
+  <script>
+    // Worker absolut (agar aman di semua browser)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = location.origin + '/pdfjs/build/pdf.worker.min.js';
+
+    // Ambil ?file=
+    const q = new URLSearchParams(location.search);
+    let fileUrl = q.get('file') || '';
+    try { fileUrl = decodeURIComponent(fileUrl); } catch {}
+    if (!fileUrl) {
+      document.getElementById('viewer').innerHTML =
+        '<div class="msg">Tidak ada parameter <code>?file=</code>.</div>';
+      throw new Error('no file param');
+    }
+    if (fileUrl.startsWith('/')) fileUrl = location.origin + fileUrl;
+
+    // State zoom
+    let scale = 1.2;     // default
+    const viewer = document.getElementById('viewer');
+
+    // Render semua halaman secara manual
+    async function renderPDF(url) {
+      const head = await fetch(url, {method:'HEAD'});
+      if (!head.ok) {
+        viewer.innerHTML = `<div class="msg error">Gagal memuat PDF (HTTP ${head.status}).<br><small>URL: ${url}</small></div>`;
+        return;
+      }
+
+      const pdf = await pdfjsLib.getDocument({
+        url,
+        disableRange: true, disableStream: true, disableAutoFetch: true
+      }).promise;
+
+      viewer.innerHTML = ''; // bersihkan
+
+      for (let p = 1; p <= pdf.numPages; p++) {
+        const page = await pdf.getPage(p);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.className = 'page';
+        canvas.width  = viewport.width;
+        canvas.height = viewport.height;
+        viewer.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d', { alpha:false });
+        await page.render({ canvasContext: ctx, viewport }).promise;
+      }
+    }
+
+    // Zoom handlers (render ulang cepat)
+    async function rerender(newScaleValue) {
+      scale = newScaleValue;
+      await renderPDF(fileUrl);
+    }
+    document.getElementById('zoomIn').addEventListener('click',  () => rerender(scale + 0.15));
+    document.getElementById('zoomOut').addEventListener('click', () => rerender(Math.max(0.3, scale - 0.15)));
+    document.getElementById('fit').addEventListener('click',     () => {
+      const w = viewer.clientWidth - 32;
+      pdfjsLib.getDocument(fileUrl).promise.then(pdf => pdf.getPage(1)).then(page=>{
+        const vp = page.getViewport({ scale: 1 });
+        const s  = Math.max(0.3, w / vp.width);
+        rerender(s);
+      });
+    });
+
+    // perbaiki unit vh di mobile
+    const setVH = () => document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
+    setVH(); addEventListener('resize', setVH);
+
+    renderPDF(fileUrl).catch(err => {
+      console.error(err);
+      viewer.innerHTML = `<div class="msg error">Gagal memuat PDF.<br><small>${(err && err.message) || err}</small></div>`;
+    });
+  </script>
+</body>
+</html>

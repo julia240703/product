@@ -42,12 +42,12 @@
         </a>
         <ul id="ddmenu_motor" class="dropdown-nav collapse @if(request()->routeIs('admin.motors.index') || request()->routeIs('admin.motor-type.index') || request()->routeIs('admin.motor-color*') || request()->routeIs('admin.categories.index')) show @endif">
             <li class="nav-item">
-                <a href="{{ route('admin.motor-type.index') }}" class="@if(request()->routeIs('admin.motor-type.index')) active @endif">Tipe Motor</a>
-            </li>
-            <li class="nav-item">
                 <a href="{{ route('admin.categories.index', ['type' => 'motor']) }}" class="@if(request()->routeIs('admin.categories.index')) active @endif">
                     <span class="text">Kategori Motor</span>
                 </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.motor-type.index') }}" class="@if(request()->routeIs('admin.motor-type.index')) active @endif">Tipe Motor</a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('admin.motors.index') }}" class="@if(request()->routeIs('admin.motors.index')) active @endif">Kelola Motor</a>
@@ -101,12 +101,3 @@
             </li>
         </ul>
     </li>
-
-    {{-- Simulasi Kredit --}}
-    <li class="nav-item @if(request()->routeIs('admin.credit_simulations.index')) active @endif">
-        <a href="{{ route('admin.credit_simulations.index') }}" class="nav-link">
-            <span class="icon"><i class="fa-solid fa-dollar"></i></span>
-            <span class="text" style="vertical-align: middle; line-height: 22px; display: inline-block;">Simulasi Kredit</span>
-        </a>
-    </li>
-</ul>

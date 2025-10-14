@@ -20,6 +20,9 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Models\MotorType;
+use App\Models\CreditProvider;
+use App\Models\CreditHeader;
+use App\Models\CreditItem;
 use App\Models\BannerTemplate;
 use App\Models\MotorAccessory;
 use App\Models\GeneralAccessory;
@@ -69,16 +72,29 @@ public function motorsPublished(Request $request)
 
         return DataTables::of($data)
             ->addIndexColumn()
+            ->filter(function ($query) use ($request) {
+                $search = $request->input('search.value');
+                if (!empty($search)) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('motors.name', 'like', "%{$search}%")
+                          ->orWhere('motors.motor_code_otr', 'like', "%{$search}%")
+                          ->orWhere('motors.motor_code_credit', 'like', "%{$search}%")
+                          ->orWhere('motors.wms_code', 'like', "%{$search}%")
+                          ->orWhereHas('category', fn($qc)=>$qc->where('name','like',"%{$search}%"))
+                          ->orWhereHas('type', fn($qt)=>$qt->where('name','like',"%{$search}%"));
+                    });
+                }
+            })
             ->addColumn('product', function ($row) {
                 $html = '
                     <div style="text-align:center; position:relative">
                         ' . ($row->is_new ? '<div style="position:absolute; right:6px; top:4px; color:#E11D2B; font-weight:700;">New !</div>' : '') . '
                         <img src="' . asset('storage/' . $row->thumbnail) . '" 
-                            alt="' . e($row->name) . '" 
-                            style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
-                            class="image-preview" 
-                            data-image="' . asset('storage/' . $row->thumbnail) . '" 
-                            data-title="' . e($row->name) . '">
+                             alt="' . e($row->name) . '" 
+                             style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
+                             class="image-preview" 
+                             data-image="' . asset('storage/' . $row->thumbnail) . '" 
+                             data-title="' . e($row->name) . '">
                         <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">' . e($row->name) . '</div>
                     </div>
                     <table style="width:100%; border: 1px solid black; border-collapse:collapse; margin-bottom:10px; font-size:14px; text-align:center;">
@@ -90,8 +106,8 @@ public function motorsPublished(Request $request)
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr) . '</td>
-                                <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code) . '</td>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr ?: '-') . '</td>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code ?: '-') . '</td>
                             </tr>
                         </tbody>
                     </table>
@@ -103,6 +119,7 @@ public function motorsPublished(Request $request)
                                 <th style="padding:8px; border: 1px solid black;">Spesifikasi</th>
                                 <th style="padding:8px; border: 1px solid black;">Fitur</th>
                                 <th style="padding:8px; border: 1px solid black;">Sparepart</th>
+                                <th style="padding:8px; border: 1px solid black;">Kredit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -112,6 +129,11 @@ public function motorsPublished(Request $request)
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;">
+                                    <a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary" title="Kelola Kredit">
+                                        <i class="fas fa-calculator"></i>
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -119,7 +141,7 @@ public function motorsPublished(Request $request)
                 return $html;
             })
             ->addColumn('action', function ($row) {
-                $btn = '
+                return '
                     <div class="btn-group">
                         <button class="btn btn-sm btn-primary me-1 editBtn" 
                             data-id="' . $row->id . '" 
@@ -145,7 +167,6 @@ public function motorsPublished(Request $request)
                         </button>
                     </div>
                 ';
-                return $btn;
             })
             ->rawColumns(['product', 'action'])
             ->make(true);
@@ -153,7 +174,7 @@ public function motorsPublished(Request $request)
 
     return view('pages.admin.motorPublished', [
         'categories' => Category::all(),
-        'types' => MotorType::all(),
+        'types'      => MotorType::all(),
     ]);
 }
 
@@ -165,15 +186,16 @@ public function motorsUnpublished(Request $request)
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('product', function ($row) {
-                $html = '
+                // …(sama persis seperti di atas, hanya link kreditnya juga ke route('admin.credits.index', $row->id))
+                return '
                     <div style="text-align:center; position:relative">
                         ' . ($row->is_new ? '<div style="position:absolute; right:6px; top:4px; color:#E11D2B; font-weight:700;">New !</div>' : '') . '
                         <img src="' . asset('storage/' . $row->thumbnail) . '" 
-                            alt="' . e($row->name) . '" 
-                            style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
-                            class="image-preview" 
-                            data-image="' . asset('storage/' . $row->thumbnail) . '" 
-                            data-title="' . e($row->name) . '">
+                             alt="' . e($row->name) . '" 
+                             style="max-width:150px; margin-bottom:10px; display:block; margin-left:auto; margin-right:auto; cursor:pointer;"
+                             class="image-preview" 
+                             data-image="' . asset('storage/' . $row->thumbnail) . '" 
+                             data-title="' . e($row->name) . '">
                         <div style="font-weight:bold; margin-bottom:10px; font-size:16px;">' . e($row->name) . '</div>
                     </div>
                     <table style="width:100%; border: 1px solid black; border-collapse:collapse; margin-bottom:10px; font-size:14px; text-align:center;">
@@ -185,8 +207,8 @@ public function motorsUnpublished(Request $request)
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr) . '</td>
-                                <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code) . '</td>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->motor_code_otr ?: '-') . '</td>
+                                <td style="padding:8px; border: 1px solid black;">' . e($row->wms_code ?: '-') . '</td>
                             </tr>
                         </tbody>
                     </table>
@@ -198,57 +220,51 @@ public function motorsUnpublished(Request $request)
                                 <th style="padding:8px; border: 1px solid black;">Spesifikasi</th>
                                 <th style="padding:8px; border: 1px solid black;">Fitur</th>
                                 <th style="padding:8px; border: 1px solid black;">Sparepart</th>
+                                <th style="padding:8px; border: 1px solid black;">Kredit</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" title="Warna"><i class="fas fa-tint"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '"><i class="fas fa-cogs"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '"><i class="fas fa-tint"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '"><i class="fas fa-list"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '"><i class="fas fa-star"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '"><i class="fas fa-wrench"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;">
+                                    <a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-calculator"></i></a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 ';
-                return $html;
             })
-            ->addColumn('action', function ($row) {
-                $btn = '
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-primary me-1 editBtn" 
-                            data-id="' . $row->id . '" 
-                            data-name="' . e($row->name) . '" 
-                            data-motor_code_otr="' . e($row->motor_code_otr) . '" 
-                            data-motor_code_credit="' . e($row->motor_code_credit) . '" 
-                            data-wms_code="' . e($row->wms_code) . '" 
-                            data-category_id="' . $row->category_id . '" 
-                            data-type_id="' . $row->type_id . '" 
-                            data-description="' . e($row->description) . '" 
-                            data-status="' . e($row->status) . '"
-                            data-is_new="' . ($row->is_new ? 1 : 0) . '"
-                            data-thumbnail="' . ($row->thumbnail ? asset('storage/' . $row->thumbnail) : '') . '" 
-                            data-accessory_thumbnail="' . ($row->accessory_thumbnail ? asset('storage/' . $row->accessory_thumbnail) : '') . '"
-                            data-feature_thumbnail="' . ($row->feature_thumbnail ? asset('storage/' . $row->feature_thumbnail) : '') . '"
-                            data-spin_gif="' . e($row->spin_gif ?? '') . '">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger deleteBtn" 
-                            data-id="' . $row->id . '" 
-                            data-name="' . e($row->name) . '">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                ';
-                return $btn;
-            })
+            ->addColumn('action', fn($row)=> /* sama seperti published */ '
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-primary me-1 editBtn" 
+                        data-id="' . $row->id . '" 
+                        data-name="' . e($row->name) . '" 
+                        data-motor_code_otr="' . e($row->motor_code_otr) . '" 
+                        data-motor_code_credit="' . e($row->motor_code_credit) . '" 
+                        data-wms_code="' . e($row->wms_code) . '" 
+                        data-category_id="' . $row->category_id . '" 
+                        data-type_id="' . $row->type_id . '" 
+                        data-description="' . e($row->description) . '" 
+                        data-status="' . e($row->status) . '"
+                        data-is_new="' . ($row->is_new ? 1 : 0) . '">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger deleteBtn" data-id="' . $row->id . '" data-name="' . e($row->name) . '">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            ')
             ->rawColumns(['product', 'action'])
             ->make(true);
     }
 
     return view('pages.admin.motorUnpublished', [
         'categories' => Category::all(),
-        'types' => MotorType::all(),
+        'types'      => MotorType::all(),
     ]);
 }
 
@@ -259,13 +275,14 @@ public function motorsStore(Request $request)
         'motor_code_otr'      => 'nullable|string|max:255',
         'motor_code_credit'   => 'nullable|string|max:255',
         'wms_code'            => 'nullable|string|max:255',
+        'price'               => 'nullable|integer|min:0', // <-- harga OTR
         'category_id'         => 'required|exists:categories,id',
         'type_id'             => 'required|exists:motor_types,id',
         'description'         => 'nullable|string',
         'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'feature_thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        'spin_gif'            => 'nullable|file|mimes:gif|max:8192', // <= FILE GIF
+        'spin_gif'            => 'nullable|file|mimes:gif|max:8192',
         'status'              => 'required|in:published,unpublished',
         'is_new'              => 'nullable|boolean',
     ]);
@@ -273,9 +290,8 @@ public function motorsStore(Request $request)
     $data['thumbnail']           = $this->uploadFile($request, 'thumbnail', 'thumbnails');
     $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails');
     $data['feature_thumbnail']   = $this->uploadFile($request, 'feature_thumbnail', 'feature_thumbnails');
-    $data['spin_gif']            = $this->uploadFile($request, 'spin_gif', 'spin_gifs'); // <= SIMPAN PATH
-
-    $data['is_new'] = $request->boolean('is_new');
+    $data['spin_gif']            = $this->uploadFile($request, 'spin_gif', 'spin_gifs');
+    $data['is_new']              = $request->boolean('is_new');
 
     $motor = Motor::create($data);
 
@@ -293,13 +309,14 @@ public function updateMotor(Request $request, $id)
         'motor_code_otr'      => 'nullable|string|max:255',
         'motor_code_credit'   => 'nullable|string|max:255',
         'wms_code'            => 'nullable|string|max:255',
+        'price'               => 'nullable|integer|min:0', // <-- harga OTR
         'category_id'         => 'required|exists:categories,id',
         'type_id'             => 'required|exists:motor_types,id',
         'description'         => 'nullable|string',
         'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'feature_thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        'spin_gif'            => 'nullable|file|mimes:gif|max:8192', // <= FILE GIF
+        'spin_gif'            => 'nullable|file|mimes:gif|max:8192',
         'status'              => 'required|in:published,unpublished',
         'is_new'              => 'nullable|boolean',
     ]);
@@ -307,9 +324,8 @@ public function updateMotor(Request $request, $id)
     $data['thumbnail']           = $this->uploadFile($request, 'thumbnail', 'thumbnails', $motor->thumbnail);
     $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails', $motor->accessory_thumbnail);
     $data['feature_thumbnail']   = $this->uploadFile($request, 'feature_thumbnail', 'feature_thumbnails', $motor->feature_thumbnail);
-    $data['spin_gif']            = $this->uploadFile($request, 'spin_gif', 'spin_gifs', $motor->spin_gif); // <= REPLACE JIKA ADA FILE BARU
-
-    $data['is_new'] = $request->boolean('is_new');
+    $data['spin_gif']            = $this->uploadFile($request, 'spin_gif', 'spin_gifs', $motor->spin_gif);
+    $data['is_new']              = $request->boolean('is_new');
 
     $motor->update($data);
 
@@ -332,7 +348,6 @@ public function deleteMotor($id)
     if ($motor->feature_thumbnail && Storage::exists('public/' . $motor->feature_thumbnail)) {
         Storage::delete('public/' . $motor->feature_thumbnail);
     }
-    // Hapus file GIF 360° jika ada
     if ($motor->spin_gif && Storage::exists('public/' . $motor->spin_gif)) {
         Storage::delete('public/' . $motor->spin_gif);
     }
@@ -348,6 +363,125 @@ public function getTypesByCategory($categoryId)
 {
     $types = MotorType::where('category_id', $categoryId)->get();
     return response()->json($types);
+}
+
+/* =========================
+       SIMULASI KREDIT PER MOTOR (AJAX)
+   ========================== */
+
+/** helper: parse "1.068.000" -> 1068000 */
+private function parseMoney($v): int
+{
+    if ($v === null) return 0;
+    return (int) preg_replace('/[^\d]/', '', (string) $v);
+}
+
+/** GET header + items terbaru untuk modal */
+public function motorCreditsShow($motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    $header = CreditHeader::with('items','provider')
+        ->where('motor_id', $motor->id)
+        ->orderByDesc('valid_from')
+        ->orderByDesc('id')
+        ->first();
+
+    $providers = CreditProvider::orderBy('name')->get(['id','name']);
+    $tenors    = [11,17,23,27,29,33,35,41];
+
+    return response()->json([
+        'motor'     => ['id'=>$motor->id, 'name'=>$motor->name],
+        'header'    => $header,
+        'items'     => $header?->items ?? [],
+        'tenors'    => $tenors,
+        'providers' => $providers,
+    ]);
+}
+
+/** POST simpan periode + matrix items (DP × Tenor) */
+public function motorCreditsSave(Request $request, $motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    $data = $request->validate([
+        'provider_id' => 'nullable|exists:credit_providers,id',
+        'valid_from'  => 'nullable|date',
+        'valid_to'    => 'nullable|date|after_or_equal:valid_from',
+        'note'        => 'nullable|string|max:255',
+        'tenors'      => 'required|array|min:1',
+        'tenors.*'    => 'integer|min:1',
+        'rows'        => 'required|array|min:1',
+    ]);
+
+    $header = CreditHeader::create([
+        'motor_id'           => $motor->id,
+        'credit_provider_id' => $data['provider_id'] ?? null,
+        'valid_from'         => $data['valid_from'] ?? null,
+        'valid_to'           => $data['valid_to'] ?? null,
+        'note'               => $data['note'] ?? null,
+    ]);
+
+    $items = [];
+    foreach ($data['rows'] as $row) {
+        if (!array_key_exists('dp', $row)) continue;
+        $dp = $this->parseMoney($row['dp']);
+        if ($dp <= 0) continue;
+
+        foreach ($data['tenors'] as $tenor) {
+            $key = (string) $tenor;
+            if (!array_key_exists($key, $row)) continue;
+
+            $installment = $this->parseMoney($row[$key]);
+            if ($installment <= 0) continue;
+
+            $items[] = [
+                'header_id'    => $header->id,
+                'dp_amount'    => $dp,
+                'tenor_months' => (int) $tenor,
+                'installment'  => $installment,
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ];
+        }
+    }
+
+    if (!empty($items)) {
+        CreditItem::insert($items);
+    }
+
+    return response()->json([
+        'ok' => true,
+        'header_id' => $header->id,
+        'count' => count($items),
+        'message' => 'Matrix kredit tersimpan.',
+    ]);
+}
+
+/** GET riwayat header per motor */
+public function motorCreditsHistory($motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    $headers = CreditHeader::withCount('items')
+        ->with('provider:id,name')
+        ->where('motor_id', $motor->id)
+        ->orderByDesc('valid_from')
+        ->orderByDesc('id')
+        ->get();
+
+    return response()->json([
+        'motor'   => ['id'=>$motor->id, 'name'=>$motor->name],
+        'headers' => $headers,
+    ]);
+}
+
+/** DELETE satu header (items kehapus via FK cascade) */
+public function motorCreditsDeleteHeader($motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
+    $header->delete();
+    return response()->json(['ok'=>true, 'message'=>'Header kredit dihapus.']);
 }
 
     /* =========================
@@ -663,90 +797,71 @@ public function accessoriesGeneralDeleteImage($imageId)
        KELOLA SPAREPART MOTOR
     ========================== */
     public function sparepartsIndex(Request $request, $motorId)
-    {
-        $motor = Motor::findOrFail($motorId);
+{
+    $motor = Motor::findOrFail($motorId);
 
-        if ($request->ajax()) {
-            $data = MotorPart::where('motor_id', $motorId);
+    // Tidak perlu DataTables lagi (hanya 1 file PDF per motor)
+    return view('pages.admin.motorSpareparts', [
+        'motor' => $motor,
+    ]);
+}
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->editColumn('image', function($row) {
-                    return $row->image 
-                        ? asset('storage/' . $row->image) 
-                        : null;
-                })
-                ->rawColumns(['image'])
-                ->make(true);
-        }
+public function sparepartsStore(Request $request, $motorId)
+{
+    $motor = Motor::findOrFail($motorId);
 
-        return view('pages.admin.motorSpareparts', [
-            'motor' => $motor
-        ]);
+    $request->validate([
+        'parts_pdf' => 'required|file|mimes:pdf|max:51200', // 50MB
+    ]);
+
+    // Simpan/replace file PDF. Helper uploadFile milikmu sudah dipakai di tempat lain.
+    // Arg ke-4 = oldPath untuk dihapus otomatis (kalau helper-mu memang handle).
+    $path = $this->uploadFile($request, 'parts_pdf', 'motor_catalogs', $motor->parts_pdf);
+
+    $motor->update([
+        'parts_pdf' => $path,
+    ]);
+
+    return back()->with('success', 'Katalog PDF berhasil diunggah.');
+}
+
+/**
+ * Opsional: kalau tetap mau pakai route PUT / update, logic-nya sama dengan store (replace).
+ */
+public function sparepartsUpdate(Request $request, $motorId, $id = null)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    $request->validate([
+        'parts_pdf' => 'required|file|mimes:pdf|max:51200',
+    ]);
+
+    $path = $this->uploadFile($request, 'parts_pdf', 'motor_catalogs', $motor->parts_pdf);
+
+    $motor->update([
+        'parts_pdf' => $path,
+    ]);
+
+    return redirect()->route('admin.spareparts.index', $motorId)->with('success', 'Katalog PDF berhasil diganti.');
+}
+
+/**
+ * Hapus PDF (abaikan $id dari route lama).
+ */
+public function sparepartsDelete($motorId, $id = null)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    if ($motor->parts_pdf && Storage::exists('public/' . $motor->parts_pdf)) {
+        Storage::delete('public/' . $motor->parts_pdf);
     }
 
-    public function sparepartsStore(Request $request, $motorId)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'category' => 'required|in:electric,engine,frame',
-            'price' => 'required|numeric',
-            'description' => 'nullable|string',
-            'dimension' => 'required|string|max:255',
-            'weight' => 'required|numeric',
-            'part_number' => 'required|string|max:255',
-        ]);
+    $motor->update([
+        'parts_pdf' => null,
+    ]);
 
-        $data['motor_id'] = $motorId;
-        $data['image'] = $this->uploadFile($request, 'image', 'motor_spareparts');
-
-        MotorPart::create($data);
-
-        return back()->with('success', 'Sparepart berhasil ditambahkan.');
-    }
-
-    public function sparepartsEdit($motorId, $id)
-    {
-        $sparepart = MotorPart::findOrFail($id);
-        $motor = Motor::findOrFail($motorId);
-        return view('pages.admin.motorSpareparts', compact('sparepart', 'motor'));
-    }
-
-    public function sparepartsUpdate(Request $request, $motorId, $id)
-    {
-        $sparepart = MotorPart::findOrFail($id);
-
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-            'category' => 'required|in:electric,engine,frame',
-            'price' => 'required|numeric',
-            'description' => 'nullable|string',
-            'dimension' => 'required|string|max:255',
-            'weight' => 'required|numeric',
-            'part_number' => 'required|string|max:255',
-        ]);
-
-        $data['image'] = $this->uploadFile($request, 'image', 'motor_spareparts', $sparepart->image);
-
-        $sparepart->update($data);
-
-        return redirect()->route('admin.spareparts.index', $motorId)->with('success', 'Sparepart berhasil diperbarui.');
-    }
-
-    public function sparepartsDelete($motorId, $id)
-    {
-        $sparepart = MotorPart::findOrFail($id);
-
-        if ($sparepart->image && Storage::exists('public/' . $sparepart->image)) {
-            Storage::delete('public/' . $sparepart->image);
-        }
-
-        $sparepart->delete();
-
-        return redirect()->route('admin.spareparts.index', $motorId)->with('success', 'Sparepart berhasil dihapus.');
-    }
+    return redirect()->route('admin.spareparts.index', $motorId)->with('success', 'Katalog PDF berhasil dihapus.');
+}
 
     /* =========================
        KELOLA SPESIFIKASI
@@ -1034,16 +1149,19 @@ public function featuresUpdate(Request $request, $motorId, $id)
         return response()->json(['success' => true, 'message' => 'Kategori berhasil dihapus']);
     }
 
-    // MOTOR TYPE
-public function motorTypeIndex()
-{
-    $categories = \App\Models\Category::all();
-    return view('pages.admin.manageMotorType', compact('categories'));
-}
+    // KELOLA MOTOR TYPE
+    public function motorTypeIndex()
+    {
+        $categories = Category::orderBy('name')->get();
+        return view('pages.admin.manageMotorType', compact('categories'));
+    }
 
-public function getMotorType(Request $request)
-{
-    if ($request->ajax()) {
+    public function getMotorType(Request $request)
+    {
+        if (!$request->ajax()) {
+            return response()->json(['error' => 'Not Ajax'], 400);
+        }
+
         // LEFT JOIN categories agar kolom 'tipe' bisa di-search & sort
         $data = MotorType::query()
             ->leftJoin('categories', 'categories.id', '=', 'motor_types.category_id')
@@ -1051,75 +1169,112 @@ public function getMotorType(Request $request)
                 'motor_types.id',
                 'motor_types.name',
                 'motor_types.category_id',
+                'motor_types.cover_image',     // <-- penting untuk preview
                 'categories.name as tipe',
-            ]);
+            ])
+            ->orderBy('categories.name')
+            ->orderBy('motor_types.name');
 
         return Datatables::of($data)
             ->addIndexColumn()
+            // kolom thumbnail (server-side, agar ringan di Blade)
+            ->addColumn('thumb', function ($row) {
+                $src = $row->cover_image
+                    ? asset('storage/' . $row->cover_image)
+                    : asset('no-image.png');
+                return '<img src="' . $src . '" alt="cover" style="height:48px;border-radius:8px">';
+            })
             ->addColumn('action', function ($row) {
                 return '
                     <button class="btn btn-sm btn-primary editBtn"
                         data-id="' . $row->id . '"
-                        data-name="' . htmlspecialchars($row->name) . '"
-                        data-category_id="' . $row->category_id . '">
+                        data-name="' . e($row->name) . '"
+                        data-category_id="' . $row->category_id . '"
+                        data-cover_image="' . e($row->cover_image ?? '') . '">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button class="btn btn-sm btn-danger deleteBtn"
                         data-id="' . $row->id . '"
-                        data-name="' . htmlspecialchars($row->name) . '">
+                        data-name="' . e($row->name) . '">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 ';
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['thumb','action'])
             ->make(true);
     }
 
-    return response()->json(['error' => 'Not Ajax'], 400);
-}
+    public function storeMotorType(Request $request)
+    {
+        $validated = $request->validate([
+            'name'        => [
+                'required','string','max:255',
+                // unik per kategori
+                Rule::unique('motor_types')->where(function ($q) use ($request) {
+                    return $q->where('category_id', $request->category_id);
+                }),
+            ],
+            'category_id' => ['required','exists:categories,id'],
+            'cover_image' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
+        ]);
 
-public function storeMotorType(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-    ]);
+        if ($request->hasFile('cover_image')) {
+            $validated['cover_image'] = $request->file('cover_image')->store('motor_types', 'public');
+        }
 
-    MotorType::create([
-        'name' => $request->name,
-        'category_id' => $request->category_id,
-    ]);
+        MotorType::create($validated);
 
-    return redirect()->back()->with('success', 'Tipe motor berhasil ditambahkan');
-}
+        return redirect()->back()->with('success', 'Tipe motor berhasil ditambahkan');
+    }
 
-public function updateMotorType(Request $request)
-{
-    $request->validate([
-        'id' => 'required|exists:motor_types,id',
-        'name' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-    ]);
+    public function updateMotorType(Request $request)
+    {
+        $validated = $request->validate([
+            'id'          => ['required','exists:motor_types,id'],
+            'name'        => [
+                'required','string','max:255',
+                // unik per kategori, abaikan diri sendiri
+                Rule::unique('motor_types')->ignore($request->id)->where(function ($q) use ($request) {
+                    return $q->where('category_id', $request->category_id);
+                }),
+            ],
+            'category_id' => ['required','exists:categories,id'],
+            'cover_image' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
+        ]);
 
-    $motorType = MotorType::findOrFail($request->id);
-    $motorType->name = $request->name;
-    $motorType->category_id = $request->category_id;
-    $motorType->save();
+        $row = MotorType::findOrFail($validated['id']);
+        $row->name        = $validated['name'];
+        $row->category_id = $validated['category_id'];
 
-    return response()->json(['message' => 'Tipe motor berhasil diperbarui']);
-}
+        if ($request->hasFile('cover_image')) {
+            // hapus file lama kalau ada
+            if (!empty($row->cover_image)) {
+                Storage::disk('public')->delete($row->cover_image);
+            }
+            $row->cover_image = $request->file('cover_image')->store('motor_types', 'public');
+        }
 
-public function deleteMotorType(Request $request)
-{
-    $request->validate([
-        'id' => 'required|exists:motor_types,id',
-    ]);
+        $row->save();
 
-    $motorType = MotorType::findOrFail($request->id);
-    $motorType->delete();
+        return response()->json(['message' => 'Tipe motor berhasil diperbarui']);
+    }
 
-    return redirect()->back()->with('success', 'Tipe motor berhasil dihapus');
-}
+    public function deleteMotorType(Request $request)
+    {
+        $request->validate([
+            'id' => ['required','exists:motor_types,id'],
+        ]);
+
+        $row = MotorType::findOrFail($request->id);
+
+        if (!empty($row->cover_image)) {
+            Storage::disk('public')->delete($row->cover_image);
+        }
+
+        $row->delete();
+
+        return redirect()->back()->with('success', 'Tipe motor berhasil dihapus');
+    }
 
     // APPAREL CATEGORY
     public function apparelCategoryIndex()
@@ -2074,91 +2229,291 @@ public function apparelsDeleteImage($imageId)
     }
 
     /* =========================
-       KELOLA SIMULASI KREDIT
-   ========================== */
-    // INDEX + DATATABLE
-    public function creditSimulationIndex(Request $request)
-    {
-        if ($request->ajax()) {
-            $data = CreditSimulation::with(['category', 'motorType'])->get();
+   KREDIT PER MOTOR (HALAMAN)
+========================== */
+public function creditsIndex($motorId)
+{
+    $motor     = Motor::findOrFail($motorId);
+    $providers = CreditProvider::orderBy('name')->get(['id','name']);
 
-            return DataTables::of($data)
-                ->addIndexColumn()
-                ->addColumn('category_name', function($row){
-                    return $row->category ? $row->category->name : '-';
-                })
-                ->addColumn('motor_type_name', function($row){
-                    return $row->motorType ? $row->motorType->name : '-';
-                })
-                // Format untuk tampilan tabel
-                ->editColumn('otr_price', function ($row) {
-                    return 'Rp ' . number_format($row->otr_price, 0, ',', '.');
-                })
-                ->editColumn('minimum_dp', function ($row) {
-                    return 'Rp ' . number_format($row->minimum_dp, 0, ',', '.');
-                })
-                // Tambah data raw untuk kebutuhan edit
-                ->addColumn('otr_price_raw', function ($row) {
-                    return $row->otr_price;
-                })
-                ->addColumn('minimum_dp_raw', function ($row) {
-                    return $row->minimum_dp;
-                })
-                ->make(true);
+    // default tenor yang kamu pakai
+    $defaultTenors = [11,17,23,27,29,33,35,41];
+
+    return view('pages.admin.motorCredits', [
+        'motor'     => $motor,
+        'providers' => $providers,
+        'tenors'    => $defaultTenors,
+    ]);
+}
+
+/* =========================
+   DATATABLE: DP × TENOR (latest header)
+========================== */
+public function creditsData(Request $request, $motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    // Ambil header terbaru (berdasarkan valid_from lalu id)
+    $header = CreditHeader::where('motor_id', $motor->id)
+        ->orderByDesc('valid_from')
+        ->orderByDesc('id')
+        ->first();
+
+    $rows = [];
+    $tenors = [11,17,23,27,29,33,35,41];
+
+    if ($header) {
+        $items = CreditItem::where('header_id', $header->id)->get();
+
+        // group by DP
+        $byDp = [];
+        foreach ($items as $it) {
+            $byDp[$it->dp_amount][$it->tenor_months] = $it->installment;
+            if (!in_array($it->tenor_months, $tenors)) $tenors[] = $it->tenor_months;
+        }
+        sort($tenors);
+
+        // bentuk baris untuk DataTables
+        foreach ($byDp as $dp => $cols) {
+            $row = ['dp' => 'Rp '.number_format($dp, 0, ',', '.')];
+            foreach ($tenors as $t) {
+                $row[(string)$t] = isset($cols[$t]) ? 'Rp '.number_format($cols[$t],0,',','.') : '-';
+            }
+            $rows[] = $row;
+        }
+    }
+
+    // Kamu bisa kirim meta header juga bila perlu
+    // via response JSON tambahan, tapi DataTables butuh array 'data'
+    return DataTables::of($rows)->with([
+        'header' => $header ? [
+            'id'          => $header->id,
+            'provider_id' => $header->credit_provider_id,
+            'valid_from'  => optional($header->valid_from)->format('Y-m-d'),
+            'valid_to'    => optional($header->valid_to)->format('Y-m-d'),
+            'note'        => $header->note,
+            'tenors'      => $tenors,
+        ] : null,
+    ])->make(true);
+}
+
+/* =========================
+   STORE (header + matrix items)
+========================== */
+public function creditsStore(Request $request, $motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    $data = $request->validate([
+        'provider_id' => 'nullable|exists:credit_providers,id',
+        'valid_from'  => 'nullable|date',
+        'valid_to'    => 'nullable|date|after_or_equal:valid_from',
+        'note'        => 'nullable|string|max:255',
+        'tenors'      => 'required|array|min:1',
+        'tenors.*'    => 'integer|min:1',
+        'rows'        => 'required|array|min:1',
+    ]);
+
+    $header = CreditHeader::create([
+        'motor_id'           => $motor->id,
+        'credit_provider_id' => $data['provider_id'] ?? null,
+        'valid_from'         => $data['valid_from'] ?? null,
+        'valid_to'           => $data['valid_to'] ?? null,
+        'note'               => $data['note'] ?? null,
+    ]);
+
+    $bulk = [];
+    foreach ($data['rows'] as $r) {
+        if (!array_key_exists('dp', $r)) continue;
+        $dp = $this->parseMoney($r['dp']);
+        if ($dp <= 0) continue;
+
+        foreach ($data['tenors'] as $t) {
+            $key = (string) $t;
+            if (!array_key_exists($key, $r)) continue;
+            $inst = $this->parseMoney($r[$key]);
+            if ($inst <= 0) continue;
+
+            $bulk[] = [
+                'header_id'    => $header->id,
+                'dp_amount'    => $dp,
+                'tenor_months' => (int)$t,
+                'installment'  => $inst,
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ];
+        }
+    }
+    if ($bulk) CreditItem::insert($bulk);
+
+    return back()->with('success', 'Simulasi kredit tersimpan.');
+}
+
+/* =========================
+   EDIT (load satu header utk form)
+========================== */
+public function creditsEdit($motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)
+        ->with(['items','provider:id,name'])
+        ->findOrFail($headerId);
+
+    // satukan items jadi struktur rows mirip input form
+    $rows = [];
+    $group = [];
+    foreach ($header->items as $it) {
+        $group[$it->dp_amount][(string)$it->tenor_months] = number_format($it->installment,0,',','.');
+    }
+    foreach ($group as $dp => $cols) {
+        $rows[] = [
+            'dp'   => number_format($dp,0,',','.'),
+            'cols' => $cols
+        ];
+    }
+
+    return response()->json([
+        'header' => [
+            'id'          => $header->id,
+            'provider_id' => $header->credit_provider_id,
+            'valid_from'  => optional($header->valid_from)->format('Y-m-d'),
+            'valid_to'    => optional($header->valid_to)->format('Y-m-d'),
+            'note'        => $header->note,
+        ],
+        'rows' => $rows,
+    ]);
+}
+
+/* =========================
+   UPDATE (replace items)
+========================== */
+public function creditsUpdate(Request $request, $motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
+
+    $data = $request->validate([
+        'provider_id' => 'nullable|exists:credit_providers,id',
+        'valid_from'  => 'nullable|date',
+        'valid_to'    => 'nullable|date|after_or_equal:valid_from',
+        'note'        => 'nullable|string|max:255',
+        'tenors'      => 'required|array|min:1',
+        'tenors.*'    => 'integer|min:1',
+        'rows'        => 'required|array|min:1',
+    ]);
+
+    $header->update([
+        'credit_provider_id' => $data['provider_id'] ?? null,
+        'valid_from'         => $data['valid_from'] ?? null,
+        'valid_to'           => $data['valid_to'] ?? null,
+        'note'               => $data['note'] ?? null,
+    ]);
+
+    // hapus items lama -> insert baru
+    CreditItem::where('header_id', $header->id)->delete();
+
+    $bulk = [];
+    foreach ($data['rows'] as $r) {
+        if (!array_key_exists('dp', $r)) continue;
+        $dp = $this->parseMoney($r['dp']);
+        if ($dp <= 0) continue;
+
+        foreach ($data['tenors'] as $t) {
+            $key = (string)$t;
+            if (!array_key_exists($key, $r)) continue;
+            $inst = $this->parseMoney($r[$key]);
+            if ($inst <= 0) continue;
+
+            $bulk[] = [
+                'header_id'    => $header->id,
+                'dp_amount'    => $dp,
+                'tenor_months' => (int)$t,
+                'installment'  => $inst,
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ];
+        }
+    }
+    if ($bulk) CreditItem::insert($bulk);
+
+    return back()->with('success', 'Simulasi kredit diperbarui.');
+}
+
+/* =========================
+   DELETE HEADER (items ikut terhapus via FK CASCADE)
+========================== */
+public function creditsDelete($motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
+    $header->delete();
+
+    return back()->with('success', 'Simulasi kredit dihapus.');
+}
+
+// LIST UNTUK TABEL RINGKAS: 1 baris = 1 DP dalam 1 header (periode)
+public function creditsHeadersData($motorId)
+{
+    // Ambil seluruh header (periode) milik motor ini
+    $headers = CreditHeader::where('motor_id', $motorId)
+        ->orderByDesc('valid_from')->orderByDesc('id')
+        ->get(['id','valid_from','valid_to','credit_provider_id','note']);
+
+    $rows = [];
+
+    foreach ($headers as $h) {
+        // Ambil item matrix utk header ini
+        $items = CreditItem::where('header_id', $h->id)
+            ->get(['dp_amount','tenor_months']);
+
+        if ($items->isEmpty()) {
+            // Placeholder kalau belum ada item
+            $rows[] = [
+                'header_id'   => $h->id,
+                'tenors_text' => '-',
+                'dp_text'     => '-',
+                'aksi'        =>
+                    '<div class="btn-group">
+                        <button class="btn btn-sm btn-primary js-edit" data-id="'.$h->id.'">
+                          <i class="fa fa-pen"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger js-del" data-id="'.$h->id.'">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                     </div>',
+            ];
+            continue;
         }
 
-        $categories = Category::where('type', 'motor')->get();
-        $motorTypes = MotorType::all();
+        // Tenor unik untuk kolom "Tenor (bln)"
+        $tenors = $items->pluck('tenor_months')->unique()->sort()->values()->all();
+        $tenorsText = implode(',', $tenors);
 
-        return view('pages.admin.creditSimulation', compact('categories', 'motorTypes'));
+        // SETIAP DP → 1 baris
+        $dpList = $items->pluck('dp_amount')->unique()->sort()->values();
+        foreach ($dpList as $dpRaw) {
+            $rows[] = [
+                'header_id'   => $h->id,
+                'tenors_text' => $tenorsText,
+                'dp_text'     => 'Rp '.number_format((int)$dpRaw, 0, ',', '.'),
+                // PENTING: bawa data-dp (angka mentah) ke tombol Edit
+                'aksi'        =>
+                    '<div class="btn-group">
+                        <button class="btn btn-sm btn-primary js-edit"
+                                data-id="'.$h->id.'"
+                                data-dp="'.$dpRaw.'">
+                          <i class="fa fa-pen"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger js-del" data-id="'.$h->id.'">
+                          <i class="fa fa-trash"></i>
+                        </button>
+                     </div>',
+            ];
+        }
     }
 
-    // STORE
-    public function creditSimulationStore(Request $request)
-    {
-        $data = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'motor_type_id' => 'required|exists:motor_types,id',
-            'motorcycle_variant' => 'required|string|max:255',
-            'otr_price' => 'required|numeric',
-            'minimum_dp' => 'required|numeric',
-            'loan_term' => 'required|integer|min:1|max:60',
-            'interest_rate' => 'nullable|numeric|min:0|max:100',
-        ]);
-
-        CreditSimulation::create($data);
-
-        return redirect()->back()->with('success', 'Data Simulasi Kredit berhasil ditambahkan!');
-    }
-
-    // UPDATE
-    public function creditSimulationUpdate(Request $request, $id)
-    {
-        $simulation = CreditSimulation::findOrFail($id);
-
-        $data = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'motor_type_id' => 'required|exists:motor_types,id',
-            'motorcycle_variant' => 'required|string|max:255',
-            'otr_price' => 'required|numeric',
-            'minimum_dp' => 'required|numeric',
-            'loan_term' => 'required|integer|min:1|max:60',
-            'interest_rate' => 'nullable|numeric|min:0|max:100',
-        ]);
-
-        $simulation->update($data);
-
-        return redirect()->back()->with('success', ' Data Simulasi Kredit berhasil diperbarui!');
-    }
-
-    // DELETE
-    public function creditSimulationDelete($id)
-    {
-        $simulation = CreditSimulation::findOrFail($id);
-        $simulation->delete();
-
-        return redirect()->back()->with('success', 'Simulasi Kredit berhasil dihapus!');
-    }
+    return \DataTables::of(collect($rows))
+        ->addIndexColumn()
+        ->rawColumns(['aksi'])
+        ->make(true);
+}
 
     /* =========================
        KELOLA PRICE LIST

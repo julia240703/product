@@ -79,6 +79,11 @@
               @php
                 $isSelected = in_array($m->id, $selectedIds ?? []);
                 $isFull     = ($selectedCount ?? 0) >= 6;
+                // harga dari controller: $m->display_price (string "Rp ...") atau fallback text/angka
+                $__priceRaw = $m->display_price ?? ($m->display_price_from_text ?? null);
+                $__priceStr = is_numeric($__priceRaw)
+                  ? ('Rp ' . number_format((float)$__priceRaw, 0, ',', '.'))
+                  : ($__priceRaw ?? '—');
               @endphp
 
               <article class="cmp-card {{ $isSelected ? 'is-selected' : '' }}">
@@ -89,7 +94,7 @@
                 <div>
                   <h3 class="cmp-card-title">{{ $m->name }}</h3>
                   <div class="cmp-card-price-hint"><em>Harga Mulai</em></div>
-                  <div class="cmp-card-price">Rp {{ number_format($m->display_price ?? 0, 0, ',', '.') }}</div>
+                  <div class="cmp-card-price">{{ $__priceStr }}</div>
                 </div>
 
                 @if($isSelected)
@@ -143,6 +148,10 @@
                   @php
                     $isSelected = in_array($m->id, $selectedIds ?? []);
                     $isFull     = ($selectedCount ?? 0) >= 6;
+                    $__priceRaw = $m->display_price ?? ($m->display_price_from_text ?? null);
+                    $__priceStr = is_numeric($__priceRaw)
+                      ? ('Rp ' . number_format((float)$__priceRaw, 0, ',', '.'))
+                      : ($__priceRaw ?? '—');
                   @endphp
 
                   <article class="cmp-card {{ $isSelected ? 'is-selected' : '' }}">
@@ -153,7 +162,7 @@
                     <div>
                       <h3 class="cmp-card-title">{{ $m->name }}</h3>
                       <div class="cmp-card-price-hint"><em>Harga Mulai</em></div>
-                      <div class="cmp-card-price">Rp {{ number_format($m->display_price ?? 0, 0, ',', '.') }}</div>
+                      <div class="cmp-card-price">{{ $__priceStr }}</div>
                     </div>
 
                     @if($isSelected)

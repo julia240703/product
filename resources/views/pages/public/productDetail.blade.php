@@ -86,37 +86,40 @@
           <p class="text-muted text-center">Belum ada spesifikasi untuk motor ini.</p>
         @else
           <div class="accordion" id="specsAccordion">
-            @foreach($groups as $cat => $rows)
-              @php
-                $headingId  = 'heading_'.$loop->index;
-                $collapseId = 'collapse_'.$loop->index;
-              @endphp
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="{{ $headingId }}">
-                  <button class="accordion-button collapsed" type="button"
-                          data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
-                          aria-expanded="false" aria-controls="{{ $collapseId }}">
-                    {{ $cat }}
-                  </button>
-                </h2>
-                <div id="{{ $collapseId }}" class="accordion-collapse collapse"
-                     aria-labelledby="{{ $headingId }}" data-bs-parent="#specsAccordion">
-                  <div class="accordion-body spec-body">
-                    <table class="table table-striped mb-0 spec-table">
-                      <tbody>
-                      @foreach($rows->sortBy('order') as $spec)
-                        <tr>
-                          <td style="width:40%">{{ $spec->atribut }}</td>
-                          <td>{{ $spec->detail }}</td>
-                        </tr>
-                      @endforeach
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            @endforeach
-          </div>
+  @foreach($groups as $cat => $rows)
+    @php
+      $headingId  = 'heading_'.$loop->index;
+      $collapseId = 'collapse_'.$loop->index;
+      $open = true; // default kebuka
+    @endphp
+
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="{{ $headingId }}">
+        <button class="accordion-button {{ $open ? '' : 'collapsed' }}" type="button"
+                data-bs-toggle="collapse" data-bs-target="#{{ $collapseId }}"
+                aria-expanded="{{ $open ? 'true' : 'false' }}" aria-controls="{{ $collapseId }}">
+          {{ $cat }}
+        </button>
+      </h2>
+
+      <div id="{{ $collapseId }}" class="accordion-collapse collapse {{ $open ? 'show' : '' }}"
+           aria-labelledby="{{ $headingId }}">
+        <div class="accordion-body spec-body">
+          <table class="table table-striped mb-0 spec-table">
+            <tbody>
+              @foreach($rows->sortBy('order') as $spec)
+                <tr>
+                  <td style="width:40%">{{ $spec->atribut }}</td>
+                  <td>{{ $spec->detail }}</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  @endforeach
+</div>
         @endif
       </section>
 

@@ -14,6 +14,7 @@ class Motor extends Model
         'motor_code_otr',
         'motor_code_credit',
         'wms_code',
+        'price',                // <-- BARU: harga OTR
         'category_id',
         'type_id',
         'description',
@@ -23,15 +24,58 @@ class Motor extends Model
         'status',
         'is_new',
         'spin_gif',
+        'parts_pdf',
     ];
 
     protected $casts = [
-        'is_new' => 'boolean', 
+        'is_new' => 'boolean',
     ];
+
+    // ======================
+    // Accessors
+    // ======================
+
+    public function getPartsPdfUrlAttribute(): ?string
+    {
+        return $this->parts_pdf ? asset('storage/'.$this->parts_pdf) : null;
+    }
 
     public function getHasSpinAttribute(): bool
     {
         return !empty($this->spin_gif);
+    }
+
+    /**
+     * URL thumbnail prioritas.
+     */
+    public function getThumbUrlAttribute(): string
+    {
+        if (!empty($this->thumbnail)) {
+            return asset('storage/'.$this->thumbnail);
+        }
+        $firstColorImage = optional($this->colors->first())->image;
+        if ($firstColorImage) {
+            return asset('storage/'.$firstColorImage);
+        }
+        return asset('placeholder.png');
+    }
+
+    /**
+     * Teks harga OTR terformat (fallback 0 jika null).
+     */
+    public function getPriceTextAttribute(): string
+    {
+        $price = $this->price ?? 0; // <-- sekarang pakai kolom 'price'
+        return 'Rp '.number_format($price, 0, ',', '.');
+    }
+
+    // ======================
+    // Scopes
+    // ======================
+
+    public function scopePublished($q)
+    {
+        return $q->where('status', 'published');
     }
 
     // ======================
@@ -73,43 +117,15 @@ class Motor extends Model
         return $this->hasMany(MotorAccessory::class);
     }
 
-    // ======================
-    // Accessors (Best Practice)
-    // ======================
-
-    /**
-     * URL thumbnail prioritas:
-     * 1) kolom 'thumbnail'
-     * 2) gambar warna pertama (colors->first()->image)
-     * 3) placeholder
-     */
-    public function getThumbUrlAttribute(): string
+    // — Kredit (matrix) —
+    public function creditHeaders()
     {
-        if (!empty($this->thumbnail)) {
-            return asset('storage/'.$this->thumbnail);
-        }
-
-        // pastikan relasi colors di-eager-load agar tidak N+1 (pakai with('colors'))
-        $firstColorImage = optional($this->colors->first())->image;
-        if ($firstColorImage) {
-            return asset('storage/'.$firstColorImage);
-        }
-
-        return asset('placeholder.png');
+        return $this->hasMany(CreditHeader::class); // App\Models\CreditHeader
     }
 
-    /**
-     * Teks harga minimum terformat (fallback ke 0 jika belum ada).
-     * Pastikan kolom price_min ada di tabel motors (nullable juga boleh).
-     */
-    public function getPriceTextAttribute(): string
+    // header terbaru (berdasarkan valid_from), useful buat frontend simulasi
+    public function latestCreditHeader()
     {
-        $min = $this->price_min ?? 0;
-        return 'Rp '.number_format($min, 0, ',', '.');
-    }
-
-public function scopePublished($q)
-    {
-        return $q->where('status', 'published');
+        return $this->hasOne(CreditHeader::class)->latestOfMany('valid_from');
     }
 }

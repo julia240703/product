@@ -229,6 +229,7 @@ Route::get('/motor/{id}', [PublicControllerSatu::class, 'motorDetail'])->name('m
 Route::get('/motors/category/{name}', [PublicControllerSatu::class, 'motorsByCategory'])->name('motors.by.category');
 Route::get('/produk', [PublicControllerSatu::class, 'produk'])->name('produk');
 Route::get('/produk/{categoryName}', [PublicControllerSatu::class, 'produk'])->name('produk.category');
+Route::get('/tipe/{id}', [PublicControllerSatu::class, 'typeGate'])->name('type.show');
 Route::get('/compare', [PublicControllerSatu::class, 'compare'])->name('motors.compare');
 Route::prefix('bandingkan-motor')->name('compare.')->group(function () {
     Route::get('/', [PublicControllerSatu::class, 'compareMenu'])->name('menu');
@@ -244,6 +245,7 @@ Route::get('/accessories/general/{id}', [PublicControllerSatu::class, 'generalAc
 Route::get('/apparels', [PublicControllerSatu::class, 'apparels'])->name('apparels');
 Route::get('/apparels/detail/{id}', [PublicControllerSatu::class, 'apparelDetail'])->name('apparel.detail');
 Route::get('/parts', [PublicControllerSatu::class, 'parts'])->name('parts');
+Route::get('/parts/{id}', [PublicControllerSatu::class, 'partsDetail'])->name('parts.detail');
 Route::get('/branches', [PublicControllerSatu::class, 'branches'])->name('branches');
 Route::get('/price-list', [PublicControllerSatu::class, 'priceList'])->name('price.list');
 Route::get('/simulasi-kredit', [PublicControllerSatu::class, 'creditSimulator'])->name('credit.sim');
@@ -276,6 +278,12 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::put('/motors/{id}', [AdminControllerSatu::class, 'updateMotor'])->name('motors.update');
     Route::delete('/motors/{id}', [AdminControllerSatu::class, 'deleteMotor'])->name('motors.delete');
     Route::get('/get-types/{category_id}', [AdminControllerSatu::class, 'getTypesByCategory'])->name('motors.getTypes');
+
+    // ==== Simulasi Kredit per Motor (AJAX) ====
+    Route::get('/motors/{motor}/credits', [AdminControllerSatu::class, 'motorCreditsShow'])->name('motors.credits.show');
+    Route::post('/motors/{motor}/credits', [AdminControllerSatu::class, 'motorCreditsSave'])->name('motors.credits.save');
+    Route::get('/motors/{motor}/credits/history', [AdminControllerSatu::class, 'motorCreditsHistory'])->name('motors.credits.history');
+    Route::delete('/motors/{motor}/credits/{header}', [AdminControllerSatu::class, 'motorCreditsDeleteHeader'])->name('motors.credits.deleteHeader');
 
     // Warna (per motor)
     Route::get('/{motor}/colors', [AdminControllerSatu::class, 'colorsIndex'])->name('colors.index');
@@ -322,6 +330,15 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::put('/{motor}/features/{id}', [AdminControllerSatu::class, 'featuresUpdate'])->name('features.update');
     Route::delete('/{motor}/features/{id}', [AdminControllerSatu::class, 'featuresDelete'])->name('features.delete');
 
+    // Credits (per motor)
+    Route::get('/{motor}/credits',                 [AdminControllerSatu::class, 'creditsIndex'])->name('credits.index');
+    Route::get('/{motor}/credits/headers',         [AdminControllerSatu::class, 'creditsHeadersData'])->name('credits.headers'); // <— BARU
+    Route::get('/{motor}/credits/data',            [AdminControllerSatu::class, 'creditsData'])->name('credits.data');
+    Route::post('/{motor}/credits',                [AdminControllerSatu::class, 'creditsStore'])->name('credits.store');
+    Route::get('/{motor}/credits/{header}/edit',   [AdminControllerSatu::class, 'creditsEdit'])->name('credits.edit');
+    Route::put('/{motor}/credits/{header}',        [AdminControllerSatu::class, 'creditsUpdate'])->name('credits.update');
+    Route::delete('/{motor}/credits/{header}',     [AdminControllerSatu::class, 'creditsDelete'])->name('credits.delete');
+
     // Apparels
     Route::get('apparels', [AdminControllerSatu::class, 'apparelsIndex'])->name('apparels.index');
     Route::get('apparels/data', [AdminControllerSatu::class, 'apparelsData'])->name('apparels.data');
@@ -361,11 +378,6 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::get('/test-rides', [AdminControllerSatu::class, 'testRidesIndex'])->name('test-rides.index');
     Route::get('/test-rides/{id}', [AdminControllerSatu::class, 'testRidesShow'])->name('test-rides.show');
     Route::delete('/test-rides/{id}', [AdminControllerSatu::class, 'testRidesDelete'])->name('test-rides.delete');
-
-    // Credit Simulation Requests
-    Route::get('/credits', [AdminControllerSatu::class, 'creditsIndex'])->name('credits.index');
-    Route::get('/credits/{id}', [AdminControllerSatu::class, 'creditsShow'])->name('credits.show');
-    Route::delete('/credits/{id}', [AdminControllerSatu::class, 'creditsDelete'])->name('credits.delete');
 
     // Motor Type
     Route::get('motor-type', [AdminControllerSatu::class, 'motorTypeIndex'])->name('motor-type.index');

@@ -6,50 +6,50 @@
     <div class="col-12 mb-4">
 
       {{-- Banner (template "Parts" → fallback "Home") --}}
-@if($banners->isNotEmpty())
-  <div id="bannerCarousel"
-       class="carousel slide"
-       data-bs-interval="false"
-       @if($banners->count() <= 1) data-bs-touch="false" data-bs-wrap="false" @endif>
+      @if($banners->isNotEmpty())
+        <div id="bannerCarousel"
+             class="carousel slide"
+             data-bs-interval="false"
+             @if($banners->count() <= 1) data-bs-touch="false" data-bs-wrap="false" @endif>
 
-    {{-- Indikator hanya kalau > 1 --}}
-    @if($banners->count() > 1)
-      <div class="carousel-indicators">
-        @foreach($banners as $index => $banner)
-          <button type="button" data-bs-target="#bannerCarousel"
-                  data-bs-slide-to="{{ $index }}"
-                  class="{{ $index == 0 ? 'active' : '' }}"
-                  aria-current="{{ $index == 0 ? 'true' : 'false' }}"
-                  aria-label="Slide {{ $index+1 }}"></button>
-        @endforeach
-      </div>
-    @endif
+          {{-- Indikator hanya kalau > 1 --}}
+          @if($banners->count() > 1)
+            <div class="carousel-indicators">
+              @foreach($banners as $index => $banner)
+                <button type="button" data-bs-target="#bannerCarousel"
+                        data-bs-slide-to="{{ $index }}"
+                        class="{{ $index == 0 ? 'active' : '' }}"
+                        aria-current="{{ $index == 0 ? 'true' : 'false' }}"
+                        aria-label="Slide {{ $index+1 }}"></button>
+              @endforeach
+            </div>
+          @endif
 
-    <div class="carousel-inner">
-      @foreach($banners as $index => $banner)
-        <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
-          <img src="{{ $banner->image_path }}"
-               class="d-block w-100 parts-banner"
-               alt="{{ $banner->title ?? 'Banner Parts' }}">
+          <div class="carousel-inner">
+            @foreach($banners as $index => $banner)
+              <div class="carousel-item {{ $index == 0 ? 'active' : '' }}">
+                <img src="{{ $banner->image_path }}"
+                     class="d-block w-100 parts-banner"
+                     alt="{{ $banner->title ?? 'Banner Parts' }}">
+              </div>
+            @endforeach
+          </div>
+
+          {{-- Panah hanya kalau > 1 --}}
+          @if($banners->count() > 1)
+            <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon bg-dark rounded-circle p-2"></span>
+            </button>
+          @endif
         </div>
-      @endforeach
-    </div>
-
-    {{-- Panah hanya kalau > 1 --}}
-    @if($banners->count() > 1)
-      <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon bg-dark rounded-circle p-2"></span>
-      </button>
-      <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon bg-dark rounded-circle p-2"></span>
-      </button>
-    @endif
-  </div>
-@endif
+      @endif
 
       {{-- Heading --}}
       <div class="text-center mt-4">
-        <h2 class="section-title">Pilih Parts</h2>
+        <h2 class="section-title">Pilih Katalog Parts</h2>
         <p class="text-muted fs-5">Temukan Sparepart Sesuai dengan Varian Motor</p>
       </div>
 
@@ -65,7 +65,7 @@
         </div>
       </div>
 
-      {{-- Grid motor per kategori (kartu & tombol PERSIS seperti Aksesoris) --}}
+      {{-- Grid motor per kategori --}}
       <div class="row mt-4 product-grid">
         @forelse($motors as $motor)
           <div class="col-md-6 mb-4 product-col">
@@ -79,8 +79,8 @@
               <div class="acc-motor-info">
                 <h5 class="acc-motor-title">{{ $motor->name }}</h5>
 
-                {{-- Tidak ada halaman detail parts. Arahkan ke detail motor bagian #parts --}}
-                <a href="#"
+                {{-- Selalu tampilkan tombol Detail, meskipun belum ada PDF --}}
+                <a href="{{ route('parts.detail', $motor->id) }}"
                    class="acc-cta acc-motor-cta">
                   <span>Detail</span>
                   <i class="fas fa-chevron-right"></i>
