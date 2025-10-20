@@ -1664,7 +1664,7 @@ public function apparelsDeleteImage($imageId)
     // Halaman utama banner
     public function adminbanner()
     {
-        return view('pages.admin.managebanner');
+        return view('pages.admin.managebanners');
     }
 
     // Get data banner templates untuk display dan AJAX
