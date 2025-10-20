@@ -94,6 +94,7 @@
         @endif
       </div>
 
+      {{-- CTA: Buat Pesanan → buka modal QR --}}
       <a href="#" class="btn btn-dark btn-lg w-100 py-3 fw-bold accd-order" style="border-radius:14px;">
         Buat Pesanan
       </a>
@@ -131,9 +132,23 @@
 </div>
 @endsection
 
+{{-- ===== QR ORDER MODAL (untuk "Buat Pesanan") ===== --}}
+<div id="qrOrderModal" class="qrmm" hidden>
+  <div class="qrmm__backdrop" data-close></div>
+  <div class="qrmm__box" role="dialog" aria-modal="true" aria-labelledby="qrOrderTitle">
+    <button class="qrmm__close" type="button" aria-label="Tutup" data-close>×</button>
+    <h3 id="qrOrderTitle" class="qrmm__title">Scan untuk Buat Pesanan</h3>
+    <p class="qrmm__tag">
+      Scan QR ini untuk menuju <strong>website resmi Wahana Ritelindo</strong>.
+      Lanjutkan pemesananmu di website resmi kami—cepat & mudah!
+    </p>
+    <div id="qrOrderCanvas" class="qrmm__canvas" aria-live="polite"></div>
+  </div>
+</div>
+
 @push('scripts')
 <script>
-  // Klik thumbnail → ganti gambar hero
+  // Klik thumbnail → ganti gambar hero (ikuti penulisan sebelumnya)
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.accd-thumb');
     if (!btn) return;
@@ -152,4 +167,67 @@
     btn.setAttribute('aria-pressed','true');
   });
 </script>
+
+{{-- Library QR --}}
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+<script>
+  (function(){
+    // URL tujuan pemesanan (web utama kita) — samakan dengan per-motor
+    const ORDER_URL = 'https://www.wahanaritelindo.com/home';
+    const modal  = document.getElementById('qrOrderModal');
+    const canvas = document.getElementById('qrOrderCanvas');
+
+    if(!modal || !canvas) return;
+
+    function openQR(){
+      canvas.innerHTML = '';
+      const render = () => {
+        if (window.QRCode) {
+          new QRCode(canvas, {text: ORDER_URL, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M});
+        } else {
+          setTimeout(render, 30);
+        }
+      };
+      render();
+      modal.hidden = false;
+    }
+    function closeQR(){ modal.hidden = true; canvas.innerHTML=''; }
+
+    // Klik "Buat Pesanan" -> tampil QR
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest('.accd-order');
+      if(!btn) return;
+      e.preventDefault();
+      openQR();
+    }, true);
+
+    // Tutup modal
+    modal.addEventListener('click', function(e){
+      if (e.target.hasAttribute('data-close')) closeQR();
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && !modal.hidden) closeQR();
+    });
+  })();
+</script>
+
+{{-- CSS modal QR (inline agar mandiri) --}}
+<style>
+.qrmm[hidden]{display:none !important;}
+.qrmm{position:fixed;inset:0;z-index:1060;}
+.qrmm__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px);}
+.qrmm__box{
+  position:relative;z-index:1;
+  max-width:600px; width:96%; margin:6vh auto;
+  background:#fff;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.24);
+  padding:24px 22px 20px;text-align:center;
+}
+.qrmm__close{
+  position:absolute;top:8px;right:10px;width:36px;height:36px;border:0;border-radius:10px;
+  background:#f3f4f6;font-size:22px;line-height:1;cursor:pointer;
+}
+.qrmm__title{font-size:22px;font-weight:800;color:#111827;margin:4px 0 6px;}
+.qrmm__tag{color:#374151;margin:0 0 14px;}
+.qrmm__canvas{display:grid;place-items:center;min-height:300px;}
+</style>
 @endpush
