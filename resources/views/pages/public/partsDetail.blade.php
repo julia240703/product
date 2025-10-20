@@ -65,14 +65,26 @@
 
   {{-- PDF viewer / Empty state --}}
   @if($viewerUrl)
-    <div class="card pdf-viewer shadow-sm">
+    <div class="card pdf-viewer shadow-sm position-relative" id="pdfViewerCard">
+      {{-- tombol fullscreen (kanan-atas) --}}
+      <button type="button" class="pdf-fs-btn js-parts-fs" aria-label="Toggle fullscreen" title="Fullscreen">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="7 3 3 3 3 7"/><line x1="3" y1="3" x2="9" y2="9"/>
+          <polyline points="17 21 21 21 21 17"/><line x1="15" y1="15" x2="21" y2="21"/>
+          <polyline points="21 7 21 3 17 3"/><line x1="15" y1="9" x2="21" y2="3"/>
+          <polyline points="3 17 3 21 7 21"/><line x1="3" y1="21" x2="9" y2="15"/>
+        </svg>
+      </button>
+
       <iframe
-      src="{{ $viewerUrl }}"
-      class="pdf-frame"
-      title="Katalog Part {{ $motor->name }}"
-      scrolling="no"                                   
-      style="width:100%;height:80vh;border:0;overflow:hidden;"
-    ></iframe>
+        src="{{ $viewerUrl }}"
+        class="pdf-frame"
+        title="Katalog Part {{ $motor->name }}"
+        scrolling="no"
+        allow="fullscreen"
+        allowfullscreen
+        style="width:100%;height:80vh;border:0;overflow:hidden;"
+      ></iframe>
     </div>
   @else
     <div class="card border-0 shadow-sm">
@@ -94,34 +106,51 @@
 
 <script>
 (function(){
+  const card  = document.getElementById('pdfViewerCard');
+  const btn   = card?.querySelector('.js-parts-fs');
+  const frame = card?.querySelector('.pdf-frame');
+
+  function isFS(){
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || document.mozFullScreenElement;
+  }
+  function enterFS(el){
+    (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen || el.mozRequestFullScreen)?.call(el);
+  }
+  function exitFS(){
+    (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen || document.mozCancelFullScreen)?.call(document);
+  }
+
+  btn?.addEventListener('click', function(){
+    if (!isFS()) enterFS(card); else exitFS();
+  });
+
   function sizePdfViewer(){
     const main  = document.querySelector('main');
-    const wrap  = document.querySelector('.accd-detail');
     const head  = document.querySelector('.accd-back');
     const hero  = document.querySelector('.parts-hero');
     const copy  = document.querySelector('.accd-detail .text-center.mb-3');
-    const card  = document.querySelector('.card.pdf-viewer');
-    const frame = document.querySelector('.pdf-frame');
-    if (!main || !wrap || !card || !frame) return;
+    if (!main || !card || !frame) return;
 
-    // total tinggi yang dipakai elemen di atas viewer
+    // saat fullscreen, biarkan CSS yang atur tinggi
+    if (isFS()) return;
+
     const usedTop =
       (head?.offsetHeight || 0) +
       (hero?.offsetHeight || 0) +
       (copy?.offsetHeight || 0) +
-      24; // padding/margin kecil
+      24;
 
-    // tinggi yang tersedia di dalam <main>
     const H = main.clientHeight;
     const avail = Math.max(300, H - usedTop);
 
-    // set tinggi untuk card + iframe agar pas
     card.style.height  = avail + 'px';
     frame.style.height = '100%';
   }
 
   window.addEventListener('load', sizePdfViewer);
   window.addEventListener('resize', sizePdfViewer);
+  document.addEventListener('fullscreenchange', sizePdfViewer);
+  document.addEventListener('webkitfullscreenchange', sizePdfViewer);
 })();
 </script>
 @endsection

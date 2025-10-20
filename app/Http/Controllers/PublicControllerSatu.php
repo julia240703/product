@@ -23,6 +23,8 @@ use App\Models\BranchLocation;
 use App\Models\Banner;
 use App\Models\TestRide;
 use App\Models\CreditSimulation;
+use App\Models\CreditHeader;
+use App\Models\CreditItem;
 
 class PublicControllerSatu extends Controller
 {
@@ -235,13 +237,45 @@ class PublicControllerSatu extends Controller
 
         $accessories = $motor->accessories->sortBy('name')->values();
 
-        $recommended = Motor::with(['colors' => fn($q) => $q->oldest()])
+        // ===== Rekomendasi: tambahkan relasi type utk fallback price =====
+        $recommended = Motor::with([
+                'colors' => fn($q) => $q->oldest(),
+                'type:id,name',
+            ])
             ->where('category_id', $motor->category_id ?? null)
             ->where('id', '!=', $motor->id)
             ->where('status', 'published')
             ->latest('updated_at')
             ->take(2)
             ->get();
+
+        // ===== Hydrate harga "Harga Mulai" (VARIAN → TIPE) dari price_lists =====
+        if ($recommended->isNotEmpty()) {
+            $variantNames = $recommended->pluck('name')->unique()->values();
+            $typeNames    = $recommended->pluck('type.name')->filter()->unique()->values();
+
+            $pv = \App\Models\PriceList::whereIn('motor_type', $variantNames)
+                    ->get(['motor_type','price']);
+            $pt = \App\Models\PriceList::whereIn('motorcycle_name', $typeNames)
+                    ->get(['motorcycle_name','price']);
+
+            $minByVariant = $pv->groupBy('motor_type')->map(
+                fn($g) => optional($g->sortBy(fn($r)=>$this->priceToInt($r->price))->first())->price
+            );
+            $minByType = $pt->groupBy('motorcycle_name')->map(
+                fn($g) => optional($g->sortBy(fn($r)=>$this->priceToInt($r->price))->first())->price
+            );
+
+            $recommended = $recommended->map(function ($m) use ($minByVariant, $minByType) {
+                $rawText = $minByVariant[$m->name] ?? ($minByType[optional($m->type)->name] ?? null);
+
+                // simpan dua versi seperti di Home/Produk
+                $m->rec_price_from_text = $rawText;                 // teks asli dari price_lists
+                $m->rec_price_from_fmt  = $this->fmtPriceText($rawText); // "Rp 18.168.000" | null
+
+                return $m;
+            });
+        }
 
         $showBack = $request->query('return_to') === 'compare';
         $backUrl  = $showBack ? route('compare.result') : null;
@@ -1135,38 +1169,45 @@ class PublicControllerSatu extends Controller
 
     // --- PRICE LIST ---
     public function priceList(Request $request)
-    {
-        $categories  = Category::orderBy('id')->get(['id','name']);
-        $activeCatId = (int) $request->query('category', 0);
-        if ($activeCatId === 0 && $categories->isNotEmpty()) {
-            $activeCatId = (int) $categories->first()->id;
-        }
-
-        $rows = \App\Models\PriceList::query()
-            ->leftJoin('motors', 'motors.name', '=', 'price_lists.motorcycle_name')
-            ->where('motors.status', 'published')
-            ->when($activeCatId > 0, fn($q) => $q->where('motors.category_id', $activeCatId))
-            ->orderBy('price_lists.motorcycle_name')
-            ->orderBy('price_lists.motor_type')
-            ->get([
-                'price_lists.id','price_lists.motorcycle_name','price_lists.motor_type','price_lists.price',
-                'motors.id as motor_id','motors.category_id as cat_id',
-            ]);
-
-        $groups = $rows->groupBy('motorcycle_name')->map(function ($items) {
-            $f = $items->first();
-            return (object)[
-                'motor_name' => $f->motorcycle_name,
-                'motor_id'   => $f->motor_id,
-                'types'      => $items->map(fn($r)=>(object)[
-                    'type'=>$r->motor_type,
-                    'price'=>$r->price, // tampilkan string asli
-                ])->values(),
-            ];
-        })->values();
-
-        return view('pages.public.priceList', compact('categories','activeCatId','groups'));
+{
+    $categories  = Category::orderBy('id')->get(['id','name']);
+    $activeCatId = (int) $request->query('category', 0);
+    if ($activeCatId === 0 && $categories->isNotEmpty()) {
+        $activeCatId = (int) $categories->first()->id;
     }
+
+    $returnUrl = $request->query('return'); // <--- ambil param return
+
+    $rows = \App\Models\PriceList::query()
+        ->leftJoin('motors', 'motors.name', '=', 'price_lists.motor_type')
+        ->where('motors.status', 'published')
+        ->when($activeCatId > 0, fn($q) => $q->where('motors.category_id', $activeCatId))
+        ->orderBy('price_lists.motorcycle_name')
+        ->orderBy('price_lists.motor_type')
+        ->get([
+            'price_lists.id',
+            'price_lists.motorcycle_name',
+            'price_lists.motor_type',
+            'price_lists.price',
+            'motors.id as motor_id',
+            'motors.category_id as cat_id',
+        ]);
+
+    $groups = $rows->groupBy('motorcycle_name')->map(function ($items) {
+        $f = $items->first();
+        return (object)[
+            'motor_name' => $f->motorcycle_name,
+            'motor_id'   => $f->motor_id,
+            'types'      => $items->map(fn($r)=>(object)[
+                'type'=>$r->motor_type,
+                'price'=>$r->price,
+            ])->values(),
+        ];
+    })->values();
+
+    // lempar $returnUrl ke view
+    return view('pages.public.priceList', compact('categories','activeCatId','groups','returnUrl'));
+}
 
     /** Ambil matrix kredit terbaru utk motor (varian) tertentu */
     private function buildCreditMatrix(int $motorId): array
@@ -1235,51 +1276,91 @@ class PublicControllerSatu extends Controller
     }
 
     // --- SIMULASI KREDIT (page + endpoint JSON matrix) ---
-    public function creditSimulator(Request $request)
-    {
-        // Endpoint JSON untuk FE
-        if ($request->get('mode') === 'matrix' && $request->filled('motor_id')) {
-            return response()->json($this->buildCreditMatrix((int)$request->query('motor_id')));
-        }
-
-        // Halaman
-        $categories = Category::orderBy('name')->get(['id','name']);
-        $types      = MotorType::orderBy('name')->get(['id','name','category_id']);
-
-        // varian publish; gunakan kolom 'price' sebagai OTR
-        $motors = Motor::where('status', 'published')
-            ->orderBy('name')
-            ->get(['id','name','type_id','thumbnail','price']);
-
-        $typeCat = $types->pluck('category_id','id'); // [type_id => category_id]
-        $datasetMotors = $motors->map(function($m) use ($typeCat){
-            return [
-                'id'          => (int)$m->id,
-                'name'        => $m->name,
-                'type_id'     => (int)$m->type_id,
-                'category_id' => (int)($typeCat[$m->type_id] ?? 0),
-                'otr'         => (int)($m->price ?? 0), // pakai price sbg OTR
-                'thumb'       => $m->thumbnail ? asset('storage/'.$m->thumbnail) : asset('placeholder.png'),
-            ];
-        })->values();
-
-        $defaults = (object)[
-            'min_dp_percent' => 10,
-            'interest_year'  => 10.0,
-        ];
-
-        $dataset = [
-            'categories' => $categories->map(fn($c)=>['id'=>$c->id,'name'=>$c->name])->values(),
-            'types'      => $types->map(fn($t)=>['id'=>$t->id,'name'=>$t->name,'category_id'=>$t->category_id])->values(),
-            'motors'     => $datasetMotors,
-        ];
-
-        return view('pages.public.creditSimulator', [
-            'categories' => $categories,
-            'defaults'   => $defaults,
-            'dataset'    => $dataset,
-        ]);
+public function creditSimulator(Request $request)
+{
+    // Endpoint JSON untuk FE (tetap)
+    if ($request->get('mode') === 'matrix' && $request->filled('motor_id')) {
+        return response()->json($this->buildCreditMatrix((int)$request->query('motor_id')));
     }
+
+    // ===== 1) Ambil hanya motor yang PUNYA data kredit =====
+    // Motor dianggap "punya kredit" jika minimal 1 CreditHeader untuk motor tsb
+    // memiliki minimal 1 CreditItem.
+    $creditMotorIds = CreditHeader::whereHas('items')
+        ->pluck('motor_id')->unique()->values();
+
+    // Varian publish yang punya data kredit
+    $motors = Motor::where('status', 'published')
+        ->whereIn('id', $creditMotorIds)
+        ->orderBy('name')
+        ->get(['id','name','type_id','thumbnail','price']);
+
+    // Jika tidak ada satupun, tetap render halaman dengan dataset kosong
+    // (dropdown akan disable otomatis oleh JS).
+    $usedTypeIds = $motors->pluck('type_id')->unique()->values();
+
+    // Tipe & kategori hanya yang dipakai motor hasil filter
+    $types = MotorType::whereIn('id', $usedTypeIds)
+        ->orderBy('name')
+        ->get(['id','name','category_id']);
+
+    $usedCatIds = $types->pluck('category_id')->unique()->values();
+    $categories = Category::whereIn('id', $usedCatIds)
+        ->orderBy('name')
+        ->get(['id','name']);
+
+    // ===== 2) Tarik harga dari price_lists (tetap seperti sebelumnya) =====
+    $variantNames   = $motors->pluck('name')->unique()->values();
+    $typeNameById   = $types->pluck('name','id');                           // [type_id => type_name]
+    $typeNames      = $typeNameById->values()->unique();
+
+    $pv = PriceList::whereIn('motor_type', $variantNames)->get(['motor_type','price']);
+    $pt = PriceList::whereIn('motorcycle_name', $typeNames)->get(['motorcycle_name','price']);
+
+    $minByVariant = $pv->groupBy('motor_type')->map(
+        fn($g) => optional($g->sortBy(fn($r)=>$this->priceToInt($r->price))->first())->price
+    );
+    $minByType = $pt->groupBy('motorcycle_name')->map(
+        fn($g) => optional($g->sortBy(fn($r)=>$this->priceToInt($r->price))->first())->price
+    );
+
+    // ===== 3) Bangun dataset FE (hanya motor yang punya kredit) =====
+    $typeCat = $types->pluck('category_id','id'); // [type_id => category_id]
+
+    $datasetMotors = $motors->map(function($m) use ($typeCat, $typeNameById, $minByVariant, $minByType){
+        $typeName = $typeNameById[$m->type_id] ?? null;
+        $rawText  = $minByVariant[$m->name] ?? ($typeName ? ($minByType[$typeName] ?? null) : null);
+
+        $otrFromPL = $rawText !== null ? $this->priceToInt($rawText) : 0;
+        $otr       = $otrFromPL > 0 ? $otrFromPL : (int)($m->price ?? 0);
+
+        return [
+            'id'          => (int)$m->id,
+            'name'        => $m->name,
+            'type_id'     => (int)$m->type_id,
+            'category_id' => (int)($typeCat[$m->type_id] ?? 0),
+            'otr'         => $otr,
+            'thumb'       => $this->imgUrl($m->thumbnail ?? null),
+        ];
+    })->values();
+
+    $defaults = (object)[
+        'min_dp_percent' => 10,
+        'interest_year'  => 10.0,
+    ];
+
+    $dataset = [
+        'categories' => $categories->map(fn($c)=>['id'=>$c->id,'name'=>$c->name])->values(),
+        'types'      => $types->map(fn($t)=>['id'=>$t->id,'name'=>$t->name,'category_id'=>$t->category_id])->values(),
+        'motors'     => $datasetMotors, // <— SUDAH TERFILTER
+    ];
+
+    return view('pages.public.creditSimulator', [
+        'categories' => $categories,
+        'defaults'   => $defaults,
+        'dataset'    => $dataset,
+    ]);
+}
 
     /** Format harga apa pun (string/angka) menjadi "Rp 18.980.000" */
 private function fmtPriceText($val): ?string

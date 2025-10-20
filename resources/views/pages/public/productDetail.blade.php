@@ -204,11 +204,13 @@
           </div>
 
           <div class="acc-actions">
-            <a href="{{ route('branches') }}" class="acc-action-btn">Dealer</a>
-            <a href="{{ route('compare.menu') }}" class="acc-action-btn">Bandingkan</a>
-            <a href="{{ route('price.list') }}" class="acc-action-btn">Price List</a>
-            <a href="{{ route('credit.sim', ['motor_id' => $motor->id]) }}" class="acc-action-btn">Simulasi Kredit</a>
-          </div>
+          <a href="{{ route('branches') }}" class="acc-action-btn">Dealer</a>
+          <a href="{{ route('compare.menu') }}" class="acc-action-btn">Bandingkan</a>
+          <a href="{{ route('price.list', ['return' => url()->current()]) }}" class="acc-action-btn">
+            Price List
+          </a>
+          <a href="{{ route('credit.sim', ['motor_id' => $motor->id]) }}" class="acc-action-btn">Simulasi Kredit</a>
+        </div>
         </section>
       @endif
 
@@ -228,8 +230,13 @@
           </div>
           <div class="product-info-right text-center">
             <h4 class="product-title">{{ $r->name }}</h4>
-            <p class="product-subtitle">Harga Mulai</p>
-            <div class="product-price">{{ $r->price_text }}</div>
+           <p class="product-subtitle">Harga Mulai</p>
+
+            @if(!empty($r->rec_price_from_fmt))
+              <div class="product-price">{{ $r->rec_price_from_fmt }}</div>
+            @else
+              <div class="product-price">Hubungi dealer</div>
+            @endif
 
             <div class="buttons d-flex justify-content-center gap-2">
               <a href="{{ route('motor.detail', $r->id) }}" class="btn btn-outline-danger">Detail</a>

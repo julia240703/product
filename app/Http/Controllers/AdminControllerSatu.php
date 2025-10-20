@@ -43,6 +43,12 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Yajra\DataTables\Facades\DataTables;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 
 class AdminControllerSatu extends Controller
@@ -124,14 +130,12 @@ public function motorsPublished(Request $request)
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" title="Warna"><i class="fas fa-tint"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" title="Fitur"><i class="fas fa-star"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" title="Part"><i class="fas fa-wrench"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;">
-                                    <a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary" title="Kelola Kredit">
-                                        <i class="fas fa-calculator"></i>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Aksesoris"><i class="fas fa-cogs"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Warna"><i class="fas fa-tint"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Fitur"><i class="fas fa-star"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Part"><i class="fas fa-wrench"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary" title="Kelola Kredit"><i class="fas fa-calculator"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -225,13 +229,12 @@ public function motorsUnpublished(Request $request)
                         </thead>
                         <tbody>
                             <tr>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '"><i class="fas fa-cogs"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '"><i class="fas fa-tint"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '"><i class="fas fa-list"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '"><i class="fas fa-star"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '"><i class="fas fa-wrench"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;">
-                                    <a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-calculator"></i></a>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.accessories.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-cogs"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.colors.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-tint"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-list"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-star"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-wrench"></i></a></td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-calculator"></i></a>
                                 </td>
                             </tr>
                         </tbody>
@@ -363,125 +366,6 @@ public function getTypesByCategory($categoryId)
 {
     $types = MotorType::where('category_id', $categoryId)->get();
     return response()->json($types);
-}
-
-/* =========================
-       SIMULASI KREDIT PER MOTOR (AJAX)
-   ========================== */
-
-/** helper: parse "1.068.000" -> 1068000 */
-private function parseMoney($v): int
-{
-    if ($v === null) return 0;
-    return (int) preg_replace('/[^\d]/', '', (string) $v);
-}
-
-/** GET header + items terbaru untuk modal */
-public function motorCreditsShow($motorId)
-{
-    $motor = Motor::findOrFail($motorId);
-
-    $header = CreditHeader::with('items','provider')
-        ->where('motor_id', $motor->id)
-        ->orderByDesc('valid_from')
-        ->orderByDesc('id')
-        ->first();
-
-    $providers = CreditProvider::orderBy('name')->get(['id','name']);
-    $tenors    = [11,17,23,27,29,33,35,41];
-
-    return response()->json([
-        'motor'     => ['id'=>$motor->id, 'name'=>$motor->name],
-        'header'    => $header,
-        'items'     => $header?->items ?? [],
-        'tenors'    => $tenors,
-        'providers' => $providers,
-    ]);
-}
-
-/** POST simpan periode + matrix items (DP × Tenor) */
-public function motorCreditsSave(Request $request, $motorId)
-{
-    $motor = Motor::findOrFail($motorId);
-
-    $data = $request->validate([
-        'provider_id' => 'nullable|exists:credit_providers,id',
-        'valid_from'  => 'nullable|date',
-        'valid_to'    => 'nullable|date|after_or_equal:valid_from',
-        'note'        => 'nullable|string|max:255',
-        'tenors'      => 'required|array|min:1',
-        'tenors.*'    => 'integer|min:1',
-        'rows'        => 'required|array|min:1',
-    ]);
-
-    $header = CreditHeader::create([
-        'motor_id'           => $motor->id,
-        'credit_provider_id' => $data['provider_id'] ?? null,
-        'valid_from'         => $data['valid_from'] ?? null,
-        'valid_to'           => $data['valid_to'] ?? null,
-        'note'               => $data['note'] ?? null,
-    ]);
-
-    $items = [];
-    foreach ($data['rows'] as $row) {
-        if (!array_key_exists('dp', $row)) continue;
-        $dp = $this->parseMoney($row['dp']);
-        if ($dp <= 0) continue;
-
-        foreach ($data['tenors'] as $tenor) {
-            $key = (string) $tenor;
-            if (!array_key_exists($key, $row)) continue;
-
-            $installment = $this->parseMoney($row[$key]);
-            if ($installment <= 0) continue;
-
-            $items[] = [
-                'header_id'    => $header->id,
-                'dp_amount'    => $dp,
-                'tenor_months' => (int) $tenor,
-                'installment'  => $installment,
-                'created_at'   => now(),
-                'updated_at'   => now(),
-            ];
-        }
-    }
-
-    if (!empty($items)) {
-        CreditItem::insert($items);
-    }
-
-    return response()->json([
-        'ok' => true,
-        'header_id' => $header->id,
-        'count' => count($items),
-        'message' => 'Matrix kredit tersimpan.',
-    ]);
-}
-
-/** GET riwayat header per motor */
-public function motorCreditsHistory($motorId)
-{
-    $motor = Motor::findOrFail($motorId);
-
-    $headers = CreditHeader::withCount('items')
-        ->with('provider:id,name')
-        ->where('motor_id', $motor->id)
-        ->orderByDesc('valid_from')
-        ->orderByDesc('id')
-        ->get();
-
-    return response()->json([
-        'motor'   => ['id'=>$motor->id, 'name'=>$motor->name],
-        'headers' => $headers,
-    ]);
-}
-
-/** DELETE satu header (items kehapus via FK cascade) */
-public function motorCreditsDeleteHeader($motorId, $headerId)
-{
-    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
-    $header->delete();
-    return response()->json(['ok'=>true, 'message'=>'Header kredit dihapus.']);
 }
 
     /* =========================
@@ -2253,7 +2137,6 @@ public function creditsData(Request $request, $motorId)
 {
     $motor = Motor::findOrFail($motorId);
 
-    // Ambil header terbaru (berdasarkan valid_from lalu id)
     $header = CreditHeader::where('motor_id', $motor->id)
         ->orderByDesc('valid_from')
         ->orderByDesc('id')
@@ -2273,18 +2156,16 @@ public function creditsData(Request $request, $motorId)
         }
         sort($tenors);
 
-        // bentuk baris untuk DataTables
+        // bentuk baris untuk DataTables (tanpa "Rp ")
         foreach ($byDp as $dp => $cols) {
-            $row = ['dp' => 'Rp '.number_format($dp, 0, ',', '.')];
+            $row = ['dp' => number_format($dp, 0, ',', '.')];
             foreach ($tenors as $t) {
-                $row[(string)$t] = isset($cols[$t]) ? 'Rp '.number_format($cols[$t],0,',','.') : '-';
+                $row[(string)$t] = isset($cols[$t]) ? number_format($cols[$t],0,',','.') : '-';
             }
             $rows[] = $row;
         }
     }
 
-    // Kamu bisa kirim meta header juga bila perlu
-    // via response JSON tambahan, tapi DataTables butuh array 'data'
     return DataTables::of($rows)->with([
         'header' => $header ? [
             'id'          => $header->id,
@@ -2448,10 +2329,12 @@ public function creditsDelete($motorId, $headerId)
     return back()->with('success', 'Simulasi kredit dihapus.');
 }
 
-// LIST UNTUK TABEL RINGKAS: 1 baris = 1 DP dalam 1 header (periode)
+/* =========================
+   LIST UNTUK TABEL RINGKAS:
+   1 baris = 1 DP dalam 1 header (periode)
+========================== */
 public function creditsHeadersData($motorId)
 {
-    // Ambil seluruh header (periode) milik motor ini
     $headers = CreditHeader::where('motor_id', $motorId)
         ->orderByDesc('valid_from')->orderByDesc('id')
         ->get(['id','valid_from','valid_to','credit_provider_id','note']);
@@ -2459,12 +2342,10 @@ public function creditsHeadersData($motorId)
     $rows = [];
 
     foreach ($headers as $h) {
-        // Ambil item matrix utk header ini
         $items = CreditItem::where('header_id', $h->id)
             ->get(['dp_amount','tenor_months']);
 
         if ($items->isEmpty()) {
-            // Placeholder kalau belum ada item
             $rows[] = [
                 'header_id'   => $h->id,
                 'tenors_text' => '-',
@@ -2492,8 +2373,8 @@ public function creditsHeadersData($motorId)
             $rows[] = [
                 'header_id'   => $h->id,
                 'tenors_text' => $tenorsText,
-                'dp_text'     => 'Rp '.number_format((int)$dpRaw, 0, ',', '.'),
-                // PENTING: bawa data-dp (angka mentah) ke tombol Edit
+                // tampilkan DP tanpa "Rp": 6500 -> "6.500"
+                'dp_text'     => number_format((int)$dpRaw, 0, ',', '.'),
                 'aksi'        =>
                     '<div class="btn-group">
                         <button class="btn btn-sm btn-primary js-edit"
@@ -2513,6 +2394,325 @@ public function creditsHeadersData($motorId)
         ->addIndexColumn()
         ->rawColumns(['aksi'])
         ->make(true);
+}
+
+/** ========================
+    Download template XLSX
+======================== */
+public function creditsTemplate($motorId)
+{
+    $motor  = Motor::findOrFail($motorId);
+
+    // Atur tenor default (boleh kamu ubah/ambil dari DB)
+    $tenors = [11,17,23,27,29,33,35];
+
+    $ss    = new Spreadsheet();
+    $sheet = $ss->getActiveSheet();
+    $sheet->setTitle('Simulasi');
+
+    // ukuran kolom/baris
+    $sheet->getColumnDimension('A')->setWidth(14);
+    for ($i=0; $i<count($tenors); $i++) {
+        $col = Coordinate::stringFromColumnIndex(2+$i); // B..?
+        $sheet->getColumnDimension($col)->setWidth(8.5);
+    }
+    $sheet->getRowDimension(1)->setRowHeight(20);
+    $sheet->getRowDimension(2)->setRowHeight(20);
+
+    // header kiri: UANG / MUKA
+    $sheet->setCellValue('A1', 'UANG');
+    $sheet->setCellValue('A2', 'MUKA');
+    $sheet->getStyle('A1:A2')->applyFromArray([
+        'font' => ['bold' => true],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
+        'borders' => ['outline' => ['borderStyle' => Border::BORDER_THIN]]
+    ]);
+
+    // header atas: JANGKA WAKTU
+    $lastHeaderCol = Coordinate::stringFromColumnIndex(1 + count($tenors));
+    $sheet->mergeCells("B1:{$lastHeaderCol}1");
+    $sheet->setCellValue('B1', 'JANGKA WAKTU');
+    $sheet->getStyle("B1:{$lastHeaderCol}1")->applyFromArray([
+        'font' => ['bold' => true],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
+        'borders' => ['outline' => ['borderStyle' => Border::BORDER_THIN]]
+    ]);
+
+    // baris 2: angka tenor
+    foreach ($tenors as $i => $t) {
+        $col = Coordinate::stringFromColumnIndex(2 + $i); // mulai dari B
+        $sheet->setCellValue("{$col}2", $t);
+        $sheet->getStyle("{$col}2")->applyFromArray([
+            'font' => ['bold' => true],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
+            'borders' => ['outline' => ['borderStyle' => Border::BORDER_THIN]]
+        ]);
+    }
+
+    // area input
+    $startRow = 3; $rows = 30; $endRow = $startRow + $rows - 1;
+    $range = "A{$startRow}:{$lastHeaderCol}{$endRow}";
+    $sheet->getStyle($range)->applyFromArray([
+        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
+    ]);
+
+    // hint
+    $sheet->setCellValue("A" . ($endRow + 2), "Isi kolom A baris 3 ke bawah dengan DP, dan isi angsuran di kolom tenor. Kosong = di-skip.");
+    $sheet->getStyle("A" . ($endRow + 2))->getFont()->setSize(9);
+    $sheet->mergeCells("A" . ($endRow + 2) . ":" . $lastHeaderCol . ($endRow + 2));
+
+    $filename = 'template_simulasi_' . $motor->slug . '.xlsx';
+    if (ob_get_length()) ob_end_clean();
+
+    $writer = new Xlsx($ss);
+    return response()->streamDownload(function() use ($writer) {
+        $writer->save('php://output');
+    }, $filename, [
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ]);
+}
+
+/** ========================
+    Helper angka rupiah
+======================== */
+private function moneyToInt($v): int
+{
+    return (int) preg_replace('/[^\d]/', '', (string) $v);
+}
+private function parseMoney($v): int
+{
+    // alias supaya panggilan lama tetap jalan
+    return $this->moneyToInt($v);
+}
+
+/* =========================
+   BULK IMPORT dari Excel (langsung simpan)
+========================== */
+public function creditsImport(Request $request, $motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    $data = $request->validate([
+        'file'        => ['required','file','mimes:xls,xlsx,csv','max:10240'],
+        'provider_id' => 'nullable|exists:credit_providers,id',
+        'valid_from'  => 'nullable|date',
+        'valid_to'    => 'nullable|date|after_or_equal:valid_from',
+        'note'        => 'nullable|string|max:255',
+        'mode'        => 'nullable|in:skip,overwrite', // duplikat DP
+    ]);
+    $mode = $data['mode'] ?? 'skip';
+
+    // 1) Load sheet
+    $path  = $request->file('file')->getRealPath();
+    $sheet = IOFactory::load($path)->getActiveSheet();
+
+    // 2) Temukan baris header tenor (angka di kolom B→)
+    $headerRow = null; $tenors = []; // [colIndex => months]
+    foreach ($sheet->getRowIterator(1, 60) as $row) {
+        $r = $row->getRowIndex();
+        $maybe = [];
+        for ($c=2; $c<=200; $c++) {
+            $raw = trim((string) $sheet->getCellByColumnAndRow($c, $r)->getCalculatedValue());
+            if ($raw === '') continue;
+            if (!preg_match('/^\d+$/', $raw)) { $maybe = []; break; }
+            $maybe[$c] = (int) $raw;
+        }
+        if ($maybe) { $headerRow = $r; $tenors = $maybe; break; }
+    }
+    if (!$headerRow || !$tenors) {
+        return back()->with('error','Header tenor tidak ditemukan (baris dengan 11,17,23,...)');
+    }
+
+    // 3) Buat header periode
+    $header = CreditHeader::create([
+        'motor_id'           => $motor->id,
+        'credit_provider_id' => $data['provider_id'] ?? null,
+        'valid_from'         => $data['valid_from'] ?? null,
+        'valid_to'           => $data['valid_to']   ?? null,
+        'note'               => $data['note']       ?? null,
+    ]);
+
+    // 4) Baca baris DP + angsuran per tenor
+    $rows = [];
+    $maxR = $sheet->getHighestRow();
+    for ($r = $headerRow + 1; $r <= $maxR; $r++) {
+        $dpRaw = trim((string) $sheet->getCellByColumnAndRow(1, $r)->getCalculatedValue());
+        if ($dpRaw === '') continue;
+        $dp = $this->moneyToInt($dpRaw);
+        if ($dp <= 0) continue;
+
+        $any = false;
+        foreach ($tenors as $col => $months) {
+            $cell = trim((string) $sheet->getCellByColumnAndRow($col, $r)->getCalculatedValue());
+            if ($cell === '') continue;
+            $angs = $this->moneyToInt($cell);
+            if ($angs <= 0) continue;
+
+            $rows[] = ['dp'=>$dp, 'tenor'=>(int)$months, 'angs'=>$angs];
+            $any = true;
+        }
+        if (!$any) continue;
+    }
+    if (!$rows) {
+        $header->delete();
+        return back()->with('error','Tidak ada data DP × tenor yang terbaca.');
+    }
+
+    // 5) Kebijakan duplikat DP dalam periode ini
+    $dpFile = collect($rows)->pluck('dp')->unique()->values();
+
+    if ($mode === 'skip') {
+        $existingDP = CreditItem::where('header_id',$header->id)
+            ->whereIn('dp_amount',$dpFile)->pluck('dp_amount');
+
+        if ($existingDP->isNotEmpty()) {
+            $rows = collect($rows)->reject(fn($r)=>$existingDP->contains($r['dp']))->values()->all();
+        }
+    }
+
+    if (!$rows) {
+        $header->delete();
+        return back()->with('error','Semua DP di file sudah pernah dimasukkan pada periode ini.');
+    }
+
+    // 6) Simpan
+    $now = now();
+    if ($mode === 'overwrite') {
+        $payload = [];
+        foreach ($rows as $r) {
+            $payload[] = [
+                'header_id'    => $header->id,
+                'dp_amount'    => $r['dp'],
+                'tenor_months' => $r['tenor'],
+                'installment'  => $r['angs'],
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ];
+        }
+        DB::table('credit_items')->upsert(
+            $payload,
+            ['header_id','dp_amount','tenor_months'],
+            ['installment','updated_at']
+        );
+    } else {
+        foreach (array_chunk($rows, 800) as $chunk) {
+            $bulk = [];
+            foreach ($chunk as $r) {
+                $bulk[] = [
+                    'header_id'    => $header->id,
+                    'dp_amount'    => $r['dp'],
+                    'tenor_months' => $r['tenor'],
+                    'installment'  => $r['angs'],
+                    'created_at'   => $now,
+                    'updated_at'   => $now,
+                ];
+            }
+            DB::table('credit_items')->insertOrIgnore($bulk);
+        }
+    }
+
+    return back()->with('success','Import selesai. Periode baru dibuat dan data berhasil dimasukkan.');
+}
+
+/* =========================
+   EDIT BARIS (DP) - SHOW
+   GET /admin/{motor}/credits/{header}/row?dp=6500000
+========================== */
+public function creditsRowShow(Request $request, $motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
+
+    $dp = (int) $request->query('dp', 0);
+    if ($dp <= 0) {
+        return response()->json(['message' => 'DP tidak valid.'], 422);
+    }
+
+    // semua tenor pada header (urut)
+    $allTenors = CreditItem::where('header_id', $header->id)
+        ->pluck('tenor_months')->unique()->sort()->values()->all();
+
+    // nilai angsuran untuk DP ini
+    $pairs = CreditItem::where('header_id', $header->id)
+        ->where('dp_amount', $dp)
+        ->pluck('installment','tenor_months');
+
+    return response()->json([
+        'dp'     => $dp,
+        'tenors' => $allTenors,
+        'values' => $pairs, // map tenor => installment
+    ]);
+}
+
+/* =========================
+   EDIT BARIS (DP) - UPDATE
+   PUT /admin/{motor}/credits/{header}/row
+   body: old_dp, dp (baru), tenor[11]=..., tenor[17]=...
+========================== */
+public function creditsRowUpdate(Request $request, $motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
+
+    $data = $request->validate([
+        'old_dp' => 'required|integer|min:1',
+        'dp'     => 'required|string',
+        'tenor'  => 'nullable|array',
+    ]);
+
+    $oldDp = (int) $data['old_dp'];
+    $newDp = $this->parseMoney($data['dp']);
+    if ($newDp <= 0) return response()->json(['message'=>'DP baru tidak valid.'], 422);
+
+    $tenorMap = collect($data['tenor'] ?? [])
+        ->mapWithKeys(function($v,$k){
+            $months = (int) $k;
+            $val    = $this->parseMoney($v);
+            return $months>0 && $val>0 ? [$months => $val] : [];
+        })->all();
+
+    if (empty($tenorMap)) {
+        return response()->json(['message'=>'Isi minimal satu tenor.'], 422);
+    }
+
+    DB::transaction(function() use ($header, $oldDp, $newDp, $tenorMap){
+        // 1) Jika DP berubah, update semua baris dp_amount tsb
+        if ($newDp !== $oldDp) {
+            CreditItem::where('header_id', $header->id)
+                ->where('dp_amount', $oldDp)
+                ->update(['dp_amount' => $newDp]);
+        }
+
+        // 2) Upsert nilai angsuran untuk tenor yg diisi
+        $now = now();
+        $payload = [];
+        foreach ($tenorMap as $months => $angs) {
+            $payload[] = [
+                'header_id'    => $header->id,
+                'dp_amount'    => $newDp,
+                'tenor_months' => (int) $months,
+                'installment'  => (int) $angs,
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ];
+        }
+
+        DB::table('credit_items')->upsert(
+            $payload,
+            ['header_id','dp_amount','tenor_months'],
+            ['installment','updated_at']
+        );
+
+        // (opsional) hapus tenor yang dikosongkan → uncomment jika mau:
+        /*
+        $keepTenors = array_keys($tenorMap);
+        CreditItem::where('header_id', $header->id)
+            ->where('dp_amount', $newDp)
+            ->whereNotIn('tenor_months', $keepTenors)
+            ->delete();
+        */
+    });
+
+    return response()->json(['ok'=>true]);
 }
 
     /* =========================

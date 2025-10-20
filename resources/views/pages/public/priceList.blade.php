@@ -1,27 +1,34 @@
 @extends('layouts.appPublic')
 
 @section('content')
-  {{-- Back bar --}}
-  @php
-    $prev     = url()->previous();
-    $current  = url()->current();
-    $backUrl  = $prev && $prev !== $current ? $prev : route('produk');
-  @endphp
+ {{-- Back bar --}}
+@php
+  // Ambil return dari query atau dari session (supaya tetap ada ketika ganti kategori)
+  $ret = request('return');
+  if ($ret) {
+      session(['price_return' => $ret]);
+  }
+  $savedReturn = session('price_return');
 
-  <div class="accd-back mb-3">
-    <a href="{{ $backUrl }}" class="accd-back-link">
-      <span class="accd-back-ico">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-             stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="11"/>
-          <line x1="15" y1="12" x2="8" y2="12"/>
-          <polyline points="12 16 8 12 12 8"/>
-        </svg>
-      </span>
-      <span class="accd-back-txt">Kembali</span>
-    </a>
-    <div class="accd-back-rule"></div>
-  </div>
+  // Fallback terakhir ke halaman produk umum
+  $backUrl = $savedReturn ?: route('produk');
+@endphp
+
+<div class="accd-back mb-3">
+  {{-- PAKAI href TETAP, JANGAN history.back() --}}
+  <a href="{{ $backUrl }}" class="accd-back-link">
+    <span class="accd-back-ico">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+           stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="11"/>
+        <line x1="15" y1="12" x2="8" y2="12"/>
+        <polyline points="12 16 8 12 12 8"/>
+      </svg>
+    </span>
+    <span class="accd-back-txt">Kembali</span>
+  </a>
+  <div class="accd-back-rule"></div>
+</div>
 
   {{-- HERO --}}
   <section class="pl-hero mb-4">
@@ -31,14 +38,15 @@
     </p>
   </section>
 
-  {{-- Kategori (tanpa "Semua") --}}
+ {{-- Kategori (tanpa "Semua") --}}
+  @php $carryReturn = request('return') ?: session('price_return'); @endphp
   @if($categories->isNotEmpty())
     <div class="category-container mt-4 mb-4">
       <div class="d-flex justify-content-center flex-wrap">
         @foreach($categories as $cat)
-          <a href="{{ route('price.list', ['category' => $cat->id]) }}"
-             class="{{ $activeCatId === $cat->id ? 'btn btn-danger' : 'btn custom-category-btn' }} me-2 mb-2">
-             {{ strtoupper($cat->name) }}
+          <a href="{{ route('price.list', ['category' => $cat->id, 'return' => $carryReturn]) }}"
+            class="{{ $activeCatId === $cat->id ? 'btn btn-danger' : 'btn custom-category-btn' }} me-2 mb-2">
+            {{ strtoupper($cat->name) }}
           </a>
         @endforeach
       </div>

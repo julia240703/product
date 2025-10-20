@@ -57,7 +57,7 @@
 
                             {{-- HARGA OTR --}}
                             <div class="mb-3">
-                                <label class="form-label">Harga OTR (Rp)</label>
+                                <label class="form-label">Harga OTR (Rp) <span class="text-red">*</span></label>
                                 <input type="number" min="0" step="1" class="form-control" name="price" placeholder="Contoh: 19000000">
                                 <div class="form-text">Masukkan angka tanpa titik/koma.</div>
                             </div>
@@ -81,17 +81,22 @@
                                 <label class="form-label">Deskripsi <span class="text-red">*</span></label>
                                 <textarea class="form-control" name="description" required></textarea>
                             </div>
+
+                            {{-- FILES (ADD) --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="feature_thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>.</div>
                             </div>
 
                             {{-- 360 --}}
@@ -180,20 +185,25 @@
                                 <label class="form-label">Deskripsi <span class="text-red">*</span></label>
                                 <textarea class="form-control" name="description" id="edit_description" required></textarea>
                             </div>
+
+                            {{-- FILES (EDIT) --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" id="edit_thumbnail" accept="image/*">
                                 <div id="current-thumbnail" class="mt-2"></div>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="accessory_thumbnail" id="edit_accessory_thumbnail" accept="image/*">
                                 <div id="current-accessory-thumbnail" class="mt-2"></div>
+                                <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="feature_thumbnail" id="edit_feature_thumbnail" accept="image/*">
                                 <div id="current-feature-thumbnail" class="mt-2"></div>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>.</div>
                             </div>
 
                             {{-- 360 --}}

@@ -46,7 +46,7 @@
   </section>
 
   {{-- Grid kartu aksesoris --}}
-  <section class="accd-grid">
+  <section class="accd-grid page-acc-motor">
     @forelse($accessories as $acc)
       <article class="accd-card">
         <div class="accd-thumb">

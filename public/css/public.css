@@ -1481,6 +1481,32 @@
     .accd-cta{ width:260px; height:46px; font-size:17px; }
   }
 
+  /* === ACCESSORIES DETAIL (per motor) — layout kolom FINAL === */
+
+/* base: 2 kolom (desktop kecil & di bawah 1400px) */
+.accd-grid.page-acc-motor {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* ≥1400px: sidebar buka = 3, sidebar tutup = 4 */
+@media (min-width: 1400px) {
+  body:not(.sidebar-collapsed) .accd-grid.page-acc-motor {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  body.sidebar-collapsed .accd-grid.page-acc-motor {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Khusus 1920×1080 @100% zoom (opsional—kalau mau memaksa perilaku sama) */
+@media (min-width:1900px) and (max-height:1100px) and (orientation:landscape) {
+  body:not(.sidebar-collapsed) .accd-grid.page-acc-motor {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  body.sidebar-collapsed .accd-grid.page-acc-motor {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
 
   /* === Samakan PRODUCT CARD dengan ACCD-CARD (ukuran, padding, gambar, tata letak) === */
   .product-card{
@@ -3152,41 +3178,7 @@ margin-bottom: calc(var(--cmpFooterH, 60px) + 24px) !important;
 
 /* 1920×1080 (landscape) — OPEN=4, CLOSED=5 */
 @media (min-width:1900px) and (max-height:1100px){
-
-  /* aktifkan container-query di kolom kanan */
-  #cmpPickPage .cmp-right-scroll{
-    container-type: inline-size;
-    container-name: pick;
-  }
-
-  /* default (aman) */
-  #cmpPickPage .cmp-right-scroll .cmp-card-grid,
-  #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
-    display: grid !important;
-    justify-content: center !important;
-    grid-auto-flow: row dense !important;
-    gap: 24px !important;
-    margin-top: 24px !important;
-  }
-
-  /* SIDEBAR TERBUKA → 4 kolom */
-  body:not(:is(.sidebar-collapsed,.sidebar-closed))
-  #cmpPickPage .cmp-right-scroll .cmp-card-grid,
-  body:not(:is(.sidebar-collapsed,.sidebar-closed))
-  #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
-    grid-template-columns: repeat(4, minmax(320px, 1fr)) !important;
-  }
-
-  /* SIDEBAR TERTUTUP → 5 kolom (saat kanan cukup lebar) */
-  @container pick (min-width:1550px){
-    :is(body.sidebar-collapsed, body.sidebar-closed)
-    #cmpPickPage .cmp-right-scroll .cmp-card-grid,
-    :is(body.sidebar-collapsed, body.sidebar-closed)
-    #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
-      grid-template-columns: repeat(5, minmax(280px, 1fr)) !important;
-    }
-  }
-
+  
   /* Posisikan CTA "Mulai Bandingkan" lebih dekat ke kategori */
   .cmp-filter-stick .cmp-stick-cta{
     position: static !important;   /* lepas dari sticky bawah */
@@ -3948,6 +3940,31 @@ margin-bottom: calc(var(--cmpFooterH, 60px) + 24px) !important;
   /* tambahkan padding bawah = padding default p-4 (1.5rem) + tinggi footer */
   padding-bottom: calc(1.5rem + var(--footer-fixed-h) + env(safe-area-inset-bottom, 0px)) !important;
   min-height: 0; /* penting untuk child flex yang jadi scroller */
+}
+
+/* ====== Simulasi Kredit — Tenor row (dropdown + "Bulan") ====== */
+.cs-tenor-row{
+  display:grid;
+  grid-template-columns: 1fr auto; /* select ambil sisa ruang, "Bulan" nempel kanan */
+  align-items:center;
+  column-gap:12px;                  /* jarak konsisten */
+  width:100%;                       /* jangan dibatasi max-width */
+}
+
+.cs-tenor-select{
+  width:100%;       /* isi penuh kolomnya */
+  min-width:0;      /* hindari overflow di zoom tinggi */
+  flex:0 0 auto;    /* neutralize aturan flex sebelumnya jika ada */
+}
+
+.cs-tenor-unit{
+  white-space:nowrap;   /* "Bulan" tidak turun baris */
+  line-height:1.2;
+}
+
+/* opsional: di layar kecil, jarak sedikit diperkecil */
+@media (max-width:576px){
+  .cs-tenor-row{ column-gap:10px; }
 }
 
 /* --- Detail CTA: universal red on hover/press/focus --- */
@@ -4951,26 +4968,6 @@ body.osk-open{ overflow:hidden; }
   #cmpPickPage .cmp-card{ min-width:0; }
 }
 
-/* 1920×1080 @100% — hanya halaman Pilih Model (#cmpPickPage) Sidebar OPEN  => 4 kolom Sidebar CLOSED => 5 kolom */
-@media (min-width:1910px) and (max-width:1930px)
-       and (min-height:1060px) and (max-height:1090px)
-       and (orientation:landscape){
-
-  /* = Sidebar TERBUKA = 4 kolom */
-  body:not(:is(.sidebar-collapsed,.sidebar-closed)) #cmpPickPage .cmp-card-grid{
-    grid-template-columns: repeat(4, minmax(240px, 1fr)) !important;
-    gap: 24px !important;
-    justify-content: center !important;
-  }
-
-  /* = Sidebar TERTUTUP = 5 kolom */
-  body:is(.sidebar-collapsed,.sidebar-closed) #cmpPickPage .cmp-card-grid{
-    grid-template-columns: repeat(5, minmax(200px, 1fr)) !important;
-    gap: 20px !important;
-    justify-content: center !important;
-  }
-}
-
 /* ==== PRODUCT DETAIL: samakan lebar dgn Banner & Spesifikasi ==== */
 /* Aksesoris: area kartu (wrap) & baris tombol */
 .motor-accessories.page-product-detail .acc-wrap,
@@ -5029,32 +5026,6 @@ body.osk-open{ overflow:hidden; }
   }
 }
 
-/* PILIH MODEL — 1920×1080 @100% Sidebar OPEN = 4 kolom, CLOSED = 5 kolom (pakai flag <html class="is-1920-100"> dari appPublic.blade) */
-html.is-1920-100 #cmpPickPage .cmp-right-scroll .cmp-card-grid,
-html.is-1920-100 #cmpPickPage .cmp-right-scroll .cmp-fig-grid{
-  display: grid !important;
-  justify-content: center !important;
-  grid-auto-flow: row dense !important;
-  gap: 24px !important;              
-  margin-top: 24px !important;
-}
-
-/* Sidebar TERBUKA → 4 kolom */
-html.is-1920-100 body:not(.sidebar-collapsed)
-#cmpPickPage .cmp-right-scroll .cmp-card-grid,
-html.is-1920-100 body:not(.sidebar-collapsed)
-#cmpPickPage .cmp-right-scroll .cmp-fig-grid{
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-}
-
-/* Sidebar TERTUTUP → 5 kolom */
-html.is-1920-100 body.sidebar-collapsed
-#cmpPickPage .cmp-right-scroll .cmp-card-grid,
-html.is-1920-100 body.sidebar-collapsed
-#cmpPickPage .cmp-right-scroll .cmp-fig-grid{
-  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-}
-
 /* ===== QR Map Modal ===== */
 .qrmm[hidden]{display:none !important;}
 .qrmm{position:fixed;inset:0;z-index:1060;}
@@ -5075,53 +5046,42 @@ html.is-1920-100 body.sidebar-collapsed
 .qrmm__tag{color:#374151;margin:0 0 14px;}
 .qrmm__canvas{display:grid;place-items:center;min-height:300px;}
 
-/* === ACCESSORIES DETAIL — samakan seperti grid Aksesoris (kartu ramping) === */
-
-/* 1920×1080 landscape, sidebar BUKA = 3 kolom */
+/* 1920×1080 landscape, untuk halaman selain detail aksesori per-motor */
 @media (min-width:1900px) and (max-height:1100px) and (orientation:landscape){
-  body:not(.sidebar-collapsed) .accd-grid{
+  body:not(.sidebar-collapsed) .accd-grid:not(.page-acc-motor){
     grid-template-columns: repeat(3, minmax(0,1fr)) !important;
     gap: 22px;
   }
-  /* sidebar TUTUP = 4 kolom */
-  body.sidebar-collapsed .accd-grid{
+  body.sidebar-collapsed .accd-grid:not(.page-acc-motor){
     grid-template-columns: repeat(4, minmax(0,1fr)) !important;
     gap: 22px;
   }
 
-  /* Kartu jadi vertikal, biar muat di 3/4 kolom */
-  .accd-grid .accd-card{
+  /* Kartu vertikal hanya untuk halaman lain */
+  .accd-grid:not(.page-acc-motor) .accd-card{
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
     padding: 20px 22px;
     min-height: auto;
   }
-
-  /* Thumbnail penuh lebar, gambar tidak kepotong */
-  .accd-grid .accd-thumb{
-    flex: 0 0 auto;
-    max-width: 100%;
+  .accd-grid:not(.page-acc-motor) .accd-thumb{ max-width: 100%; }
+  .accd-grid:not(.page-acc-motor) .accd-thumb img{
+    width: 100%; height: 180px; object-fit: contain; border-radius: 12px;
   }
-  .accd-grid .accd-thumb img{
-    width: 100%;
-    height: 180px;
-    object-fit: contain;   /* anti crop */
-    border-radius: 12px;
-  }
-
-  /* Tombol full width supaya kolom bisa ramping */
-  .accd-grid .accd-cta{
-    width: 100%;
-    height: 44px;
-    font-size: 18px;
+  .accd-grid:not(.page-acc-motor) .accd-cta{
+    width: 100%; height: 44px; font-size: 18px;
   }
 }
 
-/* Fallback umum (layar besar selain 1920×1080): sama persis */
+/* Fallback umum (layar besar selain 1920×1080) — juga kecualikan halaman ini */
 @media (min-width:1400px){
-  body:not(.sidebar-collapsed) .accd-grid{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
-  body.sidebar-collapsed .accd-grid{ grid-template-columns: repeat(4, minmax(0,1fr)) !important; }
+  body:not(.sidebar-collapsed) .accd-grid:not(.page-acc-motor){
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+  body.sidebar-collapsed .accd-grid:not(.page-acc-motor){
+    grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+  }
 }
 
 /* === Samakan KARTU Parts dengan Accessories & Apparels === */
@@ -5268,4 +5228,79 @@ body:has(.pdf-frame) .sidebar{
   }
 
   .motor-colors.mb-5{ margin-bottom: 16px !important; }
+}
+
+/* =========================
+   PARTS PDF FULLSCREEN
+   ========================= */
+
+/* wrapper pdf (card) */
+.pdf-viewer{ overflow:hidden; position:relative; }
+
+/* tombol fullscreen di kanan-atas viewer */
+.pdf-fs-btn{
+  position:absolute; top:10px; right:10px;
+  width:36px; height:36px;
+  border:1px solid #e5e7eb; border-radius:10px;
+  background:#fff; display:grid; place-items:center;
+  cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.08);
+  z-index:5; /* di atas iframe */
+}
+.pdf-fs-btn:hover{ background:#f9fafb; }
+
+/* saat fullscreen, bikin iframe isi layar */
+.pdf-viewer:fullscreen .pdf-frame,
+.pdf-viewer:-webkit-full-screen .pdf-frame{
+  height:100vh !important;
+}
+
+/* ==== PICK COMPARE — kolom final ==== */
+
+/* 150% (≈1280px): PAKSA 3 kolom untuk semua state sidebar */
+@media (min-width:1200px) and (max-width:1399.98px){
+  #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+}
+
+/* 125% (≈1536px): 4 / 5 kolom */
+@media (min-width:1400px) and (max-width:1599.98px){
+  body:not(.sidebar-collapsed) #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+  body.sidebar-collapsed #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(5, minmax(0,1fr));
+  }
+}
+
+/* ≥1600px (1920@100%): 4 / 5 kolom */
+@media (min-width:1600px){
+  body:not(.sidebar-collapsed) #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+  body.sidebar-collapsed #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(5, minmax(0,1fr));
+  }
+}
+
+/* 150% (≈1280px): PAKSA 3 / 4 kolom */
+@media (min-width:1200px) and (max-width:1399.98px){
+  body:not(.sidebar-collapsed) #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+  body.sidebar-collapsed #cmpPickPage .cmp-card-grid{
+    grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+  }
+}
+
+/* === FINAL OVERRIDE: 150% (≈1280px) === */
+@media (min-width:1200px) and (max-width:1399.98px){
+  /* Sidebar TERBUKA → 3 kolom */
+  body:not(.sidebar-collapsed) #cmpPickPage .cmp-right-scroll .cmp-card-grid{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+  /* Sidebar TERTUTUP → 4 kolom */
+  body.sidebar-collapsed #cmpPickPage .cmp-right-scroll .cmp-card-grid{
+    grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+  }
 }

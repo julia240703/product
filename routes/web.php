@@ -279,12 +279,6 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::delete('/motors/{id}', [AdminControllerSatu::class, 'deleteMotor'])->name('motors.delete');
     Route::get('/get-types/{category_id}', [AdminControllerSatu::class, 'getTypesByCategory'])->name('motors.getTypes');
 
-    // ==== Simulasi Kredit per Motor (AJAX) ====
-    Route::get('/motors/{motor}/credits', [AdminControllerSatu::class, 'motorCreditsShow'])->name('motors.credits.show');
-    Route::post('/motors/{motor}/credits', [AdminControllerSatu::class, 'motorCreditsSave'])->name('motors.credits.save');
-    Route::get('/motors/{motor}/credits/history', [AdminControllerSatu::class, 'motorCreditsHistory'])->name('motors.credits.history');
-    Route::delete('/motors/{motor}/credits/{header}', [AdminControllerSatu::class, 'motorCreditsDeleteHeader'])->name('motors.credits.deleteHeader');
-
     // Warna (per motor)
     Route::get('/{motor}/colors', [AdminControllerSatu::class, 'colorsIndex'])->name('colors.index');
     Route::post('/{motor}/colors', [AdminControllerSatu::class, 'colorsStore'])->name('colors.store');
@@ -338,6 +332,14 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::get('/{motor}/credits/{header}/edit',   [AdminControllerSatu::class, 'creditsEdit'])->name('credits.edit');
     Route::put('/{motor}/credits/{header}',        [AdminControllerSatu::class, 'creditsUpdate'])->name('credits.update');
     Route::delete('/{motor}/credits/{header}',     [AdminControllerSatu::class, 'creditsDelete'])->name('credits.delete');
+
+    // ===== Bulk Import Kredit (per motor) =====
+    Route::get('/{motor}/credits/template', [AdminControllerSatu::class, 'creditsTemplate'])->name('credits.template');
+    Route::post('/{motor}/credits/import', [AdminControllerSatu::class, 'creditsImport'])->name('credits.import');
+
+    // Edit 1 baris (DP) dalam sebuah header/periode
+    Route::get('/{motor}/credits/{header}/row',  [AdminControllerSatu::class, 'creditsRowShow'])->name('credits.row.show');
+    Route::put('/{motor}/credits/{header}/row',  [AdminControllerSatu::class, 'creditsRowUpdate'])->name('credits.row.update');
 
     // Apparels
     Route::get('apparels', [AdminControllerSatu::class, 'apparelsIndex'])->name('apparels.index');
@@ -413,18 +415,6 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::post('/categories/store', [AdminControllerSatu::class, 'storeCategory'])->name('categories.store');
     Route::post('/categories/update', [AdminControllerSatu::class, 'updateCategory'])->name('categories.update');
     Route::delete('/categories/delete', [AdminControllerSatu::class, 'deleteCategory'])->name('categories.delete');
-
-    // Credit Simulations
-    Route::get('/credit-simulations', [AdminControllerSatu::class, 'creditSimulationIndex'])->name('credit_simulations.index');
-    Route::post('/credit-simulations', [AdminControllerSatu::class, 'creditSimulationStore'])->name('credit_simulations.store');
-    Route::put('/credit-simulations/{id}', [AdminControllerSatu::class, 'creditSimulationUpdate'])->name('credit_simulations.update');
-    Route::delete('/credit-simulations/{id}', [AdminControllerSatu::class, 'creditSimulationDelete'])->name('credit_simulations.delete');
-
-    // Credit Simulations
-    Route::get('/price-lists', [AdminControllerSatu::class, 'priceListIndex'])->name('price_list.index');
-    Route::post('/price-lists', [AdminControllerSatu::class, 'priceListStore'])->name('price_list.store');
-    Route::put('/price-lists/{id}', [AdminControllerSatu::class, 'priceListUpdate'])->name('price_list.update');
-    Route::delete('/price-lists/{id}', [AdminControllerSatu::class, 'priceListDelete'])->name('price_list.delete');
 
     // Price List 
     Route::get('/price-lists', [AdminControllerSatu::class, 'priceListIndex'])->name('price_list.index');
