@@ -214,24 +214,4 @@
     });
   })();
 </script>
-
-{{-- CSS modal QR (inline agar mandiri) --}}
-<style>
-.qrmm[hidden]{display:none !important;}
-.qrmm{position:fixed;inset:0;z-index:1060;}
-.qrmm__backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:saturate(120%) blur(2px);}
-.qrmm__box{
-  position:relative;z-index:1;
-  max-width:600px; width:96%; margin:6vh auto;
-  background:#fff;border-radius:16px;box-shadow:0 12px 36px rgba(0,0,0,.24);
-  padding:24px 22px 20px;text-align:center;
-}
-.qrmm__close{
-  position:absolute;top:8px;right:10px;width:36px;height:36px;border:0;border-radius:10px;
-  background:#f3f4f6;font-size:22px;line-height:1;cursor:pointer;
-}
-.qrmm__title{font-size:22px;font-weight:800;color:#111827;margin:4px 0 6px;}
-.qrmm__tag{color:#374151;margin:0 0 14px;}
-.qrmm__canvas{display:grid;place-items:center;min-height:300px;}
-</style>
 @endpush

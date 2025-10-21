@@ -2,8 +2,20 @@
 
 @section('content')
   {{-- Back bar --}}
+  @php
+    use Illuminate\Support\Str;
+
+    $prevPath = parse_url(url()->previous(), PHP_URL_PATH) ?? '';
+    $isAccessoriesIndex =
+      Str::startsWith($prevPath, '/accessories') &&
+      !Str::startsWith($prevPath, ['/accessories/detail', '/accessories/motor/']);
+
+    // Pakai previous() hanya kalau benar-benar dari /accessories, selain itu pakai route accessories
+    $backUrl = $isAccessoriesIndex ? url()->previous() : route('accessories');
+  @endphp
+
   <div class="accd-back">
-    <a href="{{ url()->previous() ?: route('accessories') }}" class="accd-back-link">
+    <a href="{{ $backUrl }}" class="accd-back-link">
       <span class="accd-back-ico">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="11"/>
@@ -74,7 +86,6 @@
   {{-- Script (tetap gaya inline seperti sebelumnya) --}}
   <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const wrap = document.querySelector('.accd-stage-wrap');
     const pop  = document.getElementById('accd-pop');
     const imgE = document.getElementById('accd-pop-img');
     const ttlE = document.getElementById('accd-pop-title');

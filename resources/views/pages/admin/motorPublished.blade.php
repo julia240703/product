@@ -86,24 +86,25 @@
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" accept="image/*" required>
-                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>.</div>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
-                                <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*" required>
-                                <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>.</div>
+                                <label class="form-label">Aksesori Thumbnail <small class="text-muted">(opsional)</small></label>
+                                <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*">
+                                <div class="form-text">Opsional. Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
+                                <div class="form-text">Kosongkan jika motor tidak memiliki aksesoris.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="feature_thumbnail" accept="image/*" required>
-                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>.</div>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
 
                             {{-- 360 --}}
                             <div class="mb-3">
                                 <label class="form-label">Upload 360° (GIF) <small class="text-muted">(opsional)</small></label>
                                 <input type="file" class="form-control" name="spin_gif" accept="image/gif">
-                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°.</div>
+                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°. Maks <strong>8192KB</strong>.</div>
                             </div>
 
                             <div class="mb-3">
@@ -191,19 +192,20 @@
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" id="edit_thumbnail" accept="image/*">
                                 <div id="current-thumbnail" class="mt-2"></div>
-                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>.</div>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
+                                <label class="form-label">Aksesori Thumbnail <small class="text-muted">(opsional)</small></label>
                                 <input type="file" class="form-control" name="accessory_thumbnail" id="edit_accessory_thumbnail" accept="image/*">
                                 <div id="current-accessory-thumbnail" class="mt-2"></div>
-                                <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>.</div>
+                                <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
+                                <div class="form-text">Kosongkan jika tidak ingin mengubah.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="feature_thumbnail" id="edit_feature_thumbnail" accept="image/*">
                                 <div id="current-feature-thumbnail" class="mt-2"></div>
-                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>.</div>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
 
                             {{-- 360 --}}
@@ -211,7 +213,7 @@
                                 <label class="form-label">Upload 360° (GIF)</label>
                                 <input type="file" class="form-control" name="spin_gif" id="edit_spin_gif" accept="image/gif">
                                 <div id="current-spin" class="mt-2"></div>
-                                <div class="form-text">Format .gif. Kosongkan jika tidak ingin mengubah.</div>
+                                <div class="form-text">Format .gif. Kosongkan jika tidak ingin mengubah. Maks <strong>8192KB</strong>.</div>
                             </div>
 
                             <div class="mb-3">

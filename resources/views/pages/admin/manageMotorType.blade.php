@@ -14,12 +14,8 @@
                 <div class="breadcrumb-wrapper mb-30">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="#0">Admin</a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">
-                                Motor Type
-                            </li>
+                            <li class="breadcrumb-item"><a href="#0">Admin</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Motor Type</li>
                         </ol>
                     </nav>
                 </div>
@@ -146,6 +142,24 @@
         </div>
     </div>
 
+    <!-- Modal View Image (Preview Cover) -->
+    <div class="modal fade" id="viewImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Lihat Gambar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" alt="Preview" class="img-fluid rounded" style="max-height:500px;">
+                    <div class="mt-2">
+                        <p id="imageTitle" class="mb-0 fw-bold"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Table -->
     <div class="card">
         <div class="card-body">
@@ -196,22 +210,33 @@ $(document).ready(function() {
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
 
-            // COVER: gunakan 'thumb' dari server jika ada; fallback ke cover_image
+            // COVER → jika ada tampil gambar (klik untuk preview), jika tidak tampil teks "belum ada cover"
             {
-                data: 'thumb',
+                data: 'cover_image',
                 name: 'cover_image',
                 orderable: false,
                 searchable: false,
+                className: 'text-center',
                 render: function(data, type, row){
-                    // jika server kirim 'thumb' siap pakai, pakai itu
-                    if (data) return data;
-                    const src = row.cover_image ? (baseStorage + row.cover_image) : noImg;
-                    return `<img src="${src}" alt="cover" style="height:48px;border-radius:8px">`;
+                    if (!data) {
+                        return '<span class="text-muted small fst-italic">Belum Ada Cover</span>';
+                    }
+                    const src = baseStorage + data;
+                    const safeTitle = $('<div>').text(row.name || 'Cover').html();
+                    return `
+                        <img src="${src}"
+                             alt="cover"
+                             class="img-thumbnail mt-1 image-preview"
+                             data-image="${src}"
+                             data-title="${safeTitle}"
+                             style="height:48px;width:auto;cursor:pointer;border-radius:8px"
+                             onerror="this.onerror=null;this.replaceWith('<span class=&quot;text-muted small fst-italic&quot;>belum ada cover</span>');">
+                    `;
                 }
             },
 
-            { data: 'name', name: 'motor_types.name' },     // Nama MotorType
-            { data: 'tipe', name: 'categories.name' },      // Nama Kategori
+            { data: 'name', name: 'motor_types.name' },
+            { data: 'tipe', name: 'categories.name' },
 
             {
                 data: null,
@@ -235,7 +260,7 @@ $(document).ready(function() {
                 }
             }
         ],
-        error: function (xhr, error, code) {
+        error: function (xhr) {
             console.log(xhr.responseText);
             alert("Ajax Error: " + xhr.status + " " + xhr.statusText);
         }
@@ -254,11 +279,11 @@ $(document).ready(function() {
         $('#editModal').modal('show');
     });
 
-    // Update via Ajax (FormData agar bisa upload file)
+    // Update via Ajax
     $('#updateBtn').on('click', function() {
         const form = document.getElementById('editForm');
         const fd = new FormData(form);
-        fd.set('id', $('#motorTypeId').val()); // pastikan id ikut
+        fd.set('id', $('#motorTypeId').val());
         fd.append('_token', '{{ csrf_token() }}');
 
         $.ajax({
@@ -267,7 +292,7 @@ $(document).ready(function() {
             data: fd,
             processData: false,
             contentType: false,
-            success: function(response) {
+            success: function() {
                 $('#editModal').modal('hide');
                 dataTable.ajax.reload(null, false);
             },
@@ -283,13 +308,22 @@ $(document).ready(function() {
     // Delete button
     $(document).on('click', '.deleteBtn', function() {
         const id = $(this).data('id');
-        const name = $(this).closest('tr').find('td:eq(2)').text(); // kolom "Nama Motor" sekarang index 2
+        const name = $(this).closest('tr').find('td:eq(2)').text();
         $('#delete_motor_type_id').val(id);
         $('#delete_motor_type_name').text(name);
         $('#deleteModal').modal('show');
         $('#deleteModal form').off('submit').on('submit', function() {
             $(this).find('button[type="submit"]').prop('disabled', true);
         });
+    });
+
+    // Klik gambar cover → modal preview
+    $(document).on('click', '#motor-type-table .image-preview', function () {
+        const src   = $(this).data('image');
+        const title = $(this).data('title') || 'Cover';
+        $('#modalImage').attr('src', src);
+        $('#imageTitle').text(title);
+        $('#viewImageModal').modal('show');
     });
 });
 </script>

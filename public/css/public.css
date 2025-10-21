@@ -5304,3 +5304,34 @@ body:has(.pdf-frame) .sidebar{
     grid-template-columns: repeat(4, minmax(0,1fr)) !important;
   }
 }
+
+/* =========================================================
+   DETAIL — Perbesar tipografi card saat 1920×1080 @100% & @125%
+   (nama item, label "Harga", dan nominal). Tanpa pengaruh di 150%.
+   ========================================================= */
+
+/* 1920×1080 @100% (viewport kira-kira 1880–2000 × 980–1140) */
+@media (orientation: landscape) and (min-width: 1880px) and (max-width: 2000px)
+       and (min-height: 980px) and (max-height: 1140px) {
+  .accd-detail .motor-accessories .acc-title{ font-size: 28px !important; line-height: 1.22 !important; }
+  .accd-detail .motor-accessories .acc-price span{ font-size: 16px !important; }
+  .accd-detail .motor-accessories .acc-price strong{ font-size: 26px !important; line-height: 1.25 !important; }
+  .accd-detail .motor-accessories .acc-cta{ font-size: 20px !important; height: 52px !important; }
+}
+
+/* 1920×1080 @125% (viewport kira-kira 1500–1568 × 830–900) */
+@media (orientation: landscape) and (min-width: 1500px) and (max-width: 1568px)
+       and (min-height: 830px) and (max-height: 900px) {
+  .accd-detail .motor-accessories .acc-title{ font-size: 30px !important; line-height: 1.22 !important; }
+  .accd-detail .motor-accessories .acc-price span{ font-size: 18px !important; }
+  .accd-detail .motor-accessories .acc-price strong{ font-size: 28px !important; line-height: 1.25 !important; }
+  .accd-detail .motor-accessories .acc-cta{ font-size: 20px !important; height: 52px !important; }
+}
+
+/* Guard: di 150% (viewport biasanya ≤1499px lebar) JANGAN membesar */
+@media (max-width: 1499px) and (orientation: landscape){
+  .accd-detail .motor-accessories .acc-title{ font-size: 24px !important; }
+  .accd-detail .motor-accessories .acc-price span{ font-size: 14px !important; }
+  .accd-detail .motor-accessories .acc-price strong{ font-size: 22px !important; }
+  .accd-detail .motor-accessories .acc-cta{ font-size: 18px !important; height: 48px !important; }
+}

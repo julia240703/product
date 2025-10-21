@@ -69,18 +69,29 @@
                                 <label class="form-label">Nama Motor <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="name" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Kode Motor (Harga OTR) <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="motor_code_otr" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Kode Motor (Harga Kredit per Kota) <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="motor_code_credit" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">WMS Code <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="wms_code" required>
                             </div>
+
+                            {{-- HARGA OTR --}}
+                            <div class="mb-3">
+                                <label class="form-label">Harga OTR (Rp) <span class="text-red">*</span></label>
+                                <input type="number" min="0" step="1" class="form-control" name="price" placeholder="Contoh: 19000000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="add_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="add_category_id" class="form-select" required>
@@ -90,34 +101,44 @@
                                     @endforeach
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label for="add_type_id" class="form-label">Tipe Motor <span class="text-red">*</span></label>
                                 <select name="type_id" id="add_type_id" class="form-select" required>
                                     <option value="">Pilih Tipe Motor</option>
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Deskripsi <span class="text-red">*</span></label>
                                 <textarea class="form-control" name="description" required></textarea>
                             </div>
+
+                            {{-- FILES --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
+
                             <div class="mb-3">
-                                <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
-                                <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*" required>
+                                <label class="form-label">Aksesori Thumbnail <small class="text-muted">(opsional)</small></label>
+                                <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*">
+                                <div class="form-text">Opsional. Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
+                                <div class="form-text">Kosongkan jika motor tidak memiliki aksesoris.</div>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="feature_thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
 
                             {{-- 360 --}}
                             <div class="mb-3">
                                 <label class="form-label">Upload 360° (GIF) <small class="text-muted">(opsional)</small></label>
                                 <input type="file" class="form-control" name="spin_gif" accept="image/gif">
-                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°.</div>
+                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°. Maks <strong>8192KB</strong>.</div>
                             </div>
 
                             <div class="mb-3">
@@ -128,7 +149,6 @@
                                 </select>
                             </div>
 
-                            <!-- NEW -->
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="add_is_new" name="is_new" value="1">
                                 <label class="form-check-label" for="add_is_new">Tandai sebagai <strong>NEW</strong></label>
@@ -147,7 +167,7 @@
         <!-- Script for add modal (no DataTable here, since this is dashboard) -->
         <script>
         $(document).ready(function() {
-            // === Event Dependent Dropdown Tambah ===
+            // Dependent dropdown Tambah
             $('#add_category_id').on('change', function() {
                 const categoryId = $(this).val();
                 loadTypes(categoryId, $('#add_type_id'));
@@ -184,4 +204,5 @@
             }
         });
         </script>
+    </div>
 @endsection

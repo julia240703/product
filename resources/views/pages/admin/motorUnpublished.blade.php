@@ -40,18 +40,29 @@
                                 <label class="form-label">Nama Motor <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="name" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Kode Motor (Harga OTR) <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="motor_code_otr" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Kode Motor (Harga Kredit per Kota) <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="motor_code_credit" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">WMS Code <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="wms_code" required>
                             </div>
+
+                            {{-- HARGA OTR --}}
+                            <div class="mb-3">
+                                <label class="form-label">Harga OTR (Rp) <span class="text-red">*</span></label>
+                                <input type="number" min="0" step="1" class="form-control" name="price" placeholder="Contoh: 19000000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="add_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="add_category_id" class="form-select" required>
@@ -61,30 +72,44 @@
                                     @endforeach
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label for="add_type_id" class="form-label">Tipe Motor <span class="text-red">*</span></label>
                                 <select name="type_id" id="add_type_id" class="form-select" required>
                                     <option value="">-- Pilih Tipe Motor --</option>
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Deskripsi <span class="text-red">*</span></label>
                                 <textarea class="form-control" name="description" required></textarea>
                             </div>
+
+                            {{-- FILES (ADD) --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
+
                             <div class="mb-3">
-                                <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
-                                <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*" required>
+                                <label class="form-label">Aksesori Thumbnail <small class="text-muted">(opsional)</small></label>
+                                <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*">
+                                <div class="form-text">Opsional. Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
+                                <div class="form-text">Kosongkan jika motor tidak memiliki aksesoris.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
+                                <input type="file" class="form-control" name="feature_thumbnail" accept="image/*" required>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
 
                             {{-- 360 --}}
                             <div class="mb-3">
                                 <label class="form-label">Upload 360° (GIF) <small class="text-muted">(opsional)</small></label>
                                 <input type="file" class="form-control" name="spin_gif" accept="image/gif">
-                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°.</div>
+                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°. Maks <strong>8192KB</strong>.</div>
                             </div>
 
                             <div class="mb-3">
@@ -95,7 +120,6 @@
                                 </select>
                             </div>
 
-                            <!-- NEW -->
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="add_is_new" name="is_new" value="1">
                                 <label class="form-check-label" for="add_is_new">Tandai sebagai <strong>NEW</strong></label>
@@ -128,18 +152,29 @@
                                 <label class="form-label">Nama Motor <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="name" id="edit_name" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Kode Motor (Harga OTR) <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="motor_code_otr" id="edit_motor_code_otr" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Kode Motor (Harga Kredit per Kota) <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="motor_code_credit" id="edit_motor_code_credit" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">WMS Code <span class="text-red">*</span></label>
                                 <input type="text" class="form-control" name="wms_code" id="edit_wms_code" required>
                             </div>
+
+                            {{-- HARGA OTR --}}
+                            <div class="mb-3">
+                                <label class="form-label">Harga OTR (Rp)</label>
+                                <input type="number" min="0" step="1" class="form-control" name="price" id="edit_price" placeholder="Contoh: 19000000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="edit_category_id" class="form-label">Kategori <span class="text-red">*</span></label>
                                 <select name="category_id" id="edit_category_id" class="form-select" required>
@@ -149,25 +184,39 @@
                                     @endforeach
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label for="edit_type_id" class="form-label">Tipe Motor <span class="text-red">*</span></label>
                                 <select name="type_id" id="edit_type_id" class="form-select" required>
                                     <option value="">-- Pilih Tipe Motor --</option>
                                 </select>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Deskripsi <span class="text-red">*</span></label>
                                 <textarea class="form-control" name="description" id="edit_description" required></textarea>
                             </div>
+
+                            {{-- FILES (EDIT) --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
                                 <input type="file" class="form-control" name="thumbnail" id="edit_thumbnail" accept="image/*">
                                 <div id="current-thumbnail" class="mt-2"></div>
+                                <div class="form-text">Ukuran disarankan: <strong>400×400 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
+
                             <div class="mb-3">
-                                <label class="form-label">Aksesori Thumbnail <span class="text-red">*</span></label>
+                                <label class="form-label">Aksesori Thumbnail <small class="text-muted">(opsional)</small></label>
                                 <input type="file" class="form-control" name="accessory_thumbnail" id="edit_accessory_thumbnail" accept="image/*">
                                 <div id="current-accessory-thumbnail" class="mt-2"></div>
+                                <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
+                                <input type="file" class="form-control" name="feature_thumbnail" id="edit_feature_thumbnail" accept="image/*">
+                                <div id="current-feature-thumbnail" class="mt-2"></div>
+                                <div class="form-text">Ukuran disarankan: <strong>700×700 px</strong>. Maks <strong>2048KB</strong>.</div>
                             </div>
 
                             {{-- 360 --}}
@@ -175,7 +224,7 @@
                                 <label class="form-label">Upload 360° (GIF)</label>
                                 <input type="file" class="form-control" name="spin_gif" id="edit_spin_gif" accept="image/gif">
                                 <div id="current-spin" class="mt-2"></div>
-                                <div class="form-text">Format .gif. Kosongkan jika tidak ingin mengubah.</div>
+                                <div class="form-text">Format .gif. Kosongkan jika tidak ingin mengubah. Maks <strong>8192KB</strong>.</div>
                             </div>
 
                             <div class="mb-3">
@@ -186,7 +235,6 @@
                                 </select>
                             </div>
 
-                            <!-- NEW -->
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="edit_is_new" name="is_new" value="1">
                                 <label class="form-check-label" for="edit_is_new">Tandai sebagai <strong>NEW</strong></label>
@@ -292,6 +340,7 @@
                                     data-description="${data.description}" 
                                     data-status="${data.status}"
                                     data-is_new="${data.is_new ? 1 : 0}"
+                                    data-price="${data.price ?? ''}"
                                     data-thumbnail="${data.thumbnail ? baseUrl + '/' + data.thumbnail : ''}" 
                                     data-accessory_thumbnail="${data.accessory_thumbnail ? baseUrl + '/' + data.accessory_thumbnail : ''}"
                                     data-feature_thumbnail="${data.feature_thumbnail ? baseUrl + '/' + data.feature_thumbnail : ''}"
@@ -355,11 +404,16 @@
         // === Edit Button Click ===
         $(document).on('click', '.editBtn', function() {
             var motorData = dataTable.row($(this).closest('tr')).data();
+
             $('#edit_motor_id').val(motorData.id);
             $('#edit_name').val(motorData.name);
             $('#edit_motor_code_otr').val(motorData.motor_code_otr);
             $('#edit_motor_code_credit').val(motorData.motor_code_credit);
             $('#edit_wms_code').val(motorData.wms_code);
+
+            // harga
+            $('#edit_price').val(motorData.price ? motorData.price : '');
+
             $('#edit_description').val(motorData.description);
             $('#edit_category_id').val(motorData.category_id).trigger('change');
             loadTypes(motorData.category_id, $('#edit_type_id'), motorData.type_id);
@@ -402,9 +456,21 @@
                 $('#current-accessory-thumbnail').html('<label class="form-label">Gambar Aksesoris Motor Saat Ini: Tidak ada</label>');
             }
 
+            // Feature Preview
+            if (motorData.feature_thumbnail) {
+                let baseUrl = "{{ asset('storage') }}";
+                $('#current-feature-thumbnail').html(`
+                    <label class="form-label">Gambar Fitur Motor Saat Ini:</label><br>
+                    <img src="${baseUrl}/${motorData.feature_thumbnail}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;border:1px solid #ddd;" class="img-preview">
+                `);
+            } else {
+                $('#current-feature-thumbnail').html('<label class="form-label">Gambar Fitur Motor Saat Ini: Tidak ada</label>');
+            }
+
             // Reset file inputs
             $('#edit_thumbnail').val('');
             $('#edit_accessory_thumbnail').val('');
+            $('#edit_feature_thumbnail').val('');
 
             const baseEditUrl = "{{ route('admin.motors.update', ['id' => 'DUMMY']) }}".replace('DUMMY', motorData.id);
             $('#editMotorForm').attr('action', baseEditUrl);

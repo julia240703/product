@@ -6,6 +6,8 @@
   $backUrl = $prev && $prev !== $current ? $prev : route('produk');
 @endphp
 
+<div class="cs-page">
+  
 <div class="accd-back mb-3">
   <a href="{{ $backUrl }}" class="accd-back-link">
     <span class="accd-back-ico">
