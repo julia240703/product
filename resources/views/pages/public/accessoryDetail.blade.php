@@ -6,16 +6,28 @@
 
     {{-- Back bar --}}
     @php
-      $backUrl = isset($accessory->motor) && $accessory->motor
-        ? route('accessories.motor', $accessory->motor->id)
-        : route('accessories', ['key' => 'general']);
+      use Illuminate\Support\Str;
+
+      // 1) Utamakan ?return=... (hanya jika same-origin)
+      $ret = request('return');
+      $backUrl = null;
+      if ($ret && Str::startsWith($ret, url('/'))) {
+        $backUrl = $ret;
+      }
+
+      // 2) Fallback ke list per-motor jika ada relasi; jika tidak, ke list umum
+      if (!$backUrl) {
+        $backUrl = (isset($accessory->motor) && $accessory->motor)
+          ? route('accessories.motor', $accessory->motor->id)
+          : route('accessories'); // list general
+      }
     @endphp
 
     <div class="accd-back">
       <a href="{{ $backUrl }}" class="accd-back-link">
         <span class="accd-back-ico">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-              stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+               stroke="#111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="11"/>
             <line x1="15" y1="12" x2="8" y2="12"/>
             <polyline points="12 16 8 12 12 8"/>
@@ -110,6 +122,15 @@
 
       <div class="acc-track">
         @forelse($otherAccs as $o)
+          @php
+            // Teruskan return agar tombol Kembali tetap ke asal awal
+            $ret = request('return');
+            $detailUrl = route('accessory.detail', array_filter([
+              'id'     => $o->id,
+              'return' => $ret,
+            ]));
+          @endphp
+
           <article class="acc-card">
             <div class="acc-img">
               <img src="{{ $o->image_url }}" alt="{{ $o->name }}">
@@ -122,7 +143,7 @@
                 <strong>Rp {{ number_format($o->display_price ?? 0, 0, ',', '.') }}</strong>
               </div>
 
-              <a class="acc-cta" href="{{ route('accessory.detail', $o->id) }}">
+              <a class="acc-cta" href="{{ $detailUrl }}">
                 <span>Detail</span>
                 <i class="fas fa-chevron-right"></i>
               </a>

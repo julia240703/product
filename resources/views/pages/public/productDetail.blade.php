@@ -187,7 +187,8 @@
                         <strong>Rp 0</strong>
                       </div>
 
-                      <a class="acc-cta" href="{{ route('accessories') }}#acc-{{ $acc->id }}">
+                      <a class="acc-cta"
+                        href="{{ route('accessory.detail', ['id' => $acc->id, 'return' => url()->current()]) }}">
                         <span>Detail</span><i class="fas fa-chevron-right"></i>
                       </a>
                     </div>
