@@ -109,7 +109,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Upload 360° (GIF) <small class="text-muted">(opsional)</small></label>
                                 <input type="file" class="form-control" name="spin_gif" accept="image/gif">
-                                <div class="form-text">Format .gif. Kosongkan jika produk tidak memiliki 360°. Maks <strong>8192KB</strong>.</div>
+                                <div class="form-text">Format .gif. Kosongkan jika motor tidak memiliki 360°. Maks <strong>8192KB</strong>.</div>
                             </div>
 
                             <div class="mb-3">
