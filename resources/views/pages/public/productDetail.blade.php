@@ -158,10 +158,14 @@
         </div>
       </section>
 
-      {{-- Aksesoris --}}
-      @if(isset($accessories) && $accessories->count())
-        @php $accCount = $accessories->count(); @endphp
-        <section class="motor-accessories page-product-detail mb-5">
+      {{-- Aksesoris + Actions --}}
+      @php
+        $hasAcc   = isset($accessories) && $accessories->count();
+        $accCount = $hasAcc ? $accessories->count() : 0;
+      @endphp
+
+      @if($hasAcc)
+        <section class="motor-accessories page-product-detail mb-4">
           <h3 class="section-title">Aksesoris</h3>
 
           <div class="acc-wrap {{ $accCount <= 3 ? 'no-nav' : '' }}">
@@ -177,7 +181,7 @@
                   <article class="acc-card">
                     <div class="acc-img">
                       <img src="{{ $acc->image ? asset('storage/'.$acc->image) : asset('placeholder.png') }}"
-                           alt="{{ $acc->name }}">
+                          alt="{{ $acc->name }}">
                     </div>
                     <div class="acc-body">
                       <h5 class="acc-title">{{ $acc->name }}</h5>
@@ -203,17 +207,20 @@
               </button>
             @endif
           </div>
-
-          <div class="acc-actions">
-          <a href="{{ route('branches') }}" class="acc-action-btn">Dealer</a>
-          <a href="{{ route('compare.menu') }}" class="acc-action-btn">Bandingkan</a>
-          <a href="{{ route('price.list', ['return' => url()->current()]) }}" class="acc-action-btn">
-            Price List
-          </a>
-          <a href="{{ route('credit.sim', ['motor_id' => $motor->id]) }}" class="acc-action-btn">Simulasi Kredit</a>
-        </div>
         </section>
       @endif
+
+      {{-- Actions SELALU tampil --}}
+      @php
+        // kalau tidak ada aksesoris, beri margin-top lebih besar agar jarak enak
+        $actionsClass = $hasAcc ? 'acc-actions mb-5' : 'acc-actions mt-3 mb-5';
+      @endphp
+      <div class="{{ $actionsClass }}">
+        <a href="{{ route('branches') }}" class="acc-action-btn">Dealer</a>
+        <a href="{{ route('compare.menu') }}" class="acc-action-btn">Bandingkan</a>
+        <a href="{{ route('price.list', ['return' => url()->current()]) }}" class="acc-action-btn">Price List</a>
+        <a href="{{ route('credit.sim', ['motor_id' => $motor->id]) }}" class="acc-action-btn">Simulasi Kredit</a>
+      </div>
 
       {{-- Rekomendasi --}}
 @if(isset($recommended) && $recommended->count())
