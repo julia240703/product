@@ -150,7 +150,4 @@
               //  END of linechart //
               
           </script>
-
-
-
 @endsection

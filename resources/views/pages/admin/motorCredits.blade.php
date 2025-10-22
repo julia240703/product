@@ -106,7 +106,7 @@
                 {{-- diisi dinamis --}}
               </div>
               <div class="form-text">
-                Angsuran juga tanpa “Rp”. Contoh: <code>750.000</code>.
+                Angsuran juga tanpa “Rp”. Contoh: <code>750</code> = <strong>750.000</strong>.
               </div>
             </div>
           </div>
