@@ -8,7 +8,7 @@
     <div class="row align-items-center">
       <div class="col-md-6">
         <div class="title mb-30">
-          <h2>Simulasi Kredit: {{ $motor->name }}</h2>
+          <h2>Data Simulasi Kredit: {{ $motor->name }}</h2>
         </div>
       </div>
       <div class="col-md-6">
@@ -25,21 +25,29 @@
     </div>
   </div>
 
-  {{-- Tombol bulk upload + template --}}
-  <div class="d-flex gap-2 mb-3">
-    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#bulkModal">
-      Bulk Upload (Excel)
-    </button>
+  {{-- Tombol bulk upload + template + hapus semua --}}
+  <div class="d-flex gap-2 mb-3 align-items-center">
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#bulkModal">
+        Bulk Upload (Excel)
+      </button>
 
-    <a href="{{ route('admin.credits.template', $motor->id) }}" class="btn btn-outline-secondary btn-sm" download>
-      Unduh Template
-    </a>
+      <a href="{{ route('admin.credits.template', $motor->id) }}" class="btn btn-outline-secondary btn-sm" download>
+        Unduh Template
+      </a>
+    </div>
+
+    <div class="ms-auto">
+      <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+        Hapus Seluruh Data
+      </button>
+    </div>
   </div>
 
   {{-- =================== MODAL BULK UPLOAD =================== --}}
   <div class="modal fade" id="bulkModal" tabindex="-1" aria-labelledby="bulkLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form id="bulkForm" class="modal-content" enctype="multipart/form-data">
+      <form id="bulkForm" class="modal-content" method="POST" action="{{ route('admin.credits.import', $motor->id) }}" enctype="multipart/form-data">
         @csrf
         <div class="modal-header">
           <h5 class="modal-title" id="bulkLabel">Bulk Upload Simulasi Kredit ({{ $motor->name }})</h5>
@@ -52,7 +60,7 @@
             <input type="file" name="file" id="excel_file" class="form-control" accept=".xlsx,.xls,.csv" required>
           </div>
 
-          {{-- field lama (hidden) untuk kompatibilitas --}}
+          {{-- kompat --}}
           <input type="hidden" name="provider_id" value="">
           <input type="hidden" name="valid_from" value="">
           <input type="hidden" name="valid_to" value="">
@@ -65,13 +73,14 @@
               <option value="overwrite">Timpa isinya</option>
             </select>
           </div>
-
-          <div id="bulkAlert" class="alert d-none mt-3" role="alert"></div>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batalkan</button>
-          <button type="submit" class="btn btn-success" id="btnBulkSubmit">Simpan</button>
+          <button type="submit" class="btn btn-success" id="btnBulkSubmit"
+                  onclick="this.disabled=true;this.innerText='Menyimpan…';this.form.submit();">
+            Simpan
+          </button>
         </div>
       </form>
     </div>
@@ -80,7 +89,7 @@
   {{-- =================== MODAL EDIT BARIS =================== --}}
   <div class="modal fade" id="rowModal" tabindex="-1" aria-labelledby="rowLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <form id="rowForm" class="modal-content">
+      <form id="rowForm" class="modal-content" method="POST">
         @csrf
         @method('PUT')
         <input type="hidden" name="header_id" id="row_header_id">
@@ -95,27 +104,27 @@
           <div class="row g-3">
             <div class="col-sm-4">
               <label class="form-label">DP (ribuan/jutaan)</label>
-              <input type="text" class="form-control js-money" name="dp" id="row_dp" placeholder="mis. 6.500">
+              <input type="text" class="form-control js-money" name="dp" id="row_dp" placeholder="mis. 6.500" required>
               <div class="form-text">
                 Ketik dalam satuan <em>ribuan</em>. Contoh: <code>6.500</code> = <strong>6.500.000</strong>.
               </div>
             </div>
             <div class="col-sm-8">
               <label class="form-label">Tenor &amp; Angsuran</label>
-              <div id="row_tenors" class="row g-2">
-                {{-- diisi dinamis --}}
-              </div>
+              <div id="row_tenors" class="row g-2"></div>
               <div class="form-text">
                 Angsuran juga tanpa “Rp”. Contoh: <code>750</code> = <strong>750.000</strong>.
               </div>
             </div>
           </div>
-          <div id="rowAlert" class="alert d-none mt-3"></div>
         </div>
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          <button type="submit" class="btn btn-primary" id="btnRowSave">Simpan Perubahan</button>
+          <button type="submit" class="btn btn-primary" id="btnRowSave"
+                  onclick="this.disabled=true;this.innerText='Menyimpan…';this.form.submit();">
+            Simpan Perubahan
+          </button>
         </div>
       </form>
     </div>
@@ -149,7 +158,7 @@
             <tr>
               <th>#</th>
               <th>Tenor (bln)</th>
-              <th>Daftar DP</th> {{-- tanpa (Rp) --}}
+              <th>Daftar DP</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -158,40 +167,84 @@
     </div>
   </div>
 
-  {{-- =============== MODAL HAPUS (disamakan dengan halaman Fitur Motor) =============== --}}
-  <div class="modal fade" id="deleteHeaderModal" tabindex="-1" aria-labelledby="deleteHeaderLabel" aria-hidden="true">
+  {{-- =============== MODAL HAPUS 1 BARIS DP =============== --}}
+  <div class="modal fade" id="deleteRowModal" tabindex="-1" aria-labelledby="deleteRowLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form id="deleteHeaderForm" method="POST">
+      <form id="deleteRowForm" method="POST">
         @csrf
         @method('DELETE')
+        <input type="hidden" id="del_row_header_id">
+        <input type="hidden" id="del_row_dp" name="dp">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="deleteHeaderLabel">Konfirmasi Hapus Periode</h5>
+            <h5 class="modal-title" id="deleteRowLabel">Hapus 1 Baris DP</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
           </div>
           <div class="modal-body">
             <p>
-              Apakah kamu yakin ingin menghapus
+              Hapus baris DP <strong id="del_row_dp_text"></strong> pada
               <strong>Simulasi Kredit – {{ $motor->name }}</strong>?
             </p>
-            {{-- opsional: detail periode/DP ditampilkan di sini via JS bila ada --}}
-            <div id="delete_header_desc" class="text-muted small"></div>
+            <div class="text-muted small">Tenor terkait baris DP ini juga ikut terhapus.</div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-danger" id="btnHeaderDeleteYes">Ya, Hapus</button>
+            <button type="submit" class="btn btn-danger" id="btnRowDeleteYes">
+              Ya, Hapus Baris
+            </button>
           </div>
         </div>
       </form>
     </div>
   </div>
 
+  {{-- =============== MODAL HAPUS SEMUA HEADER/ITEM =============== --}}
+  <div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="deleteAllForm" method="POST" action="{{ route('admin.credits.deleteAll', $motor->id) }}">
+        @csrf
+        @method('DELETE')
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteAllLabel">Hapus Seluruh Data</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-warning">
+              Tindakan ini akan menghapus <strong>seluruh periode/header & item</strong>
+              Simulasi Kredit untuk <strong>{{ $motor->name }}</strong>. Tidak bisa dibatalkan.
+            </div>
+            <p class="mb-0">Yakin ingin melanjutkan?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-danger" id="btnDeleteAllYes"
+                    onclick="this.disabled=true;this.innerText='Menghapus…';this.form.submit();">
+              Ya, Hapus Semua
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 {{-- =================== SCRIPTS =================== --}}
 <script>
 $(function () {
-  // ===== DataTables
+  // === Flash ala appAdmin (pojok kanan atas, ijo)
+  function flashSuccess(message) {
+    const box = document.createElement('div');
+    box.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    box.style.maxWidth = '300px';
+    box.style.zIndex = '1050';
+    box.innerHTML = '<p class="mb-0">'+ message +'</p>';
+    document.body.appendChild(box);
+    setTimeout(()=> box.classList.add('show'), 10);   // (opsi) animasi kecil
+    setTimeout(()=> { box.remove(); }, 2500);
+  }
+
+  // DataTables
   const table = $('#credits-table').DataTable({
     responsive: true, processing: true, serverSide: true,
     ajax: "{{ route('admin.credits.headers', $motor->id) }}",
@@ -203,89 +256,48 @@ $(function () {
     ]
   });
 
-  // Samakan style tombol aksi (biru/merah + ikon) & bungkus btn-group
+  // Style tombol aksi & grupkan
   $('#credits-table').on('draw.dt', function(){
     $('#credits-table .js-edit')
       .addClass('btn btn-sm btn-primary me-1')
-      .each(function(){
-        if($(this).find('i.fa-solid.fa-pen-to-square').length === 0){
-          $(this).html('<i class="fa-solid fa-pen-to-square"></i>');
-        }
-      });
+      .attr('title','Edit baris DP')
+      .each(function(){ if($(this).find('i.fa-solid.fa-pen-to-square').length === 0){ $(this).html('<i class="fa-solid fa-pen-to-square"></i>'); } });
 
-    $('#credits-table .js-del')
+    $('#credits-table .js-del-row')
       .addClass('btn btn-sm btn-danger')
-      .each(function(){
-        if($(this).find('i.fa-solid.fa-trash').length === 0){
-          $(this).html('<i class="fa-solid fa-trash"></i>');
-        }
-      });
+      .attr('title','Hapus 1 baris DP')
+      .each(function(){ if($(this).find('i.fa-solid fa-trash').length === 0){ $(this).html('<i class="fa-solid fa-trash"></i>'); } });
 
-    $('#credits-table td:has(.js-edit, .js-del)').each(function(){
+    $('#credits-table td:has(.js-edit, .js-del-row)').each(function(){
       const cell = $(this);
       if(cell.find('.btn-group').length === 0){
         const e = cell.find('.js-edit').detach();
-        const d = cell.find('.js-del').detach();
-        cell.empty().append($('<div class="btn-group"></div>').append(e).append(d));
+        const r = cell.find('.js-del-row').detach();
+        cell.empty().append($('<div class="btn-group"></div>').append(e).append(r));
       }
     });
   });
 
-  // ===== Bulk upload
-  $('#bulkForm').on('submit', function(e){
-    e.preventDefault();
-    $('#bulkAlert').addClass('d-none').removeClass('alert-danger alert-success').text('');
-
-    const file = $('#excel_file')[0].files[0];
-    if(!file){
-      $('#bulkAlert').removeClass('d-none').addClass('alert-danger').text('Pilih file terlebih dahulu.');
-      return;
-    }
-
-    const fd = new FormData(this);
-    $('#btnBulkSubmit').prop('disabled', true).text('Menyimpan…');
-
-    $.ajax({
-      url: "{{ route('admin.credits.import', $motor->id) }}",
-      method: 'POST',
-      data: fd,
-      processData: false,
-      contentType: false
-    })
-    .done(function(){
-      $('#bulkAlert').removeClass('d-none').addClass('alert-success').text('Upload selesai.');
-      table.ajax.reload(null, false);
-      setTimeout(()=>$('#bulkModal').modal('hide'), 700);
-    })
-    .fail(function(xhr){
-      const msg = xhr?.responseJSON?.message || 'Gagal mengunggah file. Pastikan format sesuai template.';
-      $('#bulkAlert').removeClass('d-none').addClass('alert-danger').text(msg);
-    })
-    .always(function(){
-      $('#btnBulkSubmit').prop('disabled', false).text('Simpan');
-    });
+  // Reset form saat modal ditutup
+  $('.modal').on('hidden.bs.modal', function () {
+    this.querySelector('form')?.reset();
   });
 
-  // Reset modal bulk
-  $('#bulkModal').on('hidden.bs.modal', function(){
-    this.querySelector('#bulkForm').reset();
-    $('#bulkAlert').addClass('d-none').removeClass('alert-danger alert-success').text('');
-  });
-
-  // ===== Open edit baris
+  // Open edit baris
   $(document).on('click', '.js-edit', function(){
     const headerId = $(this).data('id');
     const dpRaw    = $(this).data('dp');
+
     $('#row_header_id').val(headerId);
     $('#row_old_dp').val(dpRaw);
-    $('#rowAlert').addClass('d-none').removeClass('alert-danger alert-success').text('');
     $('#row_tenors').empty();
-
     $('#row_dp').val(new Intl.NumberFormat('id-ID').format(dpRaw));
 
-    const url = "{{ route('admin.credits.row.show', ['motor'=>$motor->id, 'header'=>'HID']) }}".replace('HID', headerId) + '?dp='+dpRaw;
+    const urlShow   = "{{ route('admin.credits.row.show', ['motor'=>$motor->id, 'header'=>'HID']) }}".replace('HID', headerId) + '?dp=' + dpRaw;
+    const urlUpdate = "{{ route('admin.credits.row.update', ['motor'=>$motor->id, 'header'=>'HID']) }}".replace('HID', headerId);
+    $('#rowForm').attr('action', urlUpdate);
 
-    $.getJSON(url, function(res){
+    $.getJSON(urlShow, function(res){
       const wrap = $('#row_tenors');
       (res.tenors || []).forEach(function(t){
         const val = res.values && res.values[String(t)] ? res.values[String(t)] : '';
@@ -305,63 +317,49 @@ $(function () {
     });
   });
 
-  // ===== Save edit baris
-  $('#rowForm').on('submit', function(e){
-    e.preventDefault();
-    const headerId = $('#row_header_id').val();
-    const url = "{{ route('admin.credits.row.update', ['motor'=>$motor->id, 'header'=>'HID']) }}".replace('HID', headerId);
+  // ===== Hapus 1 BARIS DP (AJAX)
+  let __delRowHeaderId = null;
+  let __delRowDp = null;
 
-    const payload = $(this).serializeArray();
+  $(document).on('click', '.js-del-row', function(){
+    __delRowHeaderId = $(this).data('id');
+    __delRowDp = parseInt($(this).data('dp') || '0', 10);
 
-    $('#btnRowSave').prop('disabled', true).text('Menyimpan…');
-    $.ajax({ url, method: 'POST', data: payload })
-      .done(function(){
-        $('#rowAlert').removeClass('d-none').addClass('alert-success').text('Perubahan disimpan.');
-        table.ajax.reload(null, false);
-        setTimeout(()=>$('#rowModal').modal('hide'), 600);
-      })
-      .fail(function(xhr){
-        const msg = xhr?.responseJSON?.message || 'Gagal menyimpan.';
-        $('#rowAlert').removeClass('d-none').addClass('alert-danger').text(msg);
-      })
-      .always(function(){
-        $('#btnRowSave').prop('disabled', false).text('Simpan Perubahan');
-      });
+    const urlDelete = "{{ route('admin.credits.row.delete', ['motor'=>$motor->id, 'header'=>'HID']) }}".replace('HID', __delRowHeaderId);
+    $('#deleteRowForm').attr('action', urlDelete);
+
+    $('#del_row_header_id').val(__delRowHeaderId);
+    $('#del_row_dp').val(__delRowDp);
+    $('#del_row_dp_text').text(new Intl.NumberFormat('id-ID').format(__delRowDp));
+
+    $('#deleteRowModal').modal('show');
   });
 
-  // ===== Hapus periode/header -> pakai modal
-  let __delUrl = null;
-
-  $(document).on('click', '.js-del', function(){
-    const headerId = $(this).data('id');
-    const desc     = $(this).data('desc') || ''; // contoh: "DP 6.500 • Tenor 35 bln"
-    __delUrl = "{{ route('admin.credits.delete', ['motor' => $motor->id, 'header' => 'HID']) }}"
-                .replace('HID', headerId);
-
-    $('#delete_header_desc').text(desc); // akan kosong jika tak disediakan
-    $('#deleteHeaderForm').attr('action', __delUrl);
-    $('#deleteHeaderModal').modal('show');
-  });
-
-  $('#deleteHeaderForm').on('submit', function(e){
+  // INTERCEPT submit → AJAX DELETE + flash ijo pojok kanan
+  $('#deleteRowForm').on('submit', function(e){
     e.preventDefault();
-    if(!__delUrl) return;
+    const url = $(this).attr('action');
+    const dp  = $('#del_row_dp').val();
 
-    $('#btnHeaderDeleteYes').prop('disabled', true).text('Menghapus…');
+    $('#btnRowDeleteYes').prop('disabled', true).text('Menghapus…');
+
     $.ajax({
-      url: __delUrl,
+      url: url,
       method: 'POST',
-      data: { _method:'DELETE', _token:'{{ csrf_token() }}' }
+      data: { _method:'DELETE', _token:'{{ csrf_token() }}', dp }
     })
     .done(function(){
-      $('#deleteHeaderModal').modal('hide');
+      $('#deleteRowModal').modal('hide');
       table.ajax.reload(null, false);
+      flashSuccess('Baris DP ' + new Intl.NumberFormat('id-ID').format(dp) + ' — {{ $motor->name }} berhasil dihapus.');
     })
-    .fail(function(){
-      alert('Gagal menghapus.');
+    .fail(function(xhr){
+      const msg = xhr?.responseJSON?.message || 'Gagal menghapus baris.';
+      // pakai alert biasa untuk error (atau bikin flash merah kalau mau)
+      alert(msg);
     })
     .always(function(){
-      $('#btnHeaderDeleteYes').prop('disabled', false).text('Ya, Hapus');
+      $('#btnRowDeleteYes').prop('disabled', false).text('Ya, Hapus Baris');
     });
   });
 

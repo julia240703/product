@@ -3770,6 +3770,50 @@ margin-bottom: calc(var(--cmpFooterH, 60px) + 24px) !important;
   }
 }
 
+/* --- FIX: H1|H2|H3 satu baris TANPA bikin overflow --- */
+.dealer-services3{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:6px 0 2px;
+  color:#0f172a;
+  font-weight:700;
+  flex-wrap:nowrap;        /* tetap satu baris */
+  /* HAPUS white-space:nowrap; dari container */
+  overflow-x:hidden;       /* cegah bikin scroll horizontal */
+  min-width:0;             /* biar bisa menyusut di dalam flex/grid */
+  font-size:clamp(11px, 1.2vw, 14px);
+  line-height:1.25;
+}
+.dealer-services3 .svc3{
+  display:flex; align-items:center; gap:6px;
+  position:relative; padding-right:10px;
+  white-space:nowrap;     /* segmennya yang anti-patah, bukan container */
+  flex:0 1 auto;          /* boleh menyusut */
+  min-width:0;
+}
+.dealer-services3 .svc3:not(:last-child)::after{
+  content:""; position:absolute; right:3px; top:50%;
+  transform:translateY(-50%);
+  width:2px; height:12px; background:rgba(17,24,39,.15);
+}
+.dealer-services3 b{ font-weight:800; font-size:.95em; }
+
+/* --- Tambahan penjaga overflow di layout list --- */
+.dealer-list-pane{ overflow-x:hidden; }
+.dealer-card .dealer-card-body,
+.dealer-info{ min-width:0; max-width:100%; }
+.dealer-item, .dealer-card{ max-width:100%; }
+html, body { overflow-x:hidden; } /* kalau masih ada parent yang meluber */
+
+/* Tombol "Lihat Lokasi" selebar card */
+.dealer-cta.dealer-cta--card{
+  display:block !important;     /* override inline-flex */
+  width:100% !important;         /* isi penuh lebar konten card */
+  box-sizing:border-box;
+  margin-top:8px;
+}
+
 /* =========================
    PRICE LIST PAGE
 ========================= */
@@ -5159,46 +5203,148 @@ body.osk-open{ overflow:hidden; }
   background:#fff; border:2px solid #dc3545; color:#dc3545; font-weight:700;
 }
 
-/* ==== Parts Detail — perbaikan final ==== */
+/* ==== Parts Detail — viewer native browser ==== */
 
-/* 1) Jangan jadikan <main> scroller di halaman PDF. Biarkan body yang scroll. */
-main:has(.pdf-frame){
+/* Biarkan body yang scroll */
+main:has(.pdf-native){
   height: auto !important;
   overflow: visible !important;
 }
 
-/* 2) Kembalikan layout konten ke blok biasa (bukan flex) agar tinggi tidak kolaps */
+/* Kontainer detail normal */
 .accd-detail{
   display: block !important;
   min-height: 0 !important;
   overflow: visible !important;
 }
 
-/* 3) Parent viewer jangan paksa flex/tinggi 0; biarkan mengikuti isi */
-.card.pdf-viewer{
+/* Bungkus viewer */
+.pdf-native-wrap{
+  position: relative;
   height: auto !important;
   min-height: 0 !important;
-  overflow: visible !important;
+  overflow: hidden;
   border: 0;
 }
 
-/* 4) Iframe punya tinggi eksplisit supaya selalu terlihat */
-.pdf-frame{
+/* Elemen viewer (embed/object/iframe) */
+.pdf-native{
   display: block;
-  width: 100% !important;
-  height: 80vh !important;      /* boleh 75–85vh sesuai selera */
+  width: 100%;
+  height: 80vh;               /* bisa diubah 75–85vh */
   border: 0;
   border-radius: 12px;
 }
 
-/* 5) Sidebar tetap “nempel” saat body yang scroll */
-body:has(.pdf-frame) .sidebar{
-  position: sticky;    /* jika sticky tidak bekerja di layoutmu, ganti ke fixed */
-  top: 0;
-  height: 100vh;
+/* Saat fullscreen, isi layar penuh */
+.pdf-native-wrap:fullscreen .pdf-native,
+.pdf-native-wrap:-webkit-full-screen .pdf-native{
+  height: 100vh !important;
+  border-radius: 0;
 }
 
-/* 1080×1920 portrait — gambar varian lebih besar, dots tetap dekat */
+/* ============================
+   Tombol Fullscreen — “Pill”
+   Menutupi tombol PRINT & SAVE
+   (Find tetap kelihatan)
+   ============================ */
+:root{
+  /* Lebar overlay tombol FS.
+     Atur agar berhenti sebelum ikon Find.
+     Umumnya 140–180px (tergantung scale/OS). */
+  --pdf-fs-w: 160px;
+
+  /* Tinggi toolbar native (aprox Chrome/Edge) */
+  --pdf-toolbar-h: 44px;
+}
+
+/* Tombol FS melebar sebagai overlay kanan */
+.pdf-native-fs{
+  position: absolute;
+  top: 6px;               /* sejajarkan dengan toolbar */
+  right: 0;
+  width: var(--pdf-fs-w);
+  height: 36px;
+  padding-right: 12px;    /* ruang untuk ikon di kanan */
+  padding-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start; /* ikon di sisi kanan */
+  gap: 8px;
+
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.1);
+  border-right: none;
+  border-radius: 18px 0 0 18px;  /* kiri bulat, kanan rata */
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+
+  cursor: pointer;
+  z-index: 5;             /* di atas <embed> */
+  pointer-events: auto;   /* blok klik ke tombol print/save */
+  user-select: none;
+}
+
+/* Label opsional (boleh disembunyikan jika mau) */
+.pdf-native-fs__label{
+  font-size: 12px;
+  line-height: 1;
+  color: #111;
+}
+
+/* Ikon tetap tajam */
+.pdf-native-fs__icon{
+  line-height: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+.pdf-native-fs:hover{ background:#f7f7f7; }
+
+:root{
+  /* lebar pill saat normal */
+  --pdf-fs-w: 150px;
+  /* (opsional) lebar khusus saat fullscreen; kalau tidak di-set, pakai --pdf-fs-w */
+  --pdf-fs-w-fs: 150px;  /* naikin kalau ikon print masih kelihatan */
+}
+
+.pdf-native-wrap:fullscreen .pdf-native-fs,
+.pdf-native-wrap:-webkit-full-screen .pdf-native-fs{
+  top: 6px;
+  right: 0;                          /* tempel tepi kanan toolbar */
+  width: var(--pdf-fs-w-fs, var(--pdf-fs-w));
+  height: 36px;
+  padding: 0 12px 0 16px;
+  border-right: none;                /* tetap pill dari kanan */
+  border-radius: 18px 0 0 18px;      /* bentuk pill */
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  z-index: 9999;                     /* pastikan di atas viewer */
+}
+
+/* Responsif: sempitkan sedikit di layar kecil */
+@media (max-width: 768px){
+  :root{ --pdf-fs-w: 140px; }
+  .pdf-native-fs__label{ display: none; } /* hemat ruang */
+}
+
+/* PDF.js iframe wrapper */
+.pdfjs-wrap{
+  position: relative;
+  border: 0;
+}
+.pdfjs-frame{
+  display: block;
+  width: 100%;
+  height: 80vh;     /* boleh 75–85vh sesuai selera */
+  border: 0;
+  border-radius: 12px;
+}
+.pdfjs-wrap:fullscreen .pdfjs-frame,
+.pdfjs-wrap:-webkit-full-screen .pdfjs-frame{
+  height: 100vh !important;
+  border-radius: 0;
+}
+
+/* 1080×1920 portrait — BAGIAN VARIAN WARNA DI HALAMAN DETAIL PRODUK */
 @media (max-width:1100px) and (min-height:1880px) and (orientation:portrait){
 
   .motor-colors .variant-viewport{
@@ -5228,30 +5374,6 @@ body:has(.pdf-frame) .sidebar{
   }
 
   .motor-colors.mb-5{ margin-bottom: 16px !important; }
-}
-
-/* =========================
-   PARTS PDF FULLSCREEN
-   ========================= */
-
-/* wrapper pdf (card) */
-.pdf-viewer{ overflow:hidden; position:relative; }
-
-/* tombol fullscreen di kanan-atas viewer */
-.pdf-fs-btn{
-  position:absolute; top:10px; right:10px;
-  width:36px; height:36px;
-  border:1px solid #e5e7eb; border-radius:10px;
-  background:#fff; display:grid; place-items:center;
-  cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.08);
-  z-index:5; /* di atas iframe */
-}
-.pdf-fs-btn:hover{ background:#f9fafb; }
-
-/* saat fullscreen, bikin iframe isi layar */
-.pdf-viewer:fullscreen .pdf-frame,
-.pdf-viewer:-webkit-full-screen .pdf-frame{
-  height:100vh !important;
 }
 
 /* ==== PICK COMPARE — kolom final ==== */

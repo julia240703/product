@@ -5,62 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PDF Viewer</title>
 
-  <style>
-    *{ box-sizing:border-box }
-
-    :root{ --vh:100vh; --topbar-h:56px; }  /* tinggi toolbar fix */
-
-    /* <<< KUNCI: hilangkan scrollbar di level page (iframe) >>> */
-    html,body{
-      height:100%;
-      margin:0;
-      overflow:hidden;                     /* tidak ada scroll “tengah” */
-      background:#f6f7f9;
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans","Helvetica Neue",sans-serif;
-    }
-
-    .topbar{
-      height:var(--topbar-h);
-      display:flex; align-items:center; gap:12px;
-      padding:0 14px;                      /* padding vertikal nol → tinggi tepat */
-      border-bottom:1px solid #e5e7eb;
-      background:#fff; position:sticky; top:0; z-index:10;
-    }
-    .ttl{font-weight:600;font-size:14px;color:#111827;margin-right:auto}
-    .btn{display:inline-flex;align-items:center;justify-content:center;height:32px;min-width:32px;padding:0 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer}
-
-    /* <<< Hanya area ini yang boleh scroll >>> */
-    .viewer{
-      height:calc(100vh - var(--topbar-h));   /* atau: calc(var(--vh) - var(--topbar-h)) */
-      overflow:auto;
-      background:#edeff2;
-      padding:16px;
-    }
-
-    .page{display:block;margin:0 auto 16px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.06)}
-    canvas{display:block;max-width:100%;height:auto}
-    .msg{margin:16px;padding:16px;background:#fff;border-radius:12px}
-    .error{color:#b91c1c}
-    code{background:#f1f5f9;padding:.1rem .25rem;border-radius:.25rem}
-  </style>
+  <!-- CSS eksternal -->
+  <link rel="stylesheet" href="/pdfjs/web/custom-viewer.css?v=2">
 </head>
 <body>
   <div class="topbar">
-    <div class="ttl"></div>
-    <button class="btn" id="zoomOut">−</button>
-    <button class="btn" id="zoomIn">+</button>
-    <button class="btn" id="fit">⤢</button>
+    <button class="btn" id="zoomOut" title="Zoom out">−</button>
+    <button class="btn" id="zoomIn"  title="Zoom in">+</button>
+
+    <span class="sep"></span>
+
+    <div class="pagebox">
+      <input id="pageNumber" type="number" min="1" value="1" title="Halaman" inputmode="none" />
+      <span id="pageCount">of 0</span>
+    </div>
+
+    <span class="sep"></span>
+    <button class="btn" id="fit" title="Fit width">⤢</button>
+
+    <div class="grow"></div>
+
+    <button class="btn" id="searchBtn" title="Find (Ctrl/⌘+F)">🔍</button>
+    <button class="btn" id="fsBtn" title="Fullscreen">⛶</button>
+  </div>
+
+  <!-- Findbar: default tersembunyi -->
+  <div class="findbar hidden" id="findbar">
+    <input id="findInput" type="search" placeholder="Cari..." inputmode="none" autocomplete="off" />
+    <span class="find-count" id="findCount">0/0</span>
+    <button class="btn" id="findPrev" title="Sebelumnya">↑</button>
+    <button class="btn" id="findNext" title="Berikutnya">↓</button>
+    <button class="btn" id="findClose" title="Tutup">✕</button>
   </div>
 
   <div class="viewer" id="viewer"></div>
 
-  <!-- HANYA pdf.js build utama -->
   <script src="../build/pdf.js"></script>
   <script>
-    // Worker absolut (agar aman di semua browser)
     pdfjsLib.GlobalWorkerOptions.workerSrc = location.origin + '/pdfjs/build/pdf.worker.min.js';
 
-    // Ambil ?file=
     const q = new URLSearchParams(location.search);
     let fileUrl = q.get('file') || '';
     try { fileUrl = decodeURIComponent(fileUrl); } catch {}
@@ -71,60 +54,301 @@
     }
     if (fileUrl.startsWith('/')) fileUrl = location.origin + fileUrl;
 
-    // State zoom
-    let scale = 1.2;     // default
-    const viewer = document.getElementById('viewer');
+    const viewer   = document.getElementById('viewer');
+    const pageBox  = document.getElementById('pageNumber');
+    const pageCnt  = document.getElementById('pageCount');
+    const findbar  = document.getElementById('findbar');
+    const findInput= document.getElementById('findInput');
+    const findCount= document.getElementById('findCount');
 
-    // Render semua halaman secara manual
-    async function renderPDF(url) {
-      const head = await fetch(url, {method:'HEAD'});
-      if (!head.ok) {
-        viewer.innerHTML = `<div class="msg error">Gagal memuat PDF (HTTP ${head.status}).<br><small>URL: ${url}</small></div>`;
+    let pdf=null, scale=1.2, rotation=0, numPages=0;
+    let pageTexts=[], pageEls=[]; // index 1-based
+    let results=[], activeIndex=-1;
+
+    async function renderPage(p){
+      const page = await pdf.getPage(p);
+      const pageRotation = page.rotate || 0;
+      const viewport = page.getViewport({
+        scale,
+        rotation:(pageRotation+rotation)%360
+      });
+
+      let wrap = pageEls[p];
+      if (!wrap){
+        wrap = document.createElement('div');
+        wrap.className='pageWrap';
+        pageEls[p] = wrap;
+        viewer.appendChild(wrap);
+      }
+      wrap.style.width  = viewport.width  + 'px';
+      wrap.style.height = viewport.height + 'px';
+
+      let canvas = wrap.querySelector('canvas');
+      if(!canvas){ canvas=document.createElement('canvas'); wrap.appendChild(canvas); }
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+
+      let tLayer = wrap.querySelector('.textLayer');
+      if(!tLayer){ tLayer=document.createElement('div'); tLayer.className='textLayer'; wrap.appendChild(tLayer); }
+      tLayer.innerHTML='';
+
+      const ctx = canvas.getContext('2d',{alpha:false});
+      await page.render({ canvasContext:ctx, viewport }).promise;
+
+      if(!pageTexts[p]) pageTexts[p] = await page.getTextContent();
+      const { items, styles } = pageTexts[p];
+
+      items.forEach(item=>{
+        const span = document.createElement('span');
+        span.textContent = item.str;
+
+        // posisi/transform bawaan textLayer
+        const tx = pdfjsLib.Util.transform(
+          pdfjsLib.Util.transform(viewport.transform, item.transform),
+          [1,0,0,-1,0,0]
+        );
+        span.style.transform  = `matrix(${tx[0]},${tx[1]},${tx[2]},${tx[3]},${tx[4]},${tx[5]})`;
+
+        // ukuran & font
+        const s = styles[item.fontName];
+        span.style.fontSize   = (item.height * viewport.scale) + 'px';
+        span.style.fontFamily = s?.fontFamily || 'sans-serif';
+
+        tLayer.appendChild(span);
+      });
+    }
+
+    async function renderPDF(){
+      const head = await fetch(fileUrl,{method:'HEAD'});
+      if(!head.ok){
+        viewer.innerHTML = `<div class="msg error">Gagal memuat PDF (HTTP ${head.status}).</div>`;
         return;
       }
 
-      const pdf = await pdfjsLib.getDocument({
-        url,
-        disableRange: true, disableStream: true, disableAutoFetch: true
+      pdf = await pdfjsLib.getDocument({
+        url:fileUrl, disableRange:true, disableStream:true, disableAutoFetch:true
       }).promise;
 
-      viewer.innerHTML = ''; // bersihkan
+      numPages = pdf.numPages;
+      pageCnt.textContent = `of ${numPages}`;
+      viewer.innerHTML='';
+      pageEls=new Array(numPages+1);
 
-      for (let p = 1; p <= pdf.numPages; p++) {
-        const page = await pdf.getPage(p);
-        const viewport = page.getViewport({ scale });
-        const canvas = document.createElement('canvas');
-        canvas.className = 'page';
-        canvas.width  = viewport.width;
-        canvas.height = viewport.height;
-        viewer.appendChild(canvas);
-
-        const ctx = canvas.getContext('2d', { alpha:false });
-        await page.render({ canvasContext: ctx, viewport }).promise;
-      }
+      const tasks=[]; for(let p=1;p<=numPages;p++) tasks.push(renderPage(p));
+      await Promise.all(tasks);
     }
 
-    // Zoom handlers (render ulang cepat)
-    async function rerender(newScaleValue) {
-      scale = newScaleValue;
-      await renderPDF(fileUrl);
+    function rerender(){
+      clearSearch();
+      viewer.innerHTML='';
+      pageEls=[];
+      renderPDF().then(attachObserver);
     }
-    document.getElementById('zoomIn').addEventListener('click',  () => rerender(scale + 0.15));
-    document.getElementById('zoomOut').addEventListener('click', () => rerender(Math.max(0.3, scale - 0.15)));
-    document.getElementById('fit').addEventListener('click',     () => {
-      const w = viewer.clientWidth - 32;
-      pdfjsLib.getDocument(fileUrl).promise.then(pdf => pdf.getPage(1)).then(page=>{
-        const vp = page.getViewport({ scale: 1 });
-        const s  = Math.max(0.3, w / vp.width);
-        rerender(s);
-      });
+    function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+
+    async function fitWidth(){
+      const page = await pdf.getPage(1);
+      const vp   = page.getViewport({ scale:1, rotation:(page.rotate||0+rotation)%360 });
+      scale = Math.max(0.3, (viewer.clientWidth-32)/vp.width);
+      rerender();
+    }
+
+    document.getElementById('zoomIn').addEventListener('click',  ()=>{ scale+=0.15; rerender(); });
+    document.getElementById('zoomOut').addEventListener('click', ()=>{ scale=Math.max(0.3,scale-0.15); rerender(); });
+    document.getElementById('fit').addEventListener('click',     ()=>{ if(pdf) fitWidth(); });
+
+    document.getElementById('fsBtn').addEventListener('click', ()=>{
+      const doc=document, el=doc.documentElement;
+      const inFs=doc.fullscreenElement||doc.webkitFullscreenElement||doc.msFullscreenElement||doc.mozFullScreenElement;
+      if(!inFs){ (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen||el.mozRequestFullScreen).call(el); }
+      else{ (doc.exitFullscreen||doc.webkitExitFullscreen||doc.msExitFullscreen||doc.mozCancelFullScreen).call(doc); }
     });
 
-    // perbaiki unit vh di mobile
+    function jumpToPage(n){
+      const num = clamp(parseInt(n||'1',10),1,numPages);
+      const el=pageEls[num];
+      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+      pageBox.value=num;
+    }
+    pageBox.addEventListener('change', ()=> jumpToPage(pageBox.value));
+
+    // observer untuk update “pageNumber” saat scroll
+    const io=new IntersectionObserver(entries=>{
+      let top=null, topY=Infinity;
+      entries.forEach(e=>{
+        if(!e.isIntersecting) return;
+        const r=e.target.getBoundingClientRect();
+        if(r.top<topY){topY=r.top; top=e.target;}
+      });
+      if(top){
+        const idx=pageEls.indexOf(top);
+        if(idx>0) pageBox.value=idx;
+      }
+    }, {root:viewer, threshold:[0,.01,.1,.2,.3,.4,.5]});
+    const attachObserver=()=>pageEls.forEach(el=>{ if(el) io.observe(el); });
+
+    /* ===== FIND ===== */
+    function clearMarksInSpan(span){
+      const marks = span.querySelectorAll('mark.hl');
+      if(!marks.length) return;
+      marks.forEach(m=>{
+        const t=document.createTextNode(m.textContent);
+        m.replaceWith(t);
+      });
+      span.normalize();
+    }
+    function clearSearch(){
+      results.forEach(r=> r.marks.forEach(m=>{
+        if(m.parentNode){ const t=document.createTextNode(m.textContent); m.replaceWith(t); }
+      }));
+      results=[]; activeIndex=-1; updateCounter();
+    }
+    function buildPageMap(wrap){
+      const spans=[...wrap.querySelectorAll('.textLayer span')];
+      let pos=0; const pieces=[]; const map=[];
+      spans.forEach(sp=>{
+        const txt=sp.textContent||'';
+        pieces.push(txt);
+        map.push({node:sp, start:pos, end:pos+txt.length});
+        pos+=txt.length; pieces.push(' '); pos+=1;
+      });
+      return { full: pieces.join(''), spans:map };
+    }
+    function markInNode(node, start, end){
+      const txt=node.textContent;
+      const a=txt.slice(0,start), b=txt.slice(start,end), c=txt.slice(end);
+      const mark=document.createElement('mark'); mark.className='hl'; mark.textContent=b;
+      // supaya ukuran/posisi persis: mark inline di dalam span yang SUDAH ditransform
+      node.replaceChildren(document.createTextNode(a), mark, document.createTextNode(c));
+      return mark;
+    }
+    function highlightRangeOnPage(wrap, map, start, len){
+      const end = start + len, marks=[];
+      map.spans.forEach(seg=>{
+        if(seg.end<=start || seg.start>=end) return;
+        const s=Math.max(0,start-seg.start);
+        const e=Math.min(seg.end,end)-seg.start;
+        clearMarksInSpan(seg.node);
+        marks.push( markInNode(seg.node, s, e) );
+      });
+      return marks;
+    }
+    function doSearch(term){
+      clearSearch();
+      const query=(term||'').trim(); if(!query) return;
+      const L=query.length, qLower=query.toLowerCase();
+
+      pageEls.forEach((wrap, pageIdx)=>{
+        if(!wrap) return;
+        const map=buildPageMap(wrap);
+        const full=map.full.toLowerCase();
+        let idx=full.indexOf(qLower,0);
+        while(idx!==-1){
+          const marks=highlightRangeOnPage(wrap,map,idx,L);
+          if(marks.length) results.push({ page:pageIdx, marks, anchor:marks[0] });
+          idx=full.indexOf(qLower, idx+L);
+        }
+      });
+
+      updateCounter();
+      if(results.length){ goTo(0); }
+    }
+    function updateCounter(){
+      const total=results.length||0;
+      const cur=total?(activeIndex+1):0;
+      findCount.textContent = `${cur}/${total}`;
+      try { parent.postMessage({ type:'PDF_FIND_UPDATE', payload:{ cur, total } }, '*'); } catch(_){}
+    }
+    function goTo(i){
+      if(!results.length) return;
+      results.forEach(r=> r.marks.forEach(m=>m.classList.remove('active')));
+      activeIndex = (i + results.length) % results.length;
+      const r=results[activeIndex], wrap=pageEls[r.page];
+      if(wrap){
+        wrap.scrollIntoView({behavior:'smooth', block:'center'});
+        wrap.classList.add('hitFlash');
+        setTimeout(()=>wrap.classList.remove('hitFlash'), 900);
+        const p=pageEls.indexOf(wrap); if(p>0) pageBox.value=p;
+      }
+      r.marks.forEach(m=>m.classList.add('active'));
+      updateCounter();
+    }
+
+    // tombol findbar
+    document.getElementById('findPrev').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex-1); });
+    document.getElementById('findNext').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex+1); });
+    document.getElementById('findClose').addEventListener('click', ()=>{
+      clearSearch();
+      findbar.classList.add('hidden');
+      try{ parent.postMessage({type:'PDF_FIND_CLOSE'},'*'); }catch(_){}
+    });
+
+    /* ===== BRIDGE parent <-> iframe ===== */
+    window.addEventListener('message', (e)=>{
+      const data = e.data || {};
+      switch (data.type) {
+        case 'PDF_FIND_EXECUTE': {
+          const term = (data.payload?.term || '').trim();
+          findbar.classList.remove('hidden');   // pastikan tampil
+          findInput.value = term;
+          findInput.focus();
+          doSearch(term);
+          break;
+        }
+        case 'PDF_FIND_NEXT':
+          if (results.length) goTo(activeIndex + 1);
+          break;
+        case 'PDF_FIND_PREV':
+          if (results.length) goTo(activeIndex - 1);
+          break;
+        case 'PDF_FIND_CLOSE':
+          clearSearch();
+          findbar.classList.add('hidden');
+          break;
+        case 'PDF_PAGE_JUMP':
+          jumpToPage(data.payload?.page || 1);
+          break;
+        case 'PDF_OSK_OPEN_TEXT':   // kalau parent hanya mau membuka OSK
+          findbar.classList.remove('hidden');
+          findInput.focus();
+          break;
+      }
+    });
+
+    // klik 🔍 / Ctrl+F → tampilkan findbar + minta OSK teks dari parent
+    document.getElementById('searchBtn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      findbar.classList.remove('hidden');
+      findInput.focus();
+      try { parent.postMessage({ type:'PDF_OSK_OPEN_TEXT' }, '*'); } catch(_){}
+    });
+    window.addEventListener('keydown', (e)=>{
+      const isMac=/Mac/i.test(navigator.platform);
+      if((isMac?e.metaKey:e.ctrlKey) && e.key.toLowerCase()==='f'){
+        e.preventDefault();
+        findbar.classList.remove('hidden');
+        findInput.focus();
+        try { parent.postMessage({ type:'PDF_OSK_OPEN_TEXT' }, '*'); } catch(_){}
+      }
+    });
+
+    // Fokus page number → minta parent tampilkan numpad
+    function askParentNumpad(){
+      try {
+        parent.postMessage({
+          type:'PDF_OSK_OPEN_NUM',
+          payload:{ current: pageBox.value, max: numPages }
+        }, '*');
+      } catch(_){}
+    }
+    pageBox.addEventListener('focus', askParentNumpad);
+    pageBox.addEventListener('click', askParentNumpad);
+
+    // vh fix
     const setVH = () => document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
     setVH(); addEventListener('resize', setVH);
 
-    renderPDF(fileUrl).catch(err => {
+    renderPDF().then(attachObserver).catch(err=>{
       console.error(err);
       viewer.innerHTML = `<div class="msg error">Gagal memuat PDF.<br><small>${(err && err.message) || err}</small></div>`;
     });

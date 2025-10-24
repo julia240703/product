@@ -179,7 +179,7 @@
                         @csrf
                         <input type="hidden" name="motor_id" value="{{ $m->id }}">
                         <button type="submit" class="cmp-choose btn btn-outline-dark w-100" {{ $isFull ? 'disabled' : '' }}>
-                          <i class="fas fa-arrows-rotate me-2"></i>
+                          <i class="fas fa-plus me-2"></i>
                           Tambah Untuk Membandingkan
                         </button>
                       </form>

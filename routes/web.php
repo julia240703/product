@@ -329,6 +329,7 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::get('/{motor}/credits/headers',         [AdminControllerSatu::class, 'creditsHeadersData'])->name('credits.headers'); // <— BARU
     Route::get('/{motor}/credits/data',            [AdminControllerSatu::class, 'creditsData'])->name('credits.data');
     Route::post('/{motor}/credits',                [AdminControllerSatu::class, 'creditsStore'])->name('credits.store');
+    Route::delete('/{motor}/credits/all',        [AdminControllerSatu::class, 'creditsDeleteAll'])->name('credits.deleteAll');
     Route::get('/{motor}/credits/{header}/edit',   [AdminControllerSatu::class, 'creditsEdit'])->name('credits.edit');
     Route::put('/{motor}/credits/{header}',        [AdminControllerSatu::class, 'creditsUpdate'])->name('credits.update');
     Route::delete('/{motor}/credits/{header}',     [AdminControllerSatu::class, 'creditsDelete'])->name('credits.delete');
@@ -340,6 +341,7 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     // Edit 1 baris (DP) dalam sebuah header/periode
     Route::get('/{motor}/credits/{header}/row',  [AdminControllerSatu::class, 'creditsRowShow'])->name('credits.row.show');
     Route::put('/{motor}/credits/{header}/row',  [AdminControllerSatu::class, 'creditsRowUpdate'])->name('credits.row.update');
+    Route::delete('/{motor}/credits/{header}/row', [AdminControllerSatu::class, 'creditsRowDelete'])->name('credits.row.delete');
 
     // Apparels
     Route::get('apparels', [AdminControllerSatu::class, 'apparelsIndex'])->name('apparels.index');

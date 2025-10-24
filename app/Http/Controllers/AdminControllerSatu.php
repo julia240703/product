@@ -2320,6 +2320,7 @@ public function creditsUpdate(Request $request, $motorId, $headerId)
 
 /* =========================
    DELETE HEADER (items ikut terhapus via FK CASCADE)
+   (Route tetap ada, tapi TIDAK digunakan di UI saat ini)
 ========================== */
 public function creditsDelete($motorId, $headerId)
 {
@@ -2332,6 +2333,7 @@ public function creditsDelete($motorId, $headerId)
 /* =========================
    LIST UNTUK TABEL RINGKAS:
    1 baris = 1 DP dalam 1 header (periode)
+   Aksi: Edit + Hapus 1 Baris (MERAH). TIDAK ada hapus-periode.
 ========================== */
 public function creditsHeadersData($motorId)
 {
@@ -2350,15 +2352,7 @@ public function creditsHeadersData($motorId)
                 'header_id'   => $h->id,
                 'tenors_text' => '-',
                 'dp_text'     => '-',
-                'aksi'        =>
-                    '<div class="btn-group">
-                        <button class="btn btn-sm btn-primary js-edit" data-id="'.$h->id.'">
-                          <i class="fa fa-pen"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger js-del" data-id="'.$h->id.'">
-                          <i class="fa fa-trash"></i>
-                        </button>
-                     </div>',
+                'aksi'        => '<div class="btn-group"></div>',
             ];
             continue;
         }
@@ -2382,7 +2376,10 @@ public function creditsHeadersData($motorId)
                                 data-dp="'.$dpRaw.'">
                           <i class="fa fa-pen"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger js-del" data-id="'.$h->id.'">
+                        <button class="btn btn-sm btn-danger js-del-row"
+                                data-id="'.$h->id.'"
+                                data-dp="'.$dpRaw.'"
+                                title="Hapus 1 baris DP">
                           <i class="fa fa-trash"></i>
                         </button>
                      </div>',
@@ -2396,14 +2393,12 @@ public function creditsHeadersData($motorId)
         ->make(true);
 }
 
-/** ========================
-    Download template XLSX
+/* ========================
+   Download template XLSX
 ======================== */
 public function creditsTemplate($motorId)
 {
     $motor  = Motor::findOrFail($motorId);
-
-    // Atur tenor default (boleh kamu ubah/ambil dari DB)
     $tenors = [11,17,23,27,29,33,35];
 
     $ss    = new Spreadsheet();
@@ -2412,40 +2407,40 @@ public function creditsTemplate($motorId)
 
     // ukuran kolom/baris
     $sheet->getColumnDimension('A')->setWidth(14);
-    for ($i=0; $i<count($tenors); $i++) {
-        $col = Coordinate::stringFromColumnIndex(2+$i); // B..?
+    for ($i = 0; $i < count($tenors); $i++) {
+        $col = Coordinate::stringFromColumnIndex(2 + $i); // B..?
         $sheet->getColumnDimension($col)->setWidth(8.5);
     }
     $sheet->getRowDimension(1)->setRowHeight(20);
     $sheet->getRowDimension(2)->setRowHeight(20);
 
-    // header kiri: UANG / MUKA
+    // header kiri
     $sheet->setCellValue('A1', 'UANG');
     $sheet->setCellValue('A2', 'MUKA');
     $sheet->getStyle('A1:A2')->applyFromArray([
-        'font' => ['bold' => true],
-        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
-        'borders' => ['outline' => ['borderStyle' => Border::BORDER_THIN]]
+        'font'      => ['bold' => true],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        'borders'   => ['outline' => ['borderStyle' => Border::BORDER_THIN]],
     ]);
 
-    // header atas: JANGKA WAKTU
+    // header atas
     $lastHeaderCol = Coordinate::stringFromColumnIndex(1 + count($tenors));
     $sheet->mergeCells("B1:{$lastHeaderCol}1");
     $sheet->setCellValue('B1', 'JANGKA WAKTU');
     $sheet->getStyle("B1:{$lastHeaderCol}1")->applyFromArray([
-        'font' => ['bold' => true],
-        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
-        'borders' => ['outline' => ['borderStyle' => Border::BORDER_THIN]]
+        'font'      => ['bold' => true],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+        'borders'   => ['outline' => ['borderStyle' => Border::BORDER_THIN]],
     ]);
 
     // baris 2: angka tenor
     foreach ($tenors as $i => $t) {
-        $col = Coordinate::stringFromColumnIndex(2 + $i); // mulai dari B
+        $col = Coordinate::stringFromColumnIndex(2 + $i);
         $sheet->setCellValue("{$col}2", $t);
         $sheet->getStyle("{$col}2")->applyFromArray([
-            'font' => ['bold' => true],
-            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
-            'borders' => ['outline' => ['borderStyle' => Border::BORDER_THIN]]
+            'font'      => ['bold' => true],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+            'borders'   => ['outline' => ['borderStyle' => Border::BORDER_THIN]],
         ]);
     }
 
@@ -2453,27 +2448,61 @@ public function creditsTemplate($motorId)
     $startRow = 3; $rows = 30; $endRow = $startRow + $rows - 1;
     $range = "A{$startRow}:{$lastHeaderCol}{$endRow}";
     $sheet->getStyle($range)->applyFromArray([
-        'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical'=>Alignment::VERTICAL_CENTER],
+        'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+        'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
     ]);
 
-    // hint
-    $sheet->setCellValue("A" . ($endRow + 2), "Isi kolom A baris 3 ke bawah dengan DP, dan isi angsuran di kolom tenor. Kosong = di-skip.");
-    $sheet->getStyle("A" . ($endRow + 2))->getFont()->setSize(9);
-    $sheet->mergeCells("A" . ($endRow + 2) . ":" . $lastHeaderCol . ($endRow + 2));
+    // ===== HINTS =====
+    $hint1Row = $endRow + 2;
+    $hint2Row = $endRow + 3;
+
+    // PERLEBAR area merge khusus baris hint (tambahkan N kolom dummy di kanan tabel)
+    $lastIdx   = Coordinate::columnIndexFromString($lastHeaderCol);
+    $extraCols = 12; // ubah sesuai kebutuhan
+    $wideIdx   = $lastIdx + $extraCols;
+    $wideCol   = Coordinate::stringFromColumnIndex($wideIdx);
+
+    // kasih lebar untuk kolom dummy agar area merge benar-benar lebar
+    for ($c = $lastIdx + 1; $c <= $wideIdx; $c++) {
+        $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($c))->setWidth(10);
+    }
+
+    // Bullet 1 (boleh wrap)
+    $sheet->setCellValue("A{$hint1Row}",
+        "• Isi kolom A baris 3 ke bawah dengan DP, dan isi angsuran di kolom tenor. Kosong = di-skip."
+    );
+    $sheet->mergeCells("A{$hint1Row}:{$wideCol}{$hint1Row}");
+    $sheet->getStyle("A{$hint1Row}")->getFont()->setSize(9);
+    $sheet->getStyle("A{$hint1Row}")->getAlignment()
+          ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+          ->setVertical(Alignment::VERTICAL_CENTER)
+          ->setWrapText(true);
+    $sheet->getRowDimension($hint1Row)->setRowHeight(18);
+
+    // Bullet 2 (HARUS satu baris → no wrap, no shrink; area merge sudah lebar)
+    $sheet->setCellValue("A{$hint2Row}",
+        "• Kalau butuh tenor lebih dari kolom yang ada (mis. > 35), tambahkan kolom baru di sebelah kanan header tenor, isi angka tenornya di baris header (contoh: 37, 41, 47, dst)."
+    );
+    $sheet->mergeCells("A{$hint2Row}:{$wideCol}{$hint2Row}");
+    $sheet->getStyle("A{$hint2Row}")->getFont()->setSize(9);
+    $sheet->getStyle("A{$hint2Row}")->getAlignment()
+          ->setHorizontal(Alignment::HORIZONTAL_LEFT)
+          ->setVertical(Alignment::VERTICAL_CENTER)
+          ->setWrapText(false);       // jangan bungkus
+    $sheet->getRowDimension($hint2Row)->setRowHeight(18);
 
     $filename = 'template_simulasi_' . $motor->slug . '.xlsx';
     if (ob_get_length()) ob_end_clean();
 
     $writer = new Xlsx($ss);
-    return response()->streamDownload(function() use ($writer) {
+    return response()->streamDownload(function () use ($writer) {
         $writer->save('php://output');
     }, $filename, [
-        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ]);
 }
 
-/** ========================
+/* ========================
     Helper angka rupiah
 ======================== */
 private function moneyToInt($v): int
@@ -2713,6 +2742,63 @@ public function creditsRowUpdate(Request $request, $motorId, $headerId)
     });
 
     return response()->json(['ok'=>true]);
+}
+
+/* =========================
+   DELETE 1 BARIS (DP) dalam 1 header/periode
+   DELETE /admin/{motor}/credits/{header}/row  (body/query: dp)
+========================== */
+public function creditsRowDelete(Request $request, $motorId, $headerId)
+{
+    $header = CreditHeader::where('motor_id', $motorId)->findOrFail($headerId);
+
+    $dp = (int) ($request->input('dp') ?? $request->query('dp', 0));
+    if ($dp <= 0) {
+        return response()->json(['message' => 'DP tidak valid.'], 422);
+    }
+
+    $deleted = CreditItem::where('header_id', $header->id)
+        ->where('dp_amount', $dp)
+        ->delete();
+
+    if ($deleted === 0) {
+        return response()->json(['message' => 'Baris DP tidak ditemukan.'], 404);
+    }
+
+    return response()->json(['ok' => true, 'deleted' => $deleted]);
+}
+
+/* =========================
+   DELETE ALL — hapus seluruh header & item
+   Route: DELETE /admin/{motor}/credits/all
+========================== */
+public function creditsDeleteAll($motorId)
+{
+    $motor = Motor::findOrFail($motorId);
+
+    // Kumpulkan semua header milik motor ini
+    $headerIds = CreditHeader::where('motor_id', $motor->id)->pluck('id');
+
+    if ($headerIds->isEmpty()) {
+        // Tidak ada data: balas sesuai tipe request
+        if (request()->expectsJson()) {
+            return response()->json(['ok' => true, 'deleted' => 0]);
+        }
+        return back()->with('info', 'Tidak ada data simulasi kredit untuk dihapus.');
+    }
+
+    DB::transaction(function () use ($headerIds) {
+        // Jika FK CASCADE belum aktif, aman-amanin: hapus items dulu
+        CreditItem::whereIn('header_id', $headerIds)->delete();
+
+        // Hapus semua header (kalau CASCADE aktif, baris di atas bisa di-skip)
+        CreditHeader::whereIn('id', $headerIds)->delete();
+    });
+
+    if (request()->expectsJson()) {
+        return response()->json(['ok' => true, 'deleted' => $headerIds->count()]);
+    }
+    return back()->with('success', 'Seluruh data simulasi kredit telah dihapus.');
 }
 
     /* =========================

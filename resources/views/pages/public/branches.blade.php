@@ -57,123 +57,104 @@
     </form>
 
     {{-- ===== LIST & MAP ===== --}}
-    <div class="dealer-split">
-      {{-- LIST dealer --}}
-      <div class="dealer-list-pane" id="dealerList">
-        @forelse($branches as $b)
-          @php
-            // deteksi layanan ➜ H-code
-            $svcRaw = strtolower(trim(implode(' ', array_filter([
-              $b->services ?? null,
-              $b->service ?? null,
-              $b->service_tokens ?? null,
-              $b->token ?? null,
-              $b->tags ?? null
-            ]))));
-            $h1 = (!empty($b->h1)) || str_contains($svcRaw,'sales') || str_contains($svcRaw,'penjualan');
-            $h2 = (!empty($b->h2)) || str_contains($svcRaw,'service') || str_contains($svcRaw,'perawatan');
-            $h3 = (!empty($b->h3)) || str_contains($svcRaw,'part')   || str_contains($svcRaw,'suku');
+<div class="dealer-split">
+  {{-- LIST dealer --}}
+  <div class="dealer-list-pane" id="dealerList">
+    @forelse($branches as $b)
+      @php
+        // deteksi layanan ➜ H-code (buat logic saja; tidak ditampilkan sebagai panel kanan)
+        $svcRaw = strtolower(trim(implode(' ', array_filter([
+          $b->services ?? null,
+          $b->service ?? null,
+          $b->service_tokens ?? null,
+          $b->token ?? null,
+          $b->tags ?? null
+        ]))));
+        $h1 = (!empty($b->h1)) || str_contains($svcRaw,'sales') || str_contains($svcRaw,'penjualan');
+        $h2 = (!empty($b->h2)) || str_contains($svcRaw,'service') || str_contains($svcRaw,'perawatan');
+        $h3 = (!empty($b->h3)) || str_contains($svcRaw,'part')   || str_contains($svcRaw,'suku');
 
-            $flags=[]; if($h1)$flags[]='1'; if($h2)$flags[]='2'; if($h3)$flags[]='3';
-            $hcode = $flags ? 'H'.implode('', $flags) : null;
+        $lat = $b->latitude; $lng = $b->longitude;
+        $key = ($lat && $lng) ? ($lat.','.$lng) : '';
+      @endphp
 
-            $lat = $b->latitude; $lng = $b->longitude;
-            $key = ($lat && $lng) ? ($lat.','.$lng) : '';
-          @endphp
+      <div class="dealer-item dealer-card js-dealer"
+           data-lat="{{ $lat }}" data-lng="{{ $lng }}"
+           data-key="{{ $key }}"
+           data-name="{{ $b->name }}" data-addr="{{ $b->address }}"
+           data-phone="{{ $b->phone ?? $b->phone2 ?? $b->phone3 }}">
 
-          <div class="dealer-item dealer-card js-dealer"
-               data-lat="{{ $lat }}" data-lng="{{ $lng }}"
-               data-key="{{ $key }}"
-               data-name="{{ $b->name }}" data-addr="{{ $b->address }}"
-               data-phone="{{ $b->phone ?? $b->phone2 ?? $b->phone3 }}">
-            <div class="dealer-card-body">
-              {{-- Kiri: info dealer --}}
-              <div class="dealer-info">
-                <div class="dealer-name">{{ $b->name }}</div>
+        <div class="dealer-card-body">
+          {{-- INFO UTAMA (satu kolom vertikal) --}}
+          <div class="dealer-info">
+            <div class="dealer-name">{{ $b->name }}</div>
 
-                <div class="dealer-row">
-                  <i class="fas fa-map-marker-alt ico" style="color:#d32b2b"></i>
-                  <div class="dealer-text">{{ $b->address }}</div>
-                </div>
-
-                @php $telp = $b->phone ?? $b->phone2 ?? $b->phone3; @endphp
-                @if($telp)
-                  <div class="dealer-row">
-                    <i class="fas fa-phone ico" style="color:#d32b2b"></i>
-                    <div class="dealer-text">{{ $telp }}</div>
-                  </div>
-                @endif
-
-                @php
-                  $maps = $b->url ?: (($lat && $lng) ? "https://www.google.com/maps?q={$lat},{$lng}"
-                         : 'https://www.google.com/maps/search/?api=1&query='.rawurlencode(($b->name ?? '').' '.$b->address));
-                @endphp
-                <a href="{{ $maps }}" target="_blank" class="btn btn-danger dealer-cta" onclick="event.stopPropagation()">
-                  Lihat Lokasi <span aria-hidden="true">➤</span>
-                </a>
-              </div>
-
-              {{-- Kanan: H123 + label layanan --}}
-              <aside class="dealer-meta">
-                @if($hcode)<div class="dealer-hcode">{{ $hcode }}</div>@endif
-                @php
-                  $labels = [];
-                  if ($h1) $labels[] = 'Penjualan';
-                  if ($h2) $labels[] = 'Perawatan';
-                  if ($h3) $labels[] = 'Suku cadang';
-                @endphp
-                <div class="dealer-meta-lines">
-                  @if(count($labels) === 3)
-                    <div>Penjualan,</div>
-                    <div>Perawatan,</div>
-                    <div>dan Suku</div><div>cadang.</div>
-                  @elseif(count($labels) === 2)
-                    <div>{{ $labels[0] }},</div>
-                    @if($labels[1] === 'Suku cadang')
-                      <div>dan Suku</div><div>cadang.</div>
-                    @else
-                      <div>dan {{ $labels[1] }}.</div>
-                    @endif
-                  @elseif(count($labels) === 1)
-                    <div>{{ $labels[0] }}</div>
-                  @endif
-                </div>
-              </aside>
+            <div class="dealer-row">
+              <i class="fas fa-map-marker-alt ico" style="color:#d32b2b"></i>
+              <div class="dealer-text">{{ $b->address }}</div>
             </div>
+
+            @php $telp = $b->phone ?? $b->phone2 ?? $b->phone3; @endphp
+            @if($telp)
+              <div class="dealer-row">
+                <i class="fas fa-phone ico" style="color:#d32b2b"></i>
+                <div class="dealer-text">{{ $telp }}</div>
+              </div>
+            @endif
+
+            {{-- LAYANAN: H1 | H2 | H3 (tanpa kotak) --}}
+            @if($h1 || $h2 || $h3)
+              <div class="dealer-services3">
+                @if($h1)<div class="svc3"><b>H1</b><span>Penjualan</span></div>@endif
+                @if($h2)<div class="svc3"><b>H2</b><span>Perawatan</span></div>@endif
+                @if($h3)<div class="svc3"><b>H3</b><span>Suku Cadang</span></div>@endif
+              </div>
+            @endif
+
+            @php
+              $maps = $b->url ?: (($lat && $lng)
+                ? "https://www.google.com/maps?q={$lat},{$lng}"
+                : 'https://www.google.com/maps/search/?api=1&query='.rawurlencode(($b->name ?? '').' '.$b->address));
+            @endphp
+            <a href="{{ $maps }}" target="_blank"
+               class="btn btn-danger dealer-cta dealer-cta--card"
+               onclick="event.stopPropagation()">
+              Lihat Lokasi <span aria-hidden="true">➤</span>
+            </a>
           </div>
-
-          @if(!$loop->last)
-            <hr class="dealer-sep">
-          @endif
-        @empty
-          <div class="text-muted p-3">Tidak ada dealer yang cocok dengan filter.</div>
-        @endforelse
+        </div>
       </div>
 
-      {{-- MAP (JS API jika ada key; kalau tidak, pakai EMBED) --}}
-      <div class="dealer-map-pane">
-        @php
-          $first = $markers->first();
-          if ($first && !empty($first['lat']) && !empty($first['lng'])) {
-            $q = $first['lat'].','.$first['lng'];
-          } elseif ($first) {
-            $q = rawurlencode(($first['name'] ?? '').' '.$first['address']);
-          } else {
-            $q = ($center['lat'] ?? -6.2).','.($center['lng'] ?? 106.8);
-          }
-          $embedUrl = 'https://www.google.com/maps?output=embed&q='.$q.'&z=12';
-        @endphp
-
-        @if(!empty($mapsKey))
-          <div id="dealerMap" class="dealer-map-canvas"></div>
-          {{-- Panel info pojok kiri --}}
-          <div id="mapCornerCard" class="map-corner-card hidden" aria-live="polite"></div>
-        @else
-          <iframe id="dealerEmbed" class="dealer-map-canvas" src="{{ $embedUrl }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-        @endif
-      </div>
-    </div>
+      @if(!$loop->last)
+        <hr class="dealer-sep">
+      @endif
+    @empty
+      <div class="text-muted p-3">Tidak ada dealer yang cocok dengan filter.</div>
+    @endforelse
   </div>
+
+  {{-- MAP --}}
+  <div class="dealer-map-pane">
+    @php
+      $first = $markers->first();
+      if ($first && !empty($first['lat']) && !empty($first['lng'])) {
+        $q = $first['lat'].','.$first['lng'];
+      } elseif ($first) {
+        $q = rawurlencode(($first['name'] ?? '').' '.$first['address']);
+      } else {
+        $q = ($center['lat'] ?? -6.2).','.($center['lng'] ?? 106.8);
+      }
+      $embedUrl = 'https://www.google.com/maps?output=embed&q='.$q.'&z=12';
+    @endphp
+
+    @if(!empty($mapsKey))
+      <div id="dealerMap" class="dealer-map-canvas"></div>
+      <div id="mapCornerCard" class="map-corner-card hidden" aria-live="polite"></div>
+    @else
+      <iframe id="dealerEmbed" class="dealer-map-canvas" src="{{ $embedUrl }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+    @endif
+  </div>
+</div>
 
   {{-- ===== ON-SCREEN KEYBOARD (fixed) ===== --}}
   <div id="osk-backdrop" class="osk-backdrop" hidden></div>
