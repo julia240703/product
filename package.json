@@ -16,6 +16,25 @@
     },
     "dependencies": {
         "font-awesome": "^4.7.0",
-        "pdfjs-dist": "^2.16.105"
-    }
+        "pdfjs-dist": "^4.6.82"
+    },
+    "name": "web-product",
+    "version": "1.0.0",
+    "description": "Welcome to the documentation for Project Name. This document provides a comprehensive guide to understanding and using the features of the project.",
+    "main": "vite.config.js",
+    "directories": {
+        "doc": "docs",
+        "test": "tests"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/julia240703/product.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/julia240703/product/issues"
+    },
+    "homepage": "https://github.com/julia240703/product#readme"
 }

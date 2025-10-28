@@ -792,45 +792,49 @@ class PublicControllerSatu extends Controller
     }
 
     // --- DETAIL SATU AKSESORIS ---
-    public function accessoryDetail($id)
-    {
-        $accessory = MotorAccessory::with('motor')->findOrFail($id);
+public function accessoryDetail($id)
+{
+    $accessory = MotorAccessory::with('motor')->findOrFail($id);
 
-        $gallery = collect([$accessory->image ?? null, $accessory->image_2 ?? null, $accessory->image_3 ?? null])
-            ->filter()
-            ->map(fn($p) => $this->imgUrl($p))
-            ->values();
-        if ($gallery->isEmpty()) $gallery = collect([asset('placeholder.png')]);
+    $gallery = collect([$accessory->image ?? null, $accessory->image_2 ?? null, $accessory->image_3 ?? null])
+        ->filter()
+        ->map(fn($p) => $this->imgUrl($p))
+        ->values();
+    if ($gallery->isEmpty()) $gallery = collect([asset('placeholder.png')]);
 
-        $other = MotorAccessory::query()
-            ->when($accessory->motor_id, fn($q) => $q->where('motor_id', $accessory->motor_id))
-            ->when(!$accessory->motor_id, fn($q) => $q->whereNull('motor_id')->orWhere('is_general', true))
-            ->where('id', '!=', $accessory->id)
-            ->orderBy('name')->take(9)->get()
-            ->map(function ($a) {
-                $a->image_url     = $this->imgUrl($a->image ?? null);
-                $a->display_price = $a->price ?? 0;
-                return $a;
-            });
+    $other = MotorAccessory::query()
+        ->when($accessory->motor_id, fn($q) => $q->where('motor_id', $accessory->motor_id))
+        ->when(!$accessory->motor_id, fn($q) => $q->whereNull('motor_id')->orWhere('is_general', true))
+        ->where('id', '!=', $accessory->id)
+        ->orderBy('name')->take(9)->get()
+        ->map(function ($a) {
+            $a->image_url     = $this->imgUrl($a->image ?? null);
+            $a->display_price = $a->price ?? 0;
+            return $a;
+        });
 
-        $data = [
-            'id'           => $accessory->id,
-            'name'         => $accessory->name,
-            'function'     => $accessory->description ?? '-',
-            'color'        => $accessory->color ?? '-',
-            'material'     => $accessory->material ?? '-',
-            'part_number'  => $accessory->part_number ?? '-',
-            'price'        => $accessory->price ?? 0,
-            'stock'        => $accessory->stock ?? $accessory->qty ?? null,
-            'motor'        => $accessory->motor,
-        ];
+    $data = [
+        'id'           => $accessory->id,
+        'name'         => $accessory->name,
+        'function'     => $accessory->description ?? '-',
+        'color'        => $accessory->color ?? '-',
+        'material'     => $accessory->material ?? '-',
+        'part_number'  => $accessory->part_number ?? '-',
+        'price'        => $accessory->price ?? 0,
+        'stock'        => $accessory->stock ?? $accessory->qty ?? null,
+        'motor'        => $accessory->motor,
+    ];
 
-        return view('pages.public.accessoryDetail', [
-            'gallery'   => $gallery,
-            'accessory' => (object) $data,
-            'otherAccs' => $other,
-        ]);
-    }
+    // URL pemesanan dari back office (tanpa fallback). Boleh null.
+    $orderUrl = optional($accessory->motor)->accessory_url;
+
+    return view('pages.public.accessoryDetail', [
+        'gallery'   => $gallery,
+        'accessory' => (object) $data,
+        'otherAccs' => $other,
+        'orderUrl'  => $orderUrl, // dipakai Blade -> data-order-url
+    ]);
+}
 
     // --- DETAIL GENERAL ITEM ---
     public function generalAccessoryDetail($id)
@@ -944,70 +948,81 @@ class PublicControllerSatu extends Controller
     }
 
     // --- APPAREL DETAIL ---
-    public function apparelDetail($id)
-    {
-        $apparel = Apparel::with([
-                'category:id,name',
-                'images' => fn($q) => $q->orderBy('sort')->orderBy('id'),
-            ])->findOrFail($id);
+public function apparelDetail($id)
+{
+    $apparel = Apparel::with([
+            'category:id,name',
+            'images' => fn($q) => $q->orderBy('sort')->orderBy('id'),
+        ])->findOrFail($id);
 
-        $hero = null;
-        if ($apparel->cover_image) {
-            $hero = $this->imgUrl($apparel->cover_image);
-        } elseif ($apparel->image) {
-            $hero = $this->imgUrl($apparel->image);
-        }
-
-        $thumbs = $apparel->images
-            ->pluck('image')
-            ->filter()
-            ->map(fn($p) => $this->imgUrl($p))
-            ->unique()
-            ->values();
-
-        if (!$hero) { $hero = $thumbs->first() ?? asset('placeholder.png'); }
-        if ($thumbs->isEmpty() && $apparel->image && (!$apparel->cover_image || $apparel->image !== $apparel->cover_image)) {
-            $thumbs = collect([$this->imgUrl($apparel->image)]);
-        }
-
-        $sizes     = $this->splitList($apparel->size ?? '');
-        $materials = $this->splitList($apparel->material ?? '', '/\r\n|\r|\n/u');
-
-        $other = Apparel::with(['images' => fn($q) => $q->orderBy('sort')->orderBy('id')])
-            ->when($apparel->category_id ?? null, fn($q) => $q->where('category_id', $apparel->category_id))
-            ->where('id', '!=', $apparel->id)
-            ->orderBy('name_apparel')
-            ->take(9)
-            ->get()
-            ->map(function($a){
-                $src = $a->cover_image ?: $a->image ?: optional($a->images->first())->image;
-                $a->display_name  = $a->name_apparel ?? $a->name ?? '-';
-                $a->image_url     = $src ? $this->imgUrl($src) : asset('placeholder.png');
-                $a->display_price = $a->price ?? 0;
-                return $a;
-            });
-
-        $data = (object)[
-            'id'            => $apparel->id,
-            'category_id'   => $apparel->category_id ?? optional($apparel->category)->id,
-            'name'          => $apparel->name_apparel ?? $apparel->name ?? '-',
-            'description'   => $apparel->description ?? null,
-            'sizes'         => $sizes,
-            'material_list' => $materials,
-            'material_raw'  => $apparel->material ?? null,
-            'color'         => $apparel->color ?? null,
-            'part_number'   => $apparel->part_number ?? $apparel->sku ?? null,
-            'price'         => $apparel->price ?? 0,
-            'stock'         => $apparel->stock ?? $apparel->qty ?? null,
-        ];
-
-        return view('pages.public.apparelDetail', [
-            'hero'      => $hero,
-            'thumbs'    => $thumbs,
-            'apparel'   => $data,
-            'otherList' => $other,
-        ]);
+    // Hero
+    $hero = null;
+    if ($apparel->cover_image) {
+        $hero = $this->imgUrl($apparel->cover_image);
+    } elseif ($apparel->image) {
+        $hero = $this->imgUrl($apparel->image);
     }
+
+    // Thumbs
+    $thumbs = $apparel->images
+        ->pluck('image')
+        ->filter()
+        ->map(fn($p) => $this->imgUrl($p))
+        ->unique()
+        ->values();
+
+    if (!$hero) { $hero = $thumbs->first() ?? asset('placeholder.png'); }
+    if ($thumbs->isEmpty() && $apparel->image && (!$apparel->cover_image || $apparel->image !== $apparel->cover_image)) {
+        $thumbs = collect([$this->imgUrl($apparel->image)]);
+    }
+
+    // Parse list
+    $sizes     = $this->splitList($apparel->size ?? '');
+    $materials = $this->splitList($apparel->material ?? '', '/\r\n|\r|\n/u');
+
+    // Lainnya
+    $other = Apparel::with(['images' => fn($q) => $q->orderBy('sort')->orderBy('id')])
+        ->when($apparel->category_id ?? null, fn($q) => $q->where('category_id', $apparel->category_id))
+        ->where('id', '!=', $apparel->id)
+        ->orderBy('name_apparel')
+        ->take(9)
+        ->get()
+        ->map(function($a){
+            $src = $a->cover_image ?: $a->image ?: optional($a->images->first())->image;
+            $a->display_name  = $a->name_apparel ?? $a->name ?? '-';
+            $a->image_url     = $src ? $this->imgUrl($src) : asset('placeholder.png');
+            $a->display_price = $a->price ?? 0;
+            return $a;
+        });
+
+    // URL order dari back office (kolom apparel_url)
+    $orderUrl = null;
+    if (!empty($apparel->apparel_url) && filter_var($apparel->apparel_url, FILTER_VALIDATE_URL)) {
+        $orderUrl = $apparel->apparel_url;
+    }
+
+    $data = (object)[
+        'id'            => $apparel->id,
+        'category_id'   => $apparel->category_id ?? optional($apparel->category)->id,
+        'name'          => $apparel->name_apparel ?? $apparel->name ?? '-',
+        'description'   => $apparel->description ?? null,
+        'sizes'         => $sizes,
+        'material_list' => $materials,
+        'material_raw'  => $apparel->material ?? null,
+        'color'         => $apparel->color ?? null,
+        'part_number'   => $apparel->part_number ?? $apparel->sku ?? null,
+        'price'         => $apparel->price ?? 0,
+        'stock'         => $apparel->stock ?? $apparel->qty ?? null,
+        'order_url'     => $orderUrl, // <-- dipakai di QR
+    ];
+
+    return view('pages.public.apparelDetail', [
+        'hero'      => $hero,
+        'thumbs'    => $thumbs,
+        'apparel'   => $data,
+        'otherList' => $other,
+    ]);
+}
 
     /** Pecah string daftar (koma/semicolon/slash/baris baru) → array unik */
     private function splitList(?string $raw, string $pattern = '/[\r\n,;\/|]+/u'): array
@@ -1278,28 +1293,23 @@ class PublicControllerSatu extends Controller
     // --- SIMULASI KREDIT (page + endpoint JSON matrix) ---
 public function creditSimulator(Request $request)
 {
-    // Endpoint JSON untuk FE (tetap)
+    // Endpoint JSON matrix (tanpa perubahan)
     if ($request->get('mode') === 'matrix' && $request->filled('motor_id')) {
         return response()->json($this->buildCreditMatrix((int)$request->query('motor_id')));
     }
 
-    // ===== 1) Ambil hanya motor yang PUNYA data kredit =====
-    // Motor dianggap "punya kredit" jika minimal 1 CreditHeader untuk motor tsb
-    // memiliki minimal 1 CreditItem.
+    // motor yang punya data kredit
     $creditMotorIds = CreditHeader::whereHas('items')
         ->pluck('motor_id')->unique()->values();
 
-    // Varian publish yang punya data kredit
+    // === tambahkan motor_url di SELECT ===
     $motors = Motor::where('status', 'published')
         ->whereIn('id', $creditMotorIds)
         ->orderBy('name')
-        ->get(['id','name','type_id','thumbnail','price']);
+        ->get(['id','name','type_id','thumbnail','price','motor_url']); // <— HERE
 
-    // Jika tidak ada satupun, tetap render halaman dengan dataset kosong
-    // (dropdown akan disable otomatis oleh JS).
     $usedTypeIds = $motors->pluck('type_id')->unique()->values();
 
-    // Tipe & kategori hanya yang dipakai motor hasil filter
     $types = MotorType::whereIn('id', $usedTypeIds)
         ->orderBy('name')
         ->get(['id','name','category_id']);
@@ -1309,9 +1319,9 @@ public function creditSimulator(Request $request)
         ->orderBy('name')
         ->get(['id','name']);
 
-    // ===== 2) Tarik harga dari price_lists (tetap seperti sebelumnya) =====
+    // harga dari price_lists (tetap)
     $variantNames   = $motors->pluck('name')->unique()->values();
-    $typeNameById   = $types->pluck('name','id');                           // [type_id => type_name]
+    $typeNameById   = $types->pluck('name','id');
     $typeNames      = $typeNameById->values()->unique();
 
     $pv = PriceList::whereIn('motor_type', $variantNames)->get(['motor_type','price']);
@@ -1324,9 +1334,9 @@ public function creditSimulator(Request $request)
         fn($g) => optional($g->sortBy(fn($r)=>$this->priceToInt($r->price))->first())->price
     );
 
-    // ===== 3) Bangun dataset FE (hanya motor yang punya kredit) =====
     $typeCat = $types->pluck('category_id','id'); // [type_id => category_id]
 
+    // === kirim order_url ke FE ===
     $datasetMotors = $motors->map(function($m) use ($typeCat, $typeNameById, $minByVariant, $minByType){
         $typeName = $typeNameById[$m->type_id] ?? null;
         $rawText  = $minByVariant[$m->name] ?? ($typeName ? ($minByType[$typeName] ?? null) : null);
@@ -1341,6 +1351,7 @@ public function creditSimulator(Request $request)
             'category_id' => (int)($typeCat[$m->type_id] ?? 0),
             'otr'         => $otr,
             'thumb'       => $this->imgUrl($m->thumbnail ?? null),
+            'order_url'   => $m->motor_url ?: null,   // <— HERE
         ];
     })->values();
 
@@ -1352,7 +1363,7 @@ public function creditSimulator(Request $request)
     $dataset = [
         'categories' => $categories->map(fn($c)=>['id'=>$c->id,'name'=>$c->name])->values(),
         'types'      => $types->map(fn($t)=>['id'=>$t->id,'name'=>$t->name,'category_id'=>$t->category_id])->values(),
-        'motors'     => $datasetMotors, // <— SUDAH TERFILTER
+        'motors'     => $datasetMotors,
     ];
 
     return view('pages.public.creditSimulator', [

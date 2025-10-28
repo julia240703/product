@@ -82,6 +82,13 @@
                                 <textarea class="form-control" name="description" required></textarea>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">Link URL Motor <span class="text-red">*</span></label>
+                                <input type="url" class="form-control" name="motor_url"
+                                        placeholder="https://contoh.com/produk/beat" required>
+                                <div class="form-text">Wajib diisi. Contoh: https://contoh.com/produk/beat</div>
+                            </div>
+
                             {{-- FILES (ADD) --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
@@ -93,6 +100,11 @@
                                 <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*">
                                 <div class="form-text">Opsional. Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
                                 <div class="form-text">Kosongkan jika motor tidak memiliki aksesoris.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Link URL Aksesoris Motor <small class="text-muted">(opsional)</small></label>
+                                <input type="url" class="form-control" name="accessory_url" placeholder="https://contoh.com/produk/aksesoris-beat">
+                                <div class="form-text">Jika diisi, halaman publik dapat menautkan langsung ke daftar aksesoris motor ini.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
@@ -187,6 +199,13 @@
                                 <textarea class="form-control" name="description" id="edit_description" required></textarea>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">Link URL Motor <span class="text-red">*</span></label>
+                                <input type="url" class="form-control" name="motor_url" id="edit_motor_url"
+                                        placeholder="https://contoh.com/produk/beat" required>
+                                <div class="form-text">Wajib diisi. Maks 255 karakter.</div>
+                            </div>
+
                             {{-- FILES (EDIT) --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
@@ -200,6 +219,11 @@
                                 <div id="current-accessory-thumbnail" class="mt-2"></div>
                                 <div class="form-text">Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
                                 <div class="form-text">Kosongkan jika tidak ingin mengubah.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Link URL Aksesoris Motor <small class="text-muted">(opsional)</small></label>
+                                <input type="url" class="form-control" name="accessory_url" id="edit_accessory_url" placeholder="https://contoh.com/produk/aksesoris-beat">
+                                <div class="form-text">Opsional. Maks 255 karakter.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>
@@ -308,10 +332,12 @@
                                     data-category_id="${data.category_id}" 
                                     data-type_id="${data.type_id}" 
                                     data-description="${data.description}" 
+                                    data-motor_url="${data.motor_url ? data.motor_url.replaceAll('"','&quot;') : ''}"
                                     data-status="${data.status}"
                                     data-is_new="${data.is_new ? 1 : 0}"
                                     data-thumbnail="${data.thumbnail ? baseUrl + '/' + data.thumbnail : ''}" 
                                     data-accessory_thumbnail="${data.accessory_thumbnail ? baseUrl + '/' + data.accessory_thumbnail : ''}"
+                                    data-accessory_url="${data.accessory_url ? data.accessory_url.replaceAll('"','&quot;') : ''}"
                                     data-feature_thumbnail="${data.feature_thumbnail ? baseUrl + '/' + data.feature_thumbnail : ''}"
                                     data-spin_gif="${data.spin_gif ? (data.spin_gif.startsWith('http') ? data.spin_gif : baseUrl + '/' + data.spin_gif) : ''}">
                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -378,11 +404,14 @@
             $('#edit_motor_code_otr').val(motorData.motor_code_otr);
             $('#edit_motor_code_credit').val(motorData.motor_code_credit);
             $('#edit_wms_code').val(motorData.wms_code);
-
-            // harga
             $('#edit_price').val(motorData.price ? motorData.price : '');
-
             $('#edit_description').val(motorData.description);
+            $('#edit_motor_url').val(motorData.motor_url || $(this).data('motor_url') || '');
+
+            // === set URL aksesoris (pakai data dari server atau data-attr tombol)
+            const accessoryUrlFromBtn = $(this).data('accessory_url') || '';
+            $('#edit_accessory_url').val(motorData.accessory_url || accessoryUrlFromBtn || '');
+
             $('#edit_category_id').val(motorData.category_id).trigger('change');
             loadTypes(motorData.category_id, $('#edit_type_id'), motorData.type_id);
             $('#edit_status').val(motorData.status);

@@ -101,6 +101,10 @@
                 <input type="text" class="form-control" name="part_number">
               </div>
               <div class="col-md-6">
+                <label class="form-label">Link URL Apparel</label>
+                <input type="url" class="form-control" name="apparel_url" placeholder="https://contoh.com/produk/helm-xxl">
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Stok</label>
                 <input type="number" class="form-control" name="stock" min="0" value="0">
               </div>
@@ -203,6 +207,10 @@
               <div class="col-md-6">
                 <label class="form-label">Nomor Part</label>
                 <input type="text" class="form-control" name="part_number" id="part_number_edit">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Link URL Apparel</label>
+                <input type="url" class="form-control" name="apparel_url" id="apparel_url_edit" placeholder="https://contoh.com/produk/helm-xxl">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Stok</label>
@@ -365,6 +373,7 @@ $(document).ready(function () {
       $('#color_edit').val(res.color || '');
       $('#size_edit').val(res.size || '');
       $('#part_number_edit').val(res.part_number || '');
+      $('#apparel_url_edit').val(res.apparel_url || '');
       $('#stock_edit').val(res.stock ?? 0);
 
       // NEW checkbox

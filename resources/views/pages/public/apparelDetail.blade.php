@@ -3,13 +3,15 @@
 @section('content')
 <div class="accd-detail">
 
-  {{-- Back bar (match halaman aksesoris per motor) --}}
+  {{-- Back bar --}}
   <div class="accd-back">
     @php
-      // balik ke daftar apparel dg tab yg sama kalau tersedia
       $backUrl = isset($apparel->category_id)
         ? route('apparels', ['key' => $apparel->category_id])
         : route('apparels');
+
+      // URL dari controller; TIDAK fallback ke home
+      $orderUrl = $apparel->order_url; 
     @endphp
     <a href="{{ $backUrl }}" class="accd-back-link">
       <span class="accd-back-ico">
@@ -25,7 +27,7 @@
     <div class="accd-back-rule"></div>
   </div>
 
-  {{-- Header: Gambar besar + info kanan --}}
+  {{-- Header --}}
   <div class="accd-header">
     <div class="accd-left">
       @php
@@ -108,8 +110,10 @@
         @endif
       </div>
 
+      {{-- tombol buat pesanan -> QR, URL dari back office --}}
       <a href="#"
          class="btn btn-dark btn-lg w-100 py-3 fw-bold accd-order"
+         data-order-url="{{ $orderUrl }}"
          style="border-radius:14px;">Buat Pesanan</a>
     </div>
   </div>
@@ -147,17 +151,15 @@
   <div class="mb-5"></div>
 </div>
 
-{{-- ===== QR ORDER MODAL (untuk "Buat Pesanan") ===== --}}
+{{-- ===== QR ORDER MODAL ===== --}}
 <div id="qrOrderModal" class="qrmm" hidden>
   <div class="qrmm__backdrop" data-close></div>
   <div class="qrmm__box" role="dialog" aria-modal="true" aria-labelledby="qrOrderTitle">
     <button class="qrmm__close" type="button" aria-label="Tutup" data-close>×</button>
-    <h3 id="qrOrderTitle" class="qrmm__title">
-      Scan untuk Buat Pesanan
-    </h3>
+    <h3 id="qrOrderTitle" class="qrmm__title">Scan untuk Buat Pesanan</h3>
     <p class="qrmm__tag">
       Scan QR ini untuk menuju <strong>website resmi Wahana Ritelindo</strong>. 
-      Lanjutkan pemesananmu di website resmi kami—cepat & mudah!
+      Lanjutkan pemesananmu di website resmi kami—cepat &amp; mudah!
     </p>
     <div id="qrOrderCanvas" class="qrmm__canvas" aria-live="polite"></div>
   </div>
@@ -166,11 +168,10 @@
 
 @push('scripts')
 <script>
-  // Ganti gambar hero saat klik thumbnail
+  // ganti hero saat klik thumbnail
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.accd-thumb');
     if (!btn) return;
-
     const hero = document.getElementById('appHeroImg');
     if (!hero) return;
 
@@ -180,7 +181,6 @@
       const alt = btn.querySelector('img')?.getAttribute('alt') || hero.alt || 'Gambar';
       hero.setAttribute('alt', alt);
     }
-
     document.querySelectorAll('.accd-thumb').forEach(el => {
       el.classList.remove('is-active');
       el.setAttribute('aria-pressed', 'false');
@@ -190,23 +190,19 @@
   });
 </script>
 
-{{-- Library QR (ringan) --}}
+{{-- QR library --}}
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
 <script>
   (function(){
-    const ORDER_URL = 'https://www.wahanaritelindo.com/home';
-
     const modal  = document.getElementById('qrOrderModal');
     const canvas = document.getElementById('qrOrderCanvas');
-
     if(!modal || !canvas) return;
 
-    function openQR(){
-      // render QR
+    function openQR(url){
       canvas.innerHTML = '';
       const render = () => {
         if (window.QRCode) {
-          new QRCode(canvas, {text: ORDER_URL, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M});
+          new QRCode(canvas, {text: url, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M});
         } else {
           setTimeout(render, 30);
         }
@@ -216,15 +212,21 @@
     }
     function closeQR(){ modal.hidden = true; canvas.innerHTML=''; }
 
-    // Tampilkan modal saat klik "Buat Pesanan"
+    // klik "Buat Pesanan" -> QR ke URL dari back office
     document.addEventListener('click', function(e){
       const btn = e.target.closest('.accd-order');
       if(!btn) return;
       e.preventDefault();
-      openQR();
+
+      const url = (btn.getAttribute('data-order-url') || '').trim();
+      if (!url) {
+        alert('Link pemesanan belum tersedia.');
+        return;
+      }
+      openQR(url);
     }, true);
 
-    // Tutup modal (klik backdrop / tombol X / Escape)
+    // close modal
     modal.addEventListener('click', function(e){
       if (e.target.hasAttribute('data-close')) closeQR();
     });

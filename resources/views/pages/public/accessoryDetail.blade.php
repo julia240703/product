@@ -108,8 +108,10 @@
           @endif
         </div>
 
+        {{-- Tombol Buat Pesanan -> selalu buka QR; URL QR dari back office (controller) --}}
         <a href="#"
            class="btn btn-dark btn-lg w-100 py-3 fw-bold accd-order"
+           data-order-url="{{ $orderUrl }}"
            style="border-radius:14px;">Buat Pesanan</a>
       </div>
     </div>
@@ -198,32 +200,40 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
 <script>
   (function(){
-    const ORDER_URL = 'https://www.wahanaritelindo.com/home';
     const modal  = document.getElementById('qrOrderModal');
     const canvas = document.getElementById('qrOrderCanvas');
-
     if(!modal || !canvas) return;
 
-    function openQR(){
+    function openQR(url){
       canvas.innerHTML = '';
       const render = () => {
         if (window.QRCode) {
-          new QRCode(canvas, {text: ORDER_URL, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M});
-        } else {
-          setTimeout(render, 30);
-        }
+          new QRCode(canvas, {text: url, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M});
+        } else { setTimeout(render, 30); }
       };
       render();
       modal.hidden = false;
     }
     function closeQR(){ modal.hidden = true; canvas.innerHTML=''; }
 
-    // Klik "Buat Pesanan" -> tampil QR
+    // Klik "Buat Pesanan" -> tampil QR ke URL dari back office (tanpa fallback)
     document.addEventListener('click', function(e){
       const btn = e.target.closest('.accd-order');
       if(!btn) return;
       e.preventDefault();
-      openQR();
+
+      let url = (btn.getAttribute('data-order-url') || '').trim();
+
+      // Normalisasi: bila admin mengisi tanpa http/https
+      if (url && !/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+
+      if(!url){
+        alert('Link pemesanan belum tersedia. Silakan hubungi admin.');
+        return;
+      }
+      openQR(url);
     }, true);
 
     // Tutup modal

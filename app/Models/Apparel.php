@@ -20,6 +20,7 @@ class Apparel extends Model
         'color',
         'size',
         'part_number',
+        'apparel_url',
         'stock',
         'is_new',
     ];

@@ -19,6 +19,7 @@ html,body{
 .sep{height:20px;width:1px;background:#e5e7eb;margin:0 4px}
 .pagebox{display:inline-flex;align-items:center;gap:8px}
 .pagebox input{ width:52px;height:32px;border:1px solid #e5e7eb;border-radius:8px;text-align:center;font:inherit;background:#fff }
+.pagebox input.invalid{ border-color:#ef4444; box-shadow:0 0 0 2px rgba(239,68,68,.15); }
 .grow{ flex:1 }
 
 /* Area viewer */
@@ -33,14 +34,14 @@ html,body{
 }
 canvas{ display:block; width:100%; height:auto }
 
-/* textLayer: teks tidak terlihat (supaya tidak dobel), tapi tetap interaktif */
+/* textLayer: teks invisible tapi interaktif */
 .textLayer{ position:absolute; inset:0; pointer-events:auto; color:transparent; }
 .textLayer span{ position:absolute; white-space:pre; transform-origin:0 0; }
 
-/* Highlight yang NGE-PAS di atas glyph (tanpa membesar) */
+/* Highlight */
 .textLayer mark.hl{
   background: rgba(255, 235, 59, .65);
-  color: transparent;                 /* tetap tak menampilkan teks */
+  color: transparent;
   padding: 0 .05em;
   border-radius: 2px;
   box-shadow: 0 0 0 2px rgba(245, 158, 11, .85) inset;
@@ -50,7 +51,7 @@ canvas{ display:block; width:100%; height:auto }
   box-shadow: 0 0 0 2px rgba(234, 179, 8, 1) inset;
 }
 
-/* efek “kedip” halaman saat lompat */
+/* Kedip saat lompat */
 .hitFlash{
   outline:3px solid #60a5fa;
   box-shadow:0 0 0 6px rgba(96,165,250,.25) inset;
@@ -60,7 +61,7 @@ canvas{ display:block; width:100%; height:auto }
   to{ outline-color:transparent; box-shadow:0 0 0 0 rgba(96,165,250,0) inset }
 }
 
-/* ===== Find bar (tampil di bawah topbar) ===== */
+/* Find bar */
 .findbar{
   position: sticky;
   top: var(--topbar-h);

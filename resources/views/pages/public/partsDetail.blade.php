@@ -8,20 +8,16 @@
   $backUrl   = route('parts', ['key' => optional($motor->category)->id]);
   $heroImg   = $imageUrl ?? asset('placeholder.png');
 
-  // URL PDF absolut
   $pdfAbsUrl = $pdfUrl
     ? (Str::startsWith($pdfUrl, ['http://','https://']) ? $pdfUrl : url($pdfUrl))
     : null;
 
-  // PDF.js viewer (same-origin)
   $viewerUrl = $pdfAbsUrl
     ? url('/pdfjs/web/viewer.html') . '?file=' . urlencode($pdfAbsUrl)
     : null;
 @endphp
 
 <div class="accd-detail">
-
-  {{-- Back bar --}}
   <div class="accd-back">
     <a href="{{ $backUrl }}" class="accd-back-link">
       <span class="accd-back-ico">
@@ -37,7 +33,6 @@
     <div class="accd-back-rule"></div>
   </div>
 
-  {{-- HERO --}}
   <div class="card parts-hero border-0 shadow-sm text-center mb-3">
     <div class="card-body">
       <h1 class="parts-hero-title">{{ $motor->name }}</h1>
@@ -48,7 +43,6 @@
     </div>
   </div>
 
-  {{-- Copy --}}
   <div class="text-center mb-3">
     <h2 class="h5 fw-bold mb-1">Katalog Part</h2>
     <p class="text-muted mb-0">
@@ -60,18 +54,19 @@
     </p>
   </div>
 
-  {{-- PDF viewer (PDF.js via iframe) --}}
   @if($viewerUrl)
     <div class="card pdfjs-wrap shadow-sm" id="pdfJsCard">
-      <iframe id="pdfJsFrame" class="pdfjs-frame" src="{{ $viewerUrl }}"
-              title="Katalog Part {{ $motor->name }}"></iframe>
+      <iframe id="pdfJsFrame" class="pdfjs-frame"
+              src="{{ $viewerUrl }}"
+              title="Katalog Part {{ $motor->name }}"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
     </div>
   @endif
 
   <div class="mb-5"></div>
 </div>
 
-{{-- ===== On-Screen Keyboard (pakai gaya dealer) ===== --}}
+{{-- ===== On-Screen Keyboard (UI parent) ===== --}}
 <div id="osk-backdrop" class="osk-backdrop" hidden></div>
 <div id="osk" class="osk" hidden aria-hidden="true" role="dialog" aria-label="Keyboard">
   <div class="osk-head">
@@ -82,27 +77,20 @@
 </div>
 
 <script>
-/* ===== Parent ↔ PDF.js + OSK ===== */
 (function(){
   const frame  = document.getElementById('pdfJsFrame');
   if(!frame) return;
+  const child  = () => frame.contentWindow;
 
-  // OSK elemen (reuse CSS dealer)
+  // ===== OSK DOM =====
   const osk    = document.getElementById('osk');
-  const keysEl = osk?.querySelector('.osk-keys');
+  const keysEl = osk.querySelector('.osk-keys');
   const backd  = document.getElementById('osk-backdrop');
-  const btnX   = osk?.querySelector('.osk-close');
-  const title  = osk?.querySelector('.osk-title');
+  const title  = osk.querySelector('.osk-title');
+  const btnX   = osk.querySelector('.osk-close');
 
-  if(!osk || !keysEl) return;
+  let mode='text', buffer='', maxPage=0, caps=false, debTimer=null;
 
-  // State
-  let mode = 'text';      // 'text' | 'num'
-  let buffer = '';        // teks yg sedang diketik
-  let maxPage = 0;        // untuk numpad
-  let debTimer = null;
-
-  // Layout OSK
   const rowsText = [
     ['1','2','3','4','5','6','7','8','9','0','-','_','⌫'],
     ['q','w','e','r','t','y','u','i','o','p','@','.','/'],
@@ -118,114 +106,76 @@
   const spans = { '⌫':2,'Caps':2,'Clear':2,'Space':5,'Enter':3 };
 
   function build(layout){
-    keysEl.innerHTML = '';
+    keysEl.innerHTML='';
     layout.forEach(row=>{
-      row.forEach(label=>{
+      row.forEach(lbl=>{
         const b=document.createElement('button');
-        b.type='button';
-        b.className='osk-key'+(spans[label]?(' wide'+spans[label]):'')+(['⌫','Caps','Clear','Space','Enter'].includes(label)?' fn':'');
-        if(label==='Enter') b.classList.add('accent');
-        b.textContent=label; b.dataset.key=label;
+        b.type='button'; b.dataset.key=lbl;
+        b.className='osk-key'+(spans[lbl]?(' wide'+spans[lbl]):'')+(['⌫','Caps','Clear','Space','Enter'].includes(lbl)?' fn':'');
+        if(lbl==='Enter') b.classList.add('accent');
+        b.textContent=lbl;
         keysEl.appendChild(b);
       });
     });
   }
+  function show(){ osk.hidden=false; backd.hidden=false; osk.setAttribute('aria-hidden','false'); document.body.classList.add('osk-open'); }
+  function hide(){ osk.hidden=true;  backd.hidden=true;  osk.setAttribute('aria-hidden','true');  document.body.classList.remove('osk-open'); }
 
-  function openOSKText(){
-    mode='text'; buffer='';
-    title.textContent='Cari (Find)';
-    build(rowsText);
-    showOSK();
+  function openText(){
+    mode='text'; buffer=''; caps=false; title.textContent='Cari (Find)';
+    build(rowsText); show();
   }
-  function openOSKNum(current, max){
-    mode='num';
-    buffer = String(current||'').replace(/\D+/g,'');
-    maxPage = Number(max||0) || 0;
-    title.textContent = maxPage ? `Lompat Halaman (1–${maxPage})` : 'Lompat Halaman';
-    build(rowsNum);
-    showOSK();
+  function openNum(current, max){
+    mode='num'; buffer=String(current||'').replace(/\D+/g,''); maxPage=Number(max||0)||0; caps=false;
+    title.textContent = maxPage ? `Loncat Halaman (1–${maxPage})` : 'Loncat Halaman';
+    build(rowsNum); show();
   }
 
-  function showOSK(){
-    osk.hidden=false; backd.hidden=false; osk.setAttribute('aria-hidden','false');
-    document.body.classList.add('osk-open');
-  }
-  function closeOSK(){
-    osk.hidden=true; backd.hidden=true; osk.setAttribute('aria-hidden','true');
-    document.body.classList.remove('osk-open');
-  }
-
-  // Kirim ke iframe
-  function sendToViewer(type, payload){
-    try{ frame.contentWindow.postMessage({ type, payload }, '*'); }catch(_){}
-  }
-
-  // Text: kirim eksekusi pencarian (debounce biar halus)
-  function pushFind(){
+  function send(type, payload){ try{ child().postMessage({type, payload}, '*'); }catch{} }
+  function debounceFind(){
     clearTimeout(debTimer);
-    debTimer = setTimeout(()=> sendToViewer('PDF_FIND_EXECUTE', { term: buffer }), 120);
+    debTimer = setTimeout(()=> send('PDF_FIND_EXECUTE', { term: buffer }), 120);
   }
-
-  // Numpad: validasi range
   function clampPage(v){
-    let n = parseInt(v||'0', 10);
-    if(!Number.isFinite(n) || n<=0) n = 1;
-    if(maxPage>0) n = Math.min(n, maxPage);
-    return n;
+    let n=parseInt(v||'0',10); if(!Number.isFinite(n) || n<=0) n=1; if(maxPage>0) n=Math.min(n,maxPage); return n;
   }
 
-  // Handle tombol OSK
-  let caps=false;
-  keysEl.addEventListener('mousedown', e=>{
-    const key = e.target.closest('.osk-key'); if(!key) return;
-    const k = key.dataset.key; e.preventDefault();
+  keysEl.addEventListener('mousedown', (e)=>{
+    const key=e.target.closest('.osk-key'); if(!key) return; e.preventDefault();
+    const k=key.dataset.key;
 
     if(k==='Caps'){ caps=!caps; key.classList.toggle('muted',caps); return; }
-    if(k==='Clear'){ buffer=''; if(mode==='text') pushFind(); return; }
-    if(k==='⌫'){
-      buffer = buffer.slice(0,-1);
-      if(mode==='text') pushFind();
-      return;
-    }
-    if(k==='Space' && mode==='text'){ buffer += ' '; pushFind(); return; }
+    if(k==='Clear'){ buffer=''; if(mode==='text') debounceFind(); return; }
+    if(k==='⌫'){ buffer=buffer.slice(0,-1); if(mode==='text') debounceFind(); return; }
+    if(k==='Space' && mode==='text'){ buffer+=' '; debounceFind(); return; }
     if(k==='Enter'){
-      if(mode==='text'){ sendToViewer('PDF_FIND_EXECUTE', { term: buffer }); }
-      else{
-        const page = clampPage(buffer || '1');
-        sendToViewer('PDF_PAGE_JUMP', { page });
-      }
-      closeOSK();
-      return;
+      if(mode==='text') send('PDF_FIND_COMMIT', { term: buffer });
+      else send('PDF_PAGE_COMMIT', { page: clampPage(buffer||'1') });
+      hide(); return;
     }
 
-    // karakter biasa
-    const char = (mode==='text') ? (caps ? k.toUpperCase() : k) : (/\d/.test(k) ? k : '');
+    const char=(mode==='text')?(caps?k.toUpperCase():k):(/\d/.test(k)?k:'');
     if(!char) return;
-    buffer += char;
-    if(mode==='text') pushFind();
+    buffer+=char;
+    if(mode==='text') debounceFind();
   });
 
-  backd.addEventListener('click', closeOSK);
-  document.querySelector('.osk-close')?.addEventListener('click', closeOSK);
+  backd.addEventListener('click', hide);
+  btnX.addEventListener('click', hide);
 
-  // Terima sinyal dari viewer.html
+  // ====== Terima event dari viewer (anak)
   window.addEventListener('message', (e)=>{
-    const data = e.data || {};
-    switch (data.type) {
-      case 'PDF_OSK_OPEN_TEXT':
-        openOSKText();
-        break;
-      case 'PDF_OSK_OPEN_NUM':
-        openOSKNum(data?.payload?.current, data?.payload?.max);
-        break;
+    const {type, payload} = e.data || {};
+    switch(type){
+      case 'PDF_OSK_OPEN_TEXT': openText(); break;
+      case 'PDF_OSK_OPEN_NUM':  openNum(payload?.current, payload?.max); break;
       case 'PDF_FIND_UPDATE': {
-        // opsional: tampilkan counter di title
-        const cur = data?.payload?.cur || 0, total = data?.payload?.total || 0;
-        if(!osk.hidden && mode==='text') title.textContent = `Cari ( ${cur}/${total} )`;
+        const cur=payload?.cur||0, total=payload?.total||0;
+        if(!osk.hidden && mode==='text') title.textContent=`Cari ( ${cur}/${total} )`;
         break;
       }
       case 'PDF_FIND_CLOSE':
-        if(!osk.hidden && mode==='text') closeOSK();
+        if(!osk.hidden && mode==='text') hide();
         break;
     }
   });

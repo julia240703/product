@@ -5,31 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PDF Viewer</title>
 
-  <!-- CSS eksternal -->
-  <link rel="stylesheet" href="/pdfjs/web/custom-viewer.css?v=2">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4/web/pdf_viewer.css">
+  <link rel="stylesheet" href="./custom-viewer.css?v=5">
 </head>
 <body>
   <div class="topbar">
     <button class="btn" id="zoomOut" title="Zoom out">−</button>
     <button class="btn" id="zoomIn"  title="Zoom in">+</button>
-
     <span class="sep"></span>
-
     <div class="pagebox">
       <input id="pageNumber" type="number" min="1" value="1" title="Halaman" inputmode="none" />
       <span id="pageCount">of 0</span>
     </div>
-
     <span class="sep"></span>
     <button class="btn" id="fit" title="Fit width">⤢</button>
-
     <div class="grow"></div>
-
     <button class="btn" id="searchBtn" title="Find (Ctrl/⌘+F)">🔍</button>
     <button class="btn" id="fsBtn" title="Fullscreen">⛶</button>
   </div>
 
-  <!-- Findbar: default tersembunyi -->
   <div class="findbar hidden" id="findbar">
     <input id="findInput" type="search" placeholder="Cari..." inputmode="none" autocomplete="off" />
     <span class="find-count" id="findCount">0/0</span>
@@ -40,20 +34,12 @@
 
   <div class="viewer" id="viewer"></div>
 
+  <!-- PDF.js UMD lokal -->
   <script src="../build/pdf.js"></script>
+  <script> pdfjsLib.GlobalWorkerOptions.workerSrc = '../build/pdf.worker.js'; </script>
+
   <script>
-    pdfjsLib.GlobalWorkerOptions.workerSrc = location.origin + '/pdfjs/build/pdf.worker.min.js';
-
-    const q = new URLSearchParams(location.search);
-    let fileUrl = q.get('file') || '';
-    try { fileUrl = decodeURIComponent(fileUrl); } catch {}
-    if (!fileUrl) {
-      document.getElementById('viewer').innerHTML =
-        '<div class="msg">Tidak ada parameter <code>?file=</code>.</div>';
-      throw new Error('no file param');
-    }
-    if (fileUrl.startsWith('/')) fileUrl = location.origin + fileUrl;
-
+    /* ===== State & util ===== */
     const viewer   = document.getElementById('viewer');
     const pageBox  = document.getElementById('pageNumber');
     const pageCnt  = document.getElementById('pageCount');
@@ -61,164 +47,145 @@
     const findInput= document.getElementById('findInput');
     const findCount= document.getElementById('findCount');
 
-    let pdf=null, scale=1.2, rotation=0, numPages=0;
-    let pageTexts=[], pageEls=[]; // index 1-based
+    let pdf=null, numPages=0;
+    let scale=1.2, rotation=0;
+    const DPR  = Math.min(window.devicePixelRatio || 1, 1.5);
+    const VBUF = 2;
+
+    let pageEls=[], pageTexts=[], renderTasks={}, pageSize={w:800,h:1100};
     let results=[], activeIndex=-1;
 
+    const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+    const debounced=(fn,ms=100)=>{ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; };
+    const sendToParent = (type, payload)=>{ try{ parent.postMessage({type, payload}, '*'); }catch{} };
+
+    const showErr = (err) => {
+      console.error(err);
+      viewer.innerHTML = `<div class="msg error">Gagal memuat PDF.<br><small>${(err && err.message) || err}</small></div>`;
+    };
+
+    /* ===== Render halaman on-demand ===== */
     async function renderPage(p){
+      if (renderTasks[p] && !renderTasks[p]._cancelled) return;
+
       const page = await pdf.getPage(p);
-      const pageRotation = page.rotate || 0;
-      const viewport = page.getViewport({
-        scale,
-        rotation:(pageRotation+rotation)%360
-      });
+      if (p===1){
+        const vp0 = page.getViewport({scale:1, rotation:(page.rotate||0)});
+        pageSize = {w: vp0.width, h: vp0.height};
+      }
+      const viewport = page.getViewport({ scale, rotation: ((page.rotate||0)+rotation)%360 });
 
       let wrap = pageEls[p];
       if (!wrap){
         wrap = document.createElement('div');
         wrap.className='pageWrap';
-        pageEls[p] = wrap;
-        viewer.appendChild(wrap);
+        pageEls[p]=wrap; viewer.appendChild(wrap);
       }
+      wrap.dataset.page = p;
       wrap.style.width  = viewport.width  + 'px';
       wrap.style.height = viewport.height + 'px';
 
       let canvas = wrap.querySelector('canvas');
       if(!canvas){ canvas=document.createElement('canvas'); wrap.appendChild(canvas); }
-      canvas.width  = viewport.width;
-      canvas.height = viewport.height;
+      canvas.width  = Math.max(1, Math.floor(viewport.width  * DPR));
+      canvas.height = Math.max(1, Math.floor(viewport.height * DPR));
+      canvas.style.width  = viewport.width  + 'px';
+      canvas.style.height = viewport.height + 'px';
 
-      let tLayer = wrap.querySelector('.textLayer');
-      if(!tLayer){ tLayer=document.createElement('div'); tLayer.className='textLayer'; wrap.appendChild(tLayer); }
-      tLayer.innerHTML='';
+      const ctx = canvas.getContext('2d', {alpha:false});
+      ctx.setTransform(DPR,0,0,DPR,0,0);
 
-      const ctx = canvas.getContext('2d',{alpha:false});
-      await page.render({ canvasContext:ctx, viewport }).promise;
+      if (renderTasks[p]) { try{ renderTasks[p].cancel(); }catch{} }
+      const task = page.render({ canvasContext:ctx, viewport });
+      renderTasks[p] = task;
 
-      if(!pageTexts[p]) pageTexts[p] = await page.getTextContent();
-      const { items, styles } = pageTexts[p];
-
-      items.forEach(item=>{
-        const span = document.createElement('span');
-        span.textContent = item.str;
-
-        // posisi/transform bawaan textLayer
-        const tx = pdfjsLib.Util.transform(
-          pdfjsLib.Util.transform(viewport.transform, item.transform),
-          [1,0,0,-1,0,0]
-        );
-        span.style.transform  = `matrix(${tx[0]},${tx[1]},${tx[2]},${tx[3]},${tx[4]},${tx[5]})`;
-
-        // ukuran & font
-        const s = styles[item.fontName];
-        span.style.fontSize   = (item.height * viewport.scale) + 'px';
-        span.style.fontFamily = s?.fontFamily || 'sans-serif';
-
-        tLayer.appendChild(span);
-      });
+      try { await task.promise; } catch(e) {}
+      wrap.dataset.rendered = '1';
+      return wrap;
     }
 
-    async function renderPDF(){
-      const head = await fetch(fileUrl,{method:'HEAD'});
-      if(!head.ok){
-        viewer.innerHTML = `<div class="msg error">Gagal memuat PDF (HTTP ${head.status}).</div>`;
-        return;
+    /* ===== Virtualization ===== */
+    function inRange(cur,p){ return Math.abs(p-cur) <= VBUF; }
+    async function ensureVisiblePages(cur){
+      for (let p=Math.max(1,cur-VBUF); p<=Math.min(numPages,cur+VBUF); p++){
+        const wrap = pageEls[p];
+        if (!wrap || !wrap.dataset.rendered) await renderPage(p);
       }
-
-      pdf = await pdfjsLib.getDocument({
-        url:fileUrl, disableRange:true, disableStream:true, disableAutoFetch:true
-      }).promise;
-
-      numPages = pdf.numPages;
-      pageCnt.textContent = `of ${numPages}`;
-      viewer.innerHTML='';
-      pageEls=new Array(numPages+1);
-
-      const tasks=[]; for(let p=1;p<=numPages;p++) tasks.push(renderPage(p));
-      await Promise.all(tasks);
+      for (let p=1; p<=numPages; p++){
+        const wrap = pageEls[p];
+        if (!wrap) continue;
+        if (!inRange(cur,p) && wrap.dataset.rendered){
+          if (renderTasks[p]) { try{ renderTasks[p].cancel(); }catch{} delete renderTasks[p]; }
+          wrap.replaceChildren();
+          wrap.dataset.rendered='';
+          const estH = pageSize.h * (scale/pageSize.w) * (viewer.clientWidth/pageSize.w);
+          wrap.style.height = Math.max(400, estH|0) + 'px';
+        }
+      }
     }
 
-    function rerender(){
-      clearSearch();
-      viewer.innerHTML='';
-      pageEls=[];
-      renderPDF().then(attachObserver);
-    }
-    function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
-
-    async function fitWidth(){
-      const page = await pdf.getPage(1);
-      const vp   = page.getViewport({ scale:1, rotation:(page.rotate||0+rotation)%360 });
-      scale = Math.max(0.3, (viewer.clientWidth-32)/vp.width);
-      rerender();
-    }
-
-    document.getElementById('zoomIn').addEventListener('click',  ()=>{ scale+=0.15; rerender(); });
-    document.getElementById('zoomOut').addEventListener('click', ()=>{ scale=Math.max(0.3,scale-0.15); rerender(); });
-    document.getElementById('fit').addEventListener('click',     ()=>{ if(pdf) fitWidth(); });
-
-    document.getElementById('fsBtn').addEventListener('click', ()=>{
-      const doc=document, el=doc.documentElement;
-      const inFs=doc.fullscreenElement||doc.webkitFullscreenElement||doc.msFullscreenElement||doc.mozFullScreenElement;
-      if(!inFs){ (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen||el.mozRequestFullScreen).call(el); }
-      else{ (doc.exitFullscreen||doc.webkitExitFullscreen||doc.msExitFullscreen||doc.mozCancelFullScreen).call(doc); }
-    });
-
-    function jumpToPage(n){
-      const num = clamp(parseInt(n||'1',10),1,numPages);
-      const el=pageEls[num];
-      if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
-      pageBox.value=num;
-    }
-    pageBox.addEventListener('change', ()=> jumpToPage(pageBox.value));
-
-    // observer untuk update “pageNumber” saat scroll
-    const io=new IntersectionObserver(entries=>{
+    const io = new IntersectionObserver(entries=>{
       let top=null, topY=Infinity;
       entries.forEach(e=>{
         if(!e.isIntersecting) return;
         const r=e.target.getBoundingClientRect();
-        if(r.top<topY){topY=r.top; top=e.target;}
+        if(r.top<topY){ topY=r.top; top=e.target; }
       });
       if(top){
-        const idx=pageEls.indexOf(top);
-        if(idx>0) pageBox.value=idx;
+        const cur = parseInt(top.dataset.page,10)||1;
+        pageBox.value = cur;
+        ensureVisiblePages(cur);
       }
-    }, {root:viewer, threshold:[0,.01,.1,.2,.3,.4,.5]});
-    const attachObserver=()=>pageEls.forEach(el=>{ if(el) io.observe(el); });
+    }, { root: viewer, rootMargin: '1000px 0px', threshold: [0,0.01,0.1] });
+    const attachObserver = ()=> pageEls.forEach(el=>{ if(el) io.observe(el); });
 
-    /* ===== FIND ===== */
-    function clearMarksInSpan(span){
-      const marks = span.querySelectorAll('mark.hl');
-      if(!marks.length) return;
-      marks.forEach(m=>{
-        const t=document.createTextNode(m.textContent);
-        m.replaceWith(t);
+    /* ===== Text layer (on-demand) ===== */
+    async function ensureTextLayer(p, viewport){
+      const wrap = pageEls[p]; if (!wrap) return null;
+
+      let tLayer = wrap.querySelector('.textLayer');
+      if (tLayer) return tLayer;
+
+      if (!pageTexts[p]) {
+        const page = await pdf.getPage(p);
+        pageTexts[p] = await page.getTextContent();
+      }
+      const { items, styles } = pageTexts[p];
+      tLayer = document.createElement('div'); tLayer.className='textLayer';
+      wrap.appendChild(tLayer);
+
+      items.forEach(item=>{
+        const span=document.createElement('span');
+        span.textContent = item.str;
+        const tx = pdfjsLib.Util.transform(pdfjsLib.Util.transform(viewport.transform, item.transform), [1,0,0,-1,0,0]);
+        span.style.transform  = `matrix(${tx[0]},${tx[1]},${tx[2]},${tx[3]},${tx[4]},${tx[5]})`;
+        const s=styles[item.fontName];
+        span.style.fontSize   = (item.height * viewport.scale) + 'px';
+        span.style.fontFamily = s?.fontFamily || 'sans-serif';
+        tLayer.appendChild(span);
       });
-      span.normalize();
+      return tLayer;
     }
-    function clearSearch(){
-      results.forEach(r=> r.marks.forEach(m=>{
-        if(m.parentNode){ const t=document.createTextNode(m.textContent); m.replaceWith(t); }
-      }));
-      results=[]; activeIndex=-1; updateCounter();
-    }
+
     function buildPageMap(wrap){
       const spans=[...wrap.querySelectorAll('.textLayer span')];
       let pos=0; const pieces=[]; const map=[];
       spans.forEach(sp=>{
         const txt=sp.textContent||'';
         pieces.push(txt);
-        map.push({node:sp, start:pos, end:pos+txt.length});
+        map.push({node:sp,start:pos,end:pos+txt.length});
         pos+=txt.length; pieces.push(' '); pos+=1;
       });
       return { full: pieces.join(''), spans:map };
     }
-    function markInNode(node, start, end){
-      const txt=node.textContent;
-      const a=txt.slice(0,start), b=txt.slice(start,end), c=txt.slice(end);
+    function clearMarksInSpan(span){
+      const marks = span.querySelectorAll('mark.hl');
+      marks.forEach(m=> m.replaceWith(document.createTextNode(m.textContent)));
+      span.normalize();
+    }
+    function markInNode(node,start,end){
+      const txt=node.textContent; const a=txt.slice(0,start), b=txt.slice(start,end), c=txt.slice(end);
       const mark=document.createElement('mark'); mark.className='hl'; mark.textContent=b;
-      // supaya ukuran/posisi persis: mark inline di dalam span yang SUDAH ditransform
       node.replaceChildren(document.createTextNode(a), mark, document.createTextNode(c));
       return mark;
     }
@@ -233,125 +200,196 @@
       });
       return marks;
     }
-    function doSearch(term){
+
+    /* ===== Find ===== */
+    async function doSearch(term){
       clearSearch();
       const query=(term||'').trim(); if(!query) return;
       const L=query.length, qLower=query.toLowerCase();
 
-      pageEls.forEach((wrap, pageIdx)=>{
-        if(!wrap) return;
-        const map=buildPageMap(wrap);
-        const full=map.full.toLowerCase();
-        let idx=full.indexOf(qLower,0);
-        while(idx!==-1){
-          const marks=highlightRangeOnPage(wrap,map,idx,L);
-          if(marks.length) results.push({ page:pageIdx, marks, anchor:marks[0] });
-          idx=full.indexOf(qLower, idx+L);
+      for (let p=1; p<=numPages; p++){
+        if (!pageTexts[p]) {
+          const page = await pdf.getPage(p);
+          pageTexts[p] = await page.getTextContent();
         }
-      });
-
+        const txt = pageTexts[p].items.map(i=>i.str).join(' ').toLowerCase();
+        let idx = txt.indexOf(qLower,0);
+        while(idx!==-1){
+          results.push({ page:p, start:idx, len:L, marks:[] });
+          idx = txt.indexOf(qLower, idx+L);
+        }
+      }
       updateCounter();
       if(results.length){ goTo(0); }
     }
-    function updateCounter(){
-      const total=results.length||0;
-      const cur=total?(activeIndex+1):0;
-      findCount.textContent = `${cur}/${total}`;
-      try { parent.postMessage({ type:'PDF_FIND_UPDATE', payload:{ cur, total } }, '*'); } catch(_){}
+    function clearSearch(){
+      results.forEach(r=> r.marks.forEach(m=>{ if(m.parentNode) m.replaceWith(document.createTextNode(m.textContent)); }));
+      results=[]; activeIndex=-1; updateCounter();
     }
-    function goTo(i){
+    function updateCounter(){
+      const total=results.length||0, cur=total?(activeIndex+1):0;
+      findCount.textContent = `${cur}/${total}`;
+      sendToParent('PDF_FIND_UPDATE', { cur, total });
+    }
+    async function goTo(i){
       if(!results.length) return;
       results.forEach(r=> r.marks.forEach(m=>m.classList.remove('active')));
       activeIndex = (i + results.length) % results.length;
-      const r=results[activeIndex], wrap=pageEls[r.page];
-      if(wrap){
-        wrap.scrollIntoView({behavior:'smooth', block:'center'});
-        wrap.classList.add('hitFlash');
-        setTimeout(()=>wrap.classList.remove('hitFlash'), 900);
-        const p=pageEls.indexOf(wrap); if(p>0) pageBox.value=p;
-      }
+
+      const r = results[activeIndex];
+      await renderPage(r.page);
+      const page = await pdf.getPage(r.page);
+      const viewport = page.getViewport({ scale, rotation: ((page.rotate||0)+rotation)%360 });
+
+      const wrap = pageEls[r.page];
+      await ensureTextLayer(r.page, viewport);
+      const map = buildPageMap(wrap);
+      r.marks = highlightRangeOnPage(wrap, map, r.start, r.len);
       r.marks.forEach(m=>m.classList.add('active'));
+
+      wrap.scrollIntoView({behavior:'smooth',block:'center'});
+      pageBox.value = r.page;
       updateCounter();
     }
 
-    // tombol findbar
-    document.getElementById('findPrev').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex-1); });
-    document.getElementById('findNext').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex+1); });
-    document.getElementById('findClose').addEventListener('click', ()=>{
-      clearSearch();
-      findbar.classList.add('hidden');
-      try{ parent.postMessage({type:'PDF_FIND_CLOSE'},'*'); }catch(_){}
-    });
+    /* ===== Load dokumen ===== */
+    function setPageBoxBounds(){ pageBox.min=1; pageBox.max=numPages||1; }
 
-    /* ===== BRIDGE parent <-> iframe ===== */
-    window.addEventListener('message', (e)=>{
-      const data = e.data || {};
-      switch (data.type) {
-        case 'PDF_FIND_EXECUTE': {
-          const term = (data.payload?.term || '').trim();
-          findbar.classList.remove('hidden');   // pastikan tampil
-          findInput.value = term;
-          findInput.focus();
-          doSearch(term);
-          break;
-        }
-        case 'PDF_FIND_NEXT':
-          if (results.length) goTo(activeIndex + 1);
-          break;
-        case 'PDF_FIND_PREV':
-          if (results.length) goTo(activeIndex - 1);
-          break;
-        case 'PDF_FIND_CLOSE':
-          clearSearch();
-          findbar.classList.add('hidden');
-          break;
-        case 'PDF_PAGE_JUMP':
-          jumpToPage(data.payload?.page || 1);
-          break;
-        case 'PDF_OSK_OPEN_TEXT':   // kalau parent hanya mau membuka OSK
-          findbar.classList.remove('hidden');
-          findInput.focus();
-          break;
+    async function renderPDF(){
+      const q = new URLSearchParams(location.search);
+      let fileUrl = q.get('file') || '';
+      try{ fileUrl = decodeURIComponent(fileUrl); }catch{}
+      if (!fileUrl){ viewer.innerHTML = '<div class="msg">Tidak ada parameter <code>?file=</code>.</div>'; return; }
+      if (fileUrl.startsWith('/')) fileUrl = location.origin + fileUrl;
+
+      pdf = await pdfjsLib.getDocument({
+        url: fileUrl,
+        disableRange:true, disableStream:true, disableAutoFetch:true
+      }).promise;
+
+      numPages = pdf.numPages;
+      pageCnt.textContent = `of ${numPages}`;
+      setPageBoxBounds();
+      viewer.innerHTML='';
+
+      pageEls = new Array(numPages+1);
+      for (let p=1; p<=numPages; p++){
+        const wrap=document.createElement('div');
+        wrap.className='pageWrap lazy';
+        wrap.dataset.page=p;
+        wrap.style.minHeight='600px';
+        pageEls[p]=wrap; viewer.appendChild(wrap);
       }
-    });
-
-    // klik 🔍 / Ctrl+F → tampilkan findbar + minta OSK teks dari parent
-    document.getElementById('searchBtn').addEventListener('click', (e)=>{
-      e.preventDefault();
-      findbar.classList.remove('hidden');
-      findInput.focus();
-      try { parent.postMessage({ type:'PDF_OSK_OPEN_TEXT' }, '*'); } catch(_){}
-    });
-    window.addEventListener('keydown', (e)=>{
-      const isMac=/Mac/i.test(navigator.platform);
-      if((isMac?e.metaKey:e.ctrlKey) && e.key.toLowerCase()==='f'){
-        e.preventDefault();
-        findbar.classList.remove('hidden');
-        findInput.focus();
-        try { parent.postMessage({ type:'PDF_OSK_OPEN_TEXT' }, '*'); } catch(_){}
-      }
-    });
-
-    // Fokus page number → minta parent tampilkan numpad
-    function askParentNumpad(){
-      try {
-        parent.postMessage({
-          type:'PDF_OSK_OPEN_NUM',
-          payload:{ current: pageBox.value, max: numPages }
-        }, '*');
-      } catch(_){}
+      attachObserver();
+      pageBox.value = 1;
+      ensureVisiblePages(1);
     }
+
+    /* ===== Zoom / Fit / FS ===== */
+    const rerenderDebounced = debounced(()=>{
+      Object.values(renderTasks).forEach(t=>{ try{ t.cancel(); }catch{} });
+      renderTasks = {};
+      pageEls.forEach(wrap=>{ if(!wrap) return; wrap.dataset.rendered=''; wrap.replaceChildren(); });
+      const cur = parseInt(pageBox.value||'1',10)||1;
+      ensureVisiblePages(cur);
+    }, 100);
+
+    document.getElementById('zoomIn').addEventListener('click',  ()=>{ scale = Math.min(scale+0.15, 3); rerenderDebounced(); });
+    document.getElementById('zoomOut').addEventListener('click', ()=>{ scale = Math.max(0.3, scale-0.15); rerenderDebounced(); });
+    document.getElementById('fit').addEventListener('click', async ()=>{
+      if(!pdf) return;
+      const page = await pdf.getPage(1);
+      const vp   = page.getViewport({scale:1, rotation:((page.rotate||0)+rotation)%360});
+      const w    = viewer.clientWidth - 32;
+      scale = Math.max(0.3, w / vp.width);
+      rerenderDebounced();
+    });
+
+    document.getElementById('fsBtn').addEventListener('click', ()=>{
+      const doc=document, el=doc.documentElement;
+      const inFs=doc.fullscreenElement||doc.webkitFullscreenElement||doc.msFullscreenElement||doc.mozFullScreenElement;
+      if(!inFs){ (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen||el.mozRequestFullScreen).call(el); }
+      else{ (doc.exitFullscreen||doc.webkitExitFullscreen||doc.msExitFullscreen||doc.mozCancelFullScreen).call(doc); }
+      setTimeout(()=>rerenderDebounced(), 200);
+    });
+
+    /* ===== Page number ===== */
+    function jumpToPage(n){
+      let num = parseInt(n,10); if (Number.isNaN(num)) num = 1;
+      const clamped = clamp(num, 1, numPages);
+      pageBox.classList.toggle('invalid', num !== clamped);
+      num = clamped;
+      const el=pageEls[num]; if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+      pageBox.value=num;
+    }
+    pageBox.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') { e.preventDefault(); jumpToPage(pageBox.value); pageBox.blur(); }});
+
+    // minta OSK numerik saat fokus/klik
+    const askParentNumpad = ()=> sendToParent('PDF_OSK_OPEN_NUM', { current: pageBox.value, max: numPages });
     pageBox.addEventListener('focus', askParentNumpad);
     pageBox.addEventListener('click', askParentNumpad);
 
-    // vh fix
+    /* ===== Find UI ===== */
+    const openFindBar = ()=>{ findbar.classList.remove('hidden'); setTimeout(()=> findInput.focus(), 50); };
+    document.getElementById('findPrev').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex-1); });
+    document.getElementById('findNext').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex+1); });
+    document.getElementById('findClose').addEventListener('click', ()=>{ clearSearch(); findbar.classList.add('hidden'); sendToParent('PDF_FIND_CLOSE'); });
+
+    document.getElementById('searchBtn').addEventListener('click', (e)=>{
+      e.preventDefault(); openFindBar(); sendToParent('PDF_OSK_OPEN_TEXT');
+    });
+
+    // Enter di kolom Find → commit
+    findInput.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const term = (findInput.value || '').trim();
+        if (term) doSearch(term);
+      }
+    });
+    // saat fokus/klik minta OSK teks
+    const askParentText = ()=> sendToParent('PDF_OSK_OPEN_TEXT');
+    findInput.addEventListener('focus', askParentText);
+    findInput.addEventListener('click', askParentText);
+
+    // Shortcut
+    window.addEventListener('keydown', (e)=>{
+      const isMac=/Mac/i.test(navigator.platform);
+      if((isMac?e.metaKey:e.ctrlKey) && e.key.toLowerCase()==='f'){
+        e.preventDefault(); openFindBar(); sendToParent('PDF_OSK_OPEN_TEXT');
+      }
+      if(e.key==='Enter' && !findbar.classList.contains('hidden') && document.activeElement!==findInput){
+        if(results.length){ e.shiftKey ? goTo(activeIndex-1) : goTo(activeIndex+1); }
+      }
+    });
+
+    /* ===== Pesan dari parent (OSK) ===== */
+    window.addEventListener('message', (e)=>{
+      const data = e.data || {};
+      switch (data.type) {
+        case 'PDF_FIND_OPEN':
+          openFindBar();
+          break;
+        case 'PDF_FIND_EXECUTE': {        // live typing dari OSK
+          findbar.classList.remove('hidden');
+          doSearch((data.payload?.term ?? '').trim());
+          break;
+        }
+        case 'PDF_FIND_COMMIT': {         // enter di OSK
+          const term = (data.payload?.term ?? '').trim();
+          if (term) doSearch(term);
+          break;
+        }
+        case 'PDF_FIND_NEXT': if (results.length) goTo(activeIndex+1); break;
+        case 'PDF_FIND_PREV': if (results.length) goTo(activeIndex-1); break;
+        case 'PDF_PAGE_COMMIT': jumpToPage(data.payload?.page ?? pageBox.value); break;
+      }
+    });
+
     const setVH = () => document.documentElement.style.setProperty('--vh', window.innerHeight + 'px');
     setVH(); addEventListener('resize', setVH);
 
-    renderPDF().then(attachObserver).catch(err=>{
-      console.error(err);
-      viewer.innerHTML = `<div class="msg error">Gagal memuat PDF.<br><small>${(err && err.message) || err}</small></div>`;
-    });
+    renderPDF().catch(showErr);
   </script>
 </body>
 </html>

@@ -282,8 +282,10 @@ public function motorsStore(Request $request)
         'category_id'         => 'required|exists:categories,id',
         'type_id'             => 'required|exists:motor_types,id',
         'description'         => 'nullable|string',
+        'motor_url'           => 'required|url|max:255', 
         'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'accessory_url'       => 'nullable|url|max:255',
         'feature_thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'spin_gif'            => 'nullable|file|mimes:gif|max:8192',
         'status'              => 'required|in:published,unpublished',
@@ -312,12 +314,14 @@ public function updateMotor(Request $request, $id)
         'motor_code_otr'      => 'nullable|string|max:255',
         'motor_code_credit'   => 'nullable|string|max:255',
         'wms_code'            => 'nullable|string|max:255',
-        'price'               => 'nullable|integer|min:0', // <-- harga OTR
+        'price'               => 'nullable|integer|min:0',
         'category_id'         => 'required|exists:categories,id',
         'type_id'             => 'required|exists:motor_types,id',
         'description'         => 'nullable|string',
+        'motor_url'           => 'required|url|max:255', 
         'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        'accessory_url'       => 'nullable|url|max:255',
         'feature_thumbnail'   => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'spin_gif'            => 'nullable|file|mimes:gif|max:8192',
         'status'              => 'required|in:published,unpublished',
@@ -1300,6 +1304,7 @@ public function apparelsStore(Request $request)
         'color'        => 'nullable|string',
         'size'         => 'nullable|string',
         'part_number'  => 'nullable|string',
+        'apparel_url'  => 'nullable|url|max:255',
         'stock'        => 'nullable|integer|min:0',
         // file
         'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
@@ -1327,6 +1332,7 @@ public function apparelsStore(Request $request)
         'color'        => $request->color,
         'size'         => $request->size,
         'part_number'  => $request->part_number,
+        'apparel_url'  => $request->apparel_url, 
         'stock'        => $request->stock,
         'cover_image'  => $coverPath,
         'image'        => $singlePath, // fallback/legacy
@@ -1368,6 +1374,7 @@ public function apparelsUpdate(Request $request, $id)
         'color'        => 'nullable|string',
         'size'         => 'nullable|string',
         'part_number'  => 'nullable|string',
+        'apparel_url'  => 'nullable|url|max:255',
         'stock'        => 'nullable|integer|min:0',
         // file
         'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
@@ -1403,6 +1410,7 @@ public function apparelsUpdate(Request $request, $id)
         'color'        => $request->color,
         'size'         => $request->size,
         'part_number'  => $request->part_number,
+        'apparel_url'  => $request->apparel_url,
         'stock'        => $request->stock,
         'is_new'       => $request->boolean('is_new'), // <-- update flag NEW
     ]);
