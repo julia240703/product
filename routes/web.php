@@ -15,6 +15,7 @@ use App\Http\Controllers\EditUserProfileController;
 use App\Http\Controllers\ManagerDashboardController;
 use App\Http\Controllers\AdminControllerSatu;
 use App\Http\Controllers\PublicControllerSatu;
+use App\Http\Controllers\SsoAcceptController;
 
 
 /*
@@ -252,6 +253,14 @@ Route::get('/simulasi-kredit', [PublicControllerSatu::class, 'creditSimulator'])
 
 /*
 |--------------------------------------------------------------------------
+| SSO ENTRY (public)
+|--------------------------------------------------------------------------
+| Admin Center akan redirect ke endpoint ini dengan ?token=JWT
+*/
+Route::get('/sso/login', [SsoAcceptController::class, 'login'])->name('sso.login');
+
+/*
+|--------------------------------------------------------------------------
 | ADMIN LOGIN (Public - No Auth Middleware)
 |--------------------------------------------------------------------------
 */
@@ -259,6 +268,10 @@ Route::get('/simulasi-kredit', [PublicControllerSatu::class, 'creditSimulator'])
 Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
 Route::post('/admin/login', [LoginController::class, 'login'])->name('admin.login.submit');
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
+
+Route::get('/admin/login', [LoginController::class, 'showLoginForm'])
+    ->middleware('guest')
+    ->name('admin.login');
 
 /*
 |--------------------------------------------------------------------------
