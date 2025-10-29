@@ -19,22 +19,23 @@ class RedirectIfAuthenticated
      */
     public function handle(Request $request, Closure $next, ...$guards)
     {
-    $guards = empty($guards) ? [null] : $guards;
+        $guards = empty($guards) ? [null] : $guards;
 
-    foreach ($guards as $guard) {
-        if (Auth::guard($guard)->check()) {
-            $user = Auth::user();
+        foreach ($guards as $guard) {
+            if (Auth::guard($guard)->check()) {
+                $user = Auth::user();
 
-            if ($user->type === 'admin') {
-                return redirect()->route('admin.branch');
+                // Cek apakah user adalah admin (type === 1)
+                if (property_exists($user, 'type') && (int)($user->type) === 1) {
+                    return redirect('/admin/banner');
+                }
+
+                // Jika bukan admin, logout & redirect ke login
+                Auth::logout();
+                return redirect()->route('admin.login');
             }
-
-            // Jika bukan admin, logout & redirect ke login
-            Auth::logout();
-            return redirect()->route('admin.login.submit');
         }
-    }
 
-    return $next($request);
+        return $next($request);
     }
 }

@@ -63,8 +63,8 @@ class SsoAcceptController extends Controller
         Auth::login($user);
         $r->session()->regenerate();
 
-        // Pastikan route('admin.banner') ada di group admin.*
-        return redirect()->intended(route('admin.banner'));
+        // Gunakan URL langsung untuk menghindari masalah routing
+        return redirect('/admin/banner');
     }
 
     /**
@@ -109,5 +109,5 @@ class SsoAcceptController extends Controller
         }
         $input = strtr($input, '-_', '+/');
         return base64_decode($input) ?: '';
-        }
+    }
 }
