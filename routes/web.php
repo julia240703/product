@@ -270,7 +270,6 @@ Route::post('/admin/login', [LoginController::class, 'login'])->name('admin.logi
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
 
 Route::get('/admin/login', [LoginController::class, 'showLoginForm'])
-    ->middleware('guest')
     ->name('admin.login');
 
 /*
@@ -280,8 +279,8 @@ Route::get('/admin/login', [LoginController::class, 'showLoginForm'])
 */
 
 Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Dashboard
-    Route::get('/home', [AdminController::class, 'adminHome'])->name('home');
+   // Banner Template Management Routes
+    Route::get('/banner', [AdminControllerSatu::class, 'adminbanner'])->name('banner');
 
     // Motor base
     Route::get('/motors', [AdminControllerSatu::class, 'motorsIndex'])->name('motors.index');
@@ -373,9 +372,6 @@ Route::middleware(['auth', 'user-access:admin'])->prefix('admin')->name('admin.'
     Route::delete('/branches/delete/{id}', [AdminControllerSatu::class, 'branchesDelete'])->name('branches.delete');
     Route::get('/branches/data', [AdminControllerSatu::class, 'getBranchesData'])->name('admin.branches.data');
     Route::post('/branches/update-order', [AdminControllerSatu::class, 'updateBranchOrder'])->name('branches.updateOrder');
-
-    // Banner Template Management Routes
-    Route::get('/banner', [AdminControllerSatu::class, 'adminbanner'])->name('banner');
     
     // Template CRUD - untuk AJAX requests
     Route::get('/template/manage', [AdminControllerSatu::class, 'manageBannerTemplate'])->name('template.manage');

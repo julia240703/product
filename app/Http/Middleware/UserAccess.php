@@ -37,12 +37,8 @@ class UserAccess
     
         // Redirect berdasarkan tipe user
         switch(Auth::user()->type) {
-            case 0: // User
-                return redirect()->route('user.dashboard.reporting');
-            case 1: // Admin
-                return redirect()->route('admin.home');
-            default:
-                return redirect('/login');
+            default: // Admin
+                return redirect()->route('admin.banner');
         }
     }
 }

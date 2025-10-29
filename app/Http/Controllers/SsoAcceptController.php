@@ -8,12 +8,13 @@ use Illuminate\Support\Facades\Auth;
 class SsoAcceptController extends Controller
 {
     /**
-     * Menerima ?token=JWT HS256 dari Admin Center.
-     * Syarat payload:
-     *  - iss = 'admin-center'    (atau SSO_JWT_ISS)
-     *  - aud = 'product-admin'   (atau SSO_JWT_AUD)
-     *  - sub = email user (WAJIB)
-     *  - iat/nbf/exp standar JWT
+     * Endpoint penerima SSO dari Admin Center.
+     * Query: ?token=JWT (HS256)
+     * Payload minimal:
+     *  - iss: 'admin-center' (atau SSO_JWT_ISS)
+     *  - aud: 'product-admin' (atau SSO_JWT_AUD)
+     *  - sub: email user (WAJIB)
+     *  - iat/nbf/exp: standar JWT
      */
     public function login(Request $r)
     {
@@ -36,11 +37,11 @@ class SsoAcceptController extends Controller
         $expectedIss = env('SSO_JWT_ISS', 'admin-center');
         $expectedAud = env('SSO_JWT_AUD', 'product-admin');
         $now  = time();
-        $skew = 60; // toleransi 60 detik
+        $skew = 60; // toleransi clock skew
 
-        if (($payload['iss'] ?? null) !== $expectedIss)   return $fail('Issuer salah');
-        if (($payload['aud'] ?? null) !== $expectedAud)   return $fail('Audience salah');
-        if (isset($payload['nbf']) && $payload['nbf'] > $now + $skew) return $fail('Token belum berlaku');
+        if (($payload['iss'] ?? null) !== $expectedIss)                return $fail('Issuer salah');
+        if (($payload['aud'] ?? null) !== $expectedAud)                return $fail('Audience salah');
+        if (isset($payload['nbf']) && $payload['nbf'] > $now + $skew)  return $fail('Token belum berlaku');
         if (!isset($payload['exp']) || $payload['exp'] < ($now - $skew)) return $fail('Token kedaluwarsa');
 
         // 4) Identitas (email) dari sub
@@ -53,7 +54,12 @@ class SsoAcceptController extends Controller
         $user = $userModel::whereRaw('LOWER(email) = ?', [$email])->first();
         if (!$user) return $fail('User belum terdaftar di sistem ini');
 
-        // 6) Login & redirect ke Banner
+        // (Opsional) Batasi hanya admin (sesuai middleware user-access:admin & LoginController)
+        if (property_exists($user, 'type') && (int)($user->type) !== 1) {
+            return $fail('Akun ini tidak memiliki akses admin.');
+        }
+
+        // 6) Login & redirect langsung ke halaman Banner admin
         Auth::login($user);
         $r->session()->regenerate();
 
@@ -103,5 +109,5 @@ class SsoAcceptController extends Controller
         }
         $input = strtr($input, '-_', '+/');
         return base64_decode($input) ?: '';
-    }
+        }
 }
