@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SsoAcceptController extends Controller
 {
@@ -12,13 +13,17 @@ class SsoAcceptController extends Controller
      * Query: ?token=JWT (HS256)
      * Payload minimal:
      *  - iss: 'admin-center' (atau SSO_JWT_ISS)
-     *  - aud: 'product-admin' (atau SSO_JWT_AUD)
+     *  - aud: 'product' (atau SSO_JWT_AUD)
      *  - sub: email user (WAJIB)
      *  - iat/nbf/exp: standar JWT
      */
     public function login(Request $r)
     {
-        $fail = function (string $msg) {
+        $fail = function (string $msg) use ($r) {
+            Log::warning('SSO Login Failed', [
+                'reason' => $msg,
+                'url' => $r->fullUrl()
+            ]);
             return redirect()->route('admin.login')->withErrors(['sso' => $msg]);
         };
 
@@ -35,24 +40,43 @@ class SsoAcceptController extends Controller
 
         // 3) Validasi klaim
         $expectedIss = env('SSO_JWT_ISS', 'admin-center');
-        $expectedAud = env('SSO_JWT_AUD', 'product-admin');
+        $expectedAud = env('SSO_JWT_AUD', 'product'); // PERBAIKAN: default ke 'product'
         $now  = time();
         $skew = 60; // toleransi clock skew
 
-        if (($payload['iss'] ?? null) !== $expectedIss)                return $fail('Issuer salah');
-        if (($payload['aud'] ?? null) !== $expectedAud)                return $fail('Audience salah');
-        if (isset($payload['nbf']) && $payload['nbf'] > $now + $skew)  return $fail('Token belum berlaku');
-        if (!isset($payload['exp']) || $payload['exp'] < ($now - $skew)) return $fail('Token kedaluwarsa');
+        if (($payload['iss'] ?? null) !== $expectedIss) {
+            return $fail('Issuer salah: expected ' . $expectedIss . ', got ' . ($payload['iss'] ?? 'null'));
+        }
+        if (($payload['aud'] ?? null) !== $expectedAud) {
+            return $fail('Audience salah: expected ' . $expectedAud . ', got ' . ($payload['aud'] ?? 'null'));
+        }
+        if (isset($payload['nbf']) && $payload['nbf'] > $now + $skew) {
+            return $fail('Token belum berlaku');
+        }
+        if (!isset($payload['exp']) || $payload['exp'] < ($now - $skew)) {
+            return $fail('Token kedaluwarsa');
+        }
 
-        // 4) Identitas (email) dari sub
-        $email = strtolower(trim($payload['sub'] ?? ''));
-        if ($email === '') return $fail('Sub (email) kosong');
+        // 4) Identitas (email) dari sub atau email claim
+        $email = strtolower(trim($payload['email'] ?? $payload['sub'] ?? ''));
+        if ($email === '' || $email === 'admin') {
+            // Jika sub adalah 'admin' (bukan email), gunakan email claim
+            $email = strtolower(trim($payload['email'] ?? ''));
+        }
+        if ($email === '') return $fail('Email kosong');
+
+        Log::info('SSO Login Attempt', [
+            'email' => $email,
+            'payload' => $payload
+        ]);
 
         // 5) Cari user by email (case-insensitive)
         $userModel = config('auth.providers.users.model'); // ex: App\Models\User
         /** @var \Illuminate\Database\Eloquent\Model $user */
         $user = $userModel::whereRaw('LOWER(email) = ?', [$email])->first();
-        if (!$user) return $fail('User belum terdaftar di sistem ini');
+        if (!$user) {
+            return $fail('User dengan email ' . $email . ' belum terdaftar di sistem ini');
+        }
 
         // (Opsional) Batasi hanya admin (sesuai middleware user-access:admin & LoginController)
         if (property_exists($user, 'type') && (int)($user->type) !== 1) {
@@ -62,6 +86,11 @@ class SsoAcceptController extends Controller
         // 6) Login & redirect langsung ke halaman Banner admin
         Auth::login($user);
         $r->session()->regenerate();
+
+        Log::info('SSO Login Success', [
+            'user_id' => $user->id,
+            'email' => $user->email
+        ]);
 
         // Gunakan URL langsung untuk menghindari masalah routing
         return redirect('/admin/banner');
