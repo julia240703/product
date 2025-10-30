@@ -269,9 +269,6 @@ Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('adm
 Route::post('/admin/login', [LoginController::class, 'login'])->name('admin.login.submit');
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
 
-Route::get('/admin/login', [LoginController::class, 'showLoginForm'])
-    ->name('admin.login');
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN ROUTES (Login Required, Must be Admin)
