@@ -75,9 +75,15 @@
                 <input type="number" class="form-control" id="stock" name="stock" min="0" value="0">
               </div>
 
-              <div class="col-12">
+              {{-- Deskripsi & Link URL berdampingan --}}
+              <div class="col-md-6">
                 <label for="description" class="form-label">Deskripsi</label>
                 <textarea class="form-control" id="description" name="description"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label for="link_url" class="form-label">Link URL Aksesoris</label>
+                <input type="text" class="form-control" id="link_url" name="link_url" placeholder="https://contoh.com/produk-aksesoris atau /path/internal">
+                <small class="text-muted">Bisa URL penuh (http/https) atau path internal.</small>
               </div>
 
               {{-- Varian: teks panjang --}}
@@ -157,9 +163,15 @@
                 <input type="number" class="form-control" id="stock_edit" name="stock" min="0" value="0">
               </div>
 
-              <div class="col-12">
+              {{-- Deskripsi & Link URL berdampingan --}}
+              <div class="col-md-6">
                 <label class="form-label" for="description_edit">Deskripsi</label>
                 <textarea class="form-control" id="description_edit" name="description"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="link_url_edit">Link URL Aksesoris</label>
+                <input type="text" class="form-control" id="link_url_edit" name="link_url" placeholder="https://contoh.com/produk-aksesoris atau /path/internal">
+                <small class="text-muted">Bisa URL penuh (http/https) atau path internal.</small>
               </div>
 
               {{-- Varian: teks panjang --}}
@@ -332,6 +344,7 @@
           $('#stock_edit').val(res.stock ?? 0);
           $('#description_edit').val(res.description ?? '');
           $('#variant_edit').val(res.variant ?? '');
+          $('#link_url_edit').val(res.link_url ?? ''); // <-- isi Link URL
 
           // cover saat ini
           if (res.cover_image) {

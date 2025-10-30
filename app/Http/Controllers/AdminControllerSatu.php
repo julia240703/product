@@ -474,7 +474,6 @@ public function accessoriesDelete($motorId, $id)
 }
 
 // =============== KELOLA GENERAL AKSESORIS ===============
-
 // LIST + VIEW
 public function accessoriesGeneralIndex()
 {
@@ -506,7 +505,8 @@ public function accessoriesGeneralStore(Request $r)
         'weight'       => 'nullable|numeric',
         'price'        => 'nullable|numeric',
         'description'  => 'nullable|string',
-        'variant'      => 'nullable|string', // <-- varian teks
+        'link_url'     => 'nullable|string|max:2048',
+        'variant'      => 'nullable|string',
         'material'     => 'nullable|string|max:100',
         'color'        => 'nullable|string|max:100',
         'stock'        => 'nullable|integer|min:0',
@@ -555,7 +555,8 @@ public function accessoriesGeneralUpdate(Request $r, $id)
         'weight'       => 'nullable|numeric',
         'price'        => 'nullable|numeric',
         'description'  => 'nullable|string',
-        'variant'      => 'nullable|string', // <-- varian teks
+        'link_url'     => 'nullable|string|max:2048',
+        'variant'      => 'nullable|string',
         'material'     => 'nullable|string|max:100',
         'color'        => 'nullable|string|max:100',
         'stock'        => 'nullable|integer|min:0',

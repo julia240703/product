@@ -29,6 +29,7 @@ class GeneralAccessory extends Model
         'weight',
         'price',
         'description',
+        'link_url',
         'variant',
         'material',
         'color',
