@@ -135,9 +135,7 @@ public function motorsPublished(Request $request)
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Spesifikasi"><i class="fas fa-list"></i></a></td>
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Fitur"><i class="fas fa-star"></i></a></td>
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" class="btn btn-sm btn-outline-primary" title="Part"><i class="fas fa-wrench"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary" title="Kelola Kredit"><i class="fas fa-calculator"></i>
-                                    </a>
-                                </td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary" title="Kelola Kredit"><i class="fas fa-calculator"></i></a></td>
                             </tr>
                         </tbody>
                     </table>
@@ -189,8 +187,20 @@ public function motorsUnpublished(Request $request)
 
         return DataTables::of($data)
             ->addIndexColumn()
+            ->filter(function ($query) use ($request) {
+                $search = $request->input('search.value');
+                if (!empty($search)) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('motors.name', 'like', "%{$search}%")
+                          ->orWhere('motors.motor_code_otr', 'like', "%{$search}%")
+                          ->orWhere('motors.motor_code_credit', 'like', "%{$search}%")
+                          ->orWhere('motors.wms_code', 'like', "%{$search}%")
+                          ->orWhereHas('category', fn($qc)=>$qc->where('name','like',"%{$search}%"))
+                          ->orWhereHas('type', fn($qt)=>$qt->where('name','like',"%{$search}%"));
+                    });
+                }
+            })
             ->addColumn('product', function ($row) {
-                // …(sama persis seperti di atas, hanya link kreditnya juga ke route('admin.credits.index', $row->id))
                 return '
                     <div style="text-align:center; position:relative">
                         ' . ($row->is_new ? '<div style="position:absolute; right:6px; top:4px; color:#E11D2B; font-weight:700;">New !</div>' : '') . '
@@ -234,14 +244,13 @@ public function motorsUnpublished(Request $request)
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.specifications.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-list"></i></a></td>
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.features.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-star"></i></a></td>
                                 <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.spareparts.index', $row->id) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-wrench"></i></a></td>
-                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-calculator"></i></a>
-                                </td>
+                                <td style="padding:8px; border: 1px solid black;"><a href="' . route('admin.credits.index', ['motor' => $row->id]) . '" class="btn btn-sm btn-outline-primary"><i class="fas fa-calculator"></i></a></td>
                             </tr>
                         </tbody>
                     </table>
                 ';
             })
-            ->addColumn('action', fn($row)=> /* sama seperti published */ '
+            ->addColumn('action', fn($row)=> '
                 <div class="btn-group">
                     <button class="btn btn-sm btn-primary me-1 editBtn" 
                         data-id="' . $row->id . '" 
@@ -282,7 +291,7 @@ public function motorsStore(Request $request)
         'category_id'         => 'required|exists:categories,id',
         'type_id'             => 'required|exists:motor_types,id',
         'description'         => 'nullable|string',
-        'motor_url'           => 'required|url|max:255', 
+        'motor_url'           => 'required|url|max:255',
         'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_url'       => 'nullable|url|max:255',
@@ -292,6 +301,7 @@ public function motorsStore(Request $request)
         'is_new'              => 'nullable|boolean',
     ]);
 
+    // gunakan helper uploadFile() milikmu (disk 'public')
     $data['thumbnail']           = $this->uploadFile($request, 'thumbnail', 'thumbnails');
     $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails');
     $data['feature_thumbnail']   = $this->uploadFile($request, 'feature_thumbnail', 'feature_thumbnails');
@@ -318,7 +328,7 @@ public function updateMotor(Request $request, $id)
         'category_id'         => 'required|exists:categories,id',
         'type_id'             => 'required|exists:motor_types,id',
         'description'         => 'nullable|string',
-        'motor_url'           => 'required|url|max:255', 
+        'motor_url'           => 'required|url|max:255',
         'thumbnail'           => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         'accessory_url'       => 'nullable|url|max:255',
@@ -328,6 +338,7 @@ public function updateMotor(Request $request, $id)
         'is_new'              => 'nullable|boolean',
     ]);
 
+    // pakai helper uploadFile(), lewati path lama agar dihapus otomatis bila upload baru
     $data['thumbnail']           = $this->uploadFile($request, 'thumbnail', 'thumbnails', $motor->thumbnail);
     $data['accessory_thumbnail'] = $this->uploadFile($request, 'accessory_thumbnail', 'accessory_thumbnails', $motor->accessory_thumbnail);
     $data['feature_thumbnail']   = $this->uploadFile($request, 'feature_thumbnail', 'feature_thumbnails', $motor->feature_thumbnail);
@@ -346,17 +357,10 @@ public function deleteMotor($id)
     $motor  = Motor::findOrFail($id);
     $status = $motor->status;
 
-    if ($motor->thumbnail && Storage::exists('public/' . $motor->thumbnail)) {
-        Storage::delete('public/' . $motor->thumbnail);
-    }
-    if ($motor->accessory_thumbnail && Storage::exists('public/' . $motor->accessory_thumbnail)) {
-        Storage::delete('public/' . $motor->accessory_thumbnail);
-    }
-    if ($motor->feature_thumbnail && Storage::exists('public/' . $motor->feature_thumbnail)) {
-        Storage::delete('public/' . $motor->feature_thumbnail);
-    }
-    if ($motor->spin_gif && Storage::exists('public/' . $motor->spin_gif)) {
-        Storage::delete('public/' . $motor->spin_gif);
+    foreach (['thumbnail','accessory_thumbnail','feature_thumbnail','spin_gif'] as $col) {
+        if (!empty($motor->{$col}) && \Storage::disk('public')->exists($motor->{$col})) {
+            \Storage::disk('public')->delete($motor->{$col});
+        }
     }
 
     $motor->delete();

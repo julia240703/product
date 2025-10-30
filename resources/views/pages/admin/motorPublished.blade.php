@@ -104,7 +104,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Link URL Aksesoris Motor <small class="text-muted">(opsional)</small></label>
                                 <input type="url" class="form-control" name="accessory_url" placeholder="https://contoh.com/produk/aksesoris-beat">
-                                <div class="form-text">Jika diisi, halaman publik dapat menautkan langsung ke daftar aksesoris motor ini.</div>
+                                <div class="form-text">Opsional. Jika diisi, halaman publik dapat menautkan langsung ke daftar aksesoris motor ini.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fitur Thumbnail <span class="text-red">*</span></label>

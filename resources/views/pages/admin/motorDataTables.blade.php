@@ -114,6 +114,13 @@
                                 <textarea class="form-control" name="description" required></textarea>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">Link URL Motor <span class="text-red">*</span></label>
+                                <input type="url" class="form-control" name="motor_url"
+                                        placeholder="https://contoh.com/produk/beat" required>
+                                <div class="form-text">Wajib diisi. Contoh: https://contoh.com/produk/beat</div>
+                            </div>
+
                             {{-- FILES --}}
                             <div class="mb-3">
                                 <label class="form-label">Thumbnail <span class="text-red">*</span></label>
@@ -126,6 +133,13 @@
                                 <input type="file" class="form-control" name="accessory_thumbnail" accept="image/*">
                                 <div class="form-text">Opsional. Ukuran disarankan: <strong>1400×1400 px</strong>. Maks <strong>2048KB</strong>.</div>
                                 <div class="form-text">Kosongkan jika motor tidak memiliki aksesoris.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Link URL Aksesoris Motor <small class="text-muted">(opsional)</small></label>
+                                <input type="url" class="form-control" name="accessory_url"
+                                        placeholder="https://contoh.com/produk/aksesoris-beat">
+                                <div class="form-text">Jika diisi, halaman publik dapat menautkan langsung ke daftar aksesoris motor ini.</div>
                             </div>
 
                             <div class="mb-3">
