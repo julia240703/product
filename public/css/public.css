@@ -3770,49 +3770,71 @@ margin-bottom: calc(var(--cmpFooterH, 60px) + 24px) !important;
   }
 }
 
-/* --- FIX: H1|H2|H3 satu baris TANPA bikin overflow --- */
+/* --- H1|H2|H3: tampil 2 baris (kode + label) & lebih besar --- */
 .dealer-services3{
   display:flex;
-  align-items:center;
-  gap:10px;
-  margin:6px 0 2px;
+  align-items:center;        /* semula: flex-start */
+  justify-content:center;    /* <— tambah: pusatkan grup */
+  gap:18px;
+  margin:10px 0 6px;
   color:#0f172a;
   font-weight:700;
-  flex-wrap:nowrap;        /* tetap satu baris */
-  /* HAPUS white-space:nowrap; dari container */
-  overflow-x:hidden;       /* cegah bikin scroll horizontal */
-  min-width:0;             /* biar bisa menyusut di dalam flex/grid */
-  font-size:clamp(11px, 1.2vw, 14px);
-  line-height:1.25;
+  flex-wrap:nowrap;
+  overflow-x:hidden;
+  min-width:0;
+  text-align:center;         /* <— tambah: teks tiap item ke tengah */
 }
+
 .dealer-services3 .svc3{
-  display:flex; align-items:center; gap:6px;
-  position:relative; padding-right:10px;
-  white-space:nowrap;     /* segmennya yang anti-patah, bukan container */
-  flex:0 1 auto;          /* boleh menyusut */
+  display:flex;
+  flex-direction:column;
+  align-items:center;        /* semula: flex-start */
+  gap:3px;
+  padding-right:0;
+  white-space:normal;
+  flex:0 1 auto;
   min-width:0;
 }
-.dealer-services3 .svc3:not(:last-child)::after{
-  content:""; position:absolute; right:3px; top:50%;
-  transform:translateY(-50%);
-  width:2px; height:12px; background:rgba(17,24,39,.15);
+
+/* matikan garis pemisah vertikal lama */
+.dealer-services3 .svc3::after{ display:none !important; }
+
+/* baris 1: H1/H2/H3 lebih besar */
+.dealer-services3 .svc3 b{
+  font-weight:800;
+  font-size:clamp(18px, 1.7vw, 24px);
+  line-height:1.05;
+  color:#111827;
 }
-.dealer-services3 b{ font-weight:800; font-size:.95em; }
 
-/* --- Tambahan penjaga overflow di layout list --- */
-.dealer-list-pane{ overflow-x:hidden; }
-.dealer-card .dealer-card-body,
-.dealer-info{ min-width:0; max-width:100%; }
-.dealer-item, .dealer-card{ max-width:100%; }
-html, body { overflow-x:hidden; } /* kalau masih ada parent yang meluber */
+/* baris 2: label di bawahnya */
+.dealer-services3 .svc3 span{
+  font-weight:700;
+  font-size:clamp(14px, 1.25vw, 18px);
+  line-height:1.2;
+  color:#0f172a;
+  letter-spacing:.1px;
+}
 
-/* Tombol "Lihat Lokasi" selebar card */
-.dealer-cta.dealer-cta--card{
-  display:block !important;     /* override inline-flex */
-  width:100% !important;         /* isi penuh lebar konten card */
+/* mobile: sedikit lebih rapat */
+@media (max-width:576px){
+  .dealer-services3{ gap:14px; }
+  .dealer-services3 .svc3 b{ font-size:clamp(17px, 5vw, 20px); }
+  .dealer-services3 .svc3 span{ font-size:clamp(13px, 3.8vw, 16px); }
+}
+
+/* tombol "Lihat Lokasi" selebar card */
+.dealer-card .dealer-info > a.dealer-cta.dealer-cta--card,
+.dealer-card .dealer-info > a.dealer-cta.dealer-cta--card.btn{
+  display:block !important;
+  width:100% !important;
   box-sizing:border-box;
-  margin-top:8px;
+  text-align:center;
+  justify-content:center;
 }
+
+/* pastikan kontainer teksnya melebar penuh */
+.dealer-card .dealer-info{ width:100%; min-width:0; }
 
 /* =========================
    PRICE LIST PAGE
