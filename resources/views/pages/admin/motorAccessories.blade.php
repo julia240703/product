@@ -62,6 +62,14 @@
                                 <label for="weight" class="form-label">Berat (gram) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="weight" name="weight">
                             </div>
+
+                            {{-- ====== HARGA (ADD) ====== --}}
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Harga (Rp)</label>
+                                <input type="number" min="0" step="1" class="form-control" id="price" name="price" placeholder="Contoh: 101000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="color" class="form-label">Warna</label>
                                 <input type="text" class="form-control" id="color" name="color">
@@ -146,6 +154,14 @@
                                 <label for="weight_edit" class="form-label">Berat (gram) <span class="text-danger">*</span></label>
                                 <input type="number" class="form-control" id="weight_edit" name="weight">
                             </div>
+
+                            {{-- ====== HARGA (EDIT) ====== --}}
+                            <div class="mb-3">
+                                <label for="price_edit" class="form-label">Harga (Rp)</label>
+                                <input type="number" min="0" step="1" class="form-control" id="price_edit" name="price" placeholder="Contoh: 101000">
+                                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+                            </div>
+
                             <div class="mb-3">
                                 <label for="color_edit" class="form-label">Warna</label>
                                 <input type="text" class="form-control" id="color_edit" name="color">
@@ -261,6 +277,28 @@
         <script>
 $(document).ready(function() {
 
+    // === Parser harga: "101.000,00" -> "101000"
+    function parsePriceToInt(v) {
+        if (v === null || v === undefined) return '';
+        if (typeof v === 'number') return String(Math.round(v));
+        let s = String(v).trim();
+        if (s === '') return '';
+        s = s.replace(/\s+/g, '');
+        const hasComma = s.includes(',');
+        const hasDot   = s.includes('.');
+        if (hasComma && hasDot) { s = s.replace(/\./g, ''); s = s.replace(/,/g, '.'); }
+        else if (hasComma)      { s = s.replace(/\./g, ''); s = s.replace(/,/g, '.'); }
+        else                    { s = s.replace(/\./g, ''); }
+        const num = parseFloat(s);
+        if (isNaN(num)) return '';
+        return String(Math.round(num));
+    }
+
+    // Saat mengetik di field harga: tetap angka polos
+    $('#price, #price_edit').on('input', function () {
+        this.value = this.value.replace(/[^\d]/g, '');
+    });
+
     // ================== DATATABLE ==================
     var dataTable = $('#accessory-table').DataTable({
         responsive: true,
@@ -320,6 +358,13 @@ $(document).ready(function() {
         $('#weight_edit').val(accessoryData.weight);
         $('#description_edit').val(accessoryData.description);
 
+        // harga (ambil price_raw kalau ada; fallback ke price)
+        $('#price_edit').val(
+            accessoryData.price_raw != null
+              ? parsePriceToInt(accessoryData.price_raw)
+              : (accessoryData.price != null ? parsePriceToInt(accessoryData.price) : '')
+        );
+
         $('#color_edit').val(accessoryData.color || '');
         $('#material_edit').val(accessoryData.material || '');
         $('#stock_edit').val(accessoryData.stock ?? 0);
@@ -362,6 +407,16 @@ $(document).ready(function() {
         $('#modalImage').attr('src', $(this).data('image'));
         $('#imageTitle').text($(this).data('title'));
         $('#viewImageModal').modal('show');
+    });
+
+    // ========== BERSIHKAN NILAI HARGA SEBELUM SUBMIT ==========
+    $('#addAccessoryForm').on('submit', function () {
+        const $p = $('#price');
+        $p.val(parsePriceToInt($p.val()));
+    });
+    $('#editAccessoryForm').on('submit', function () {
+        const $p = $('#price_edit');
+        $p.val(parsePriceToInt($p.val()));
     });
 
     // Reset form saat modal ditutup

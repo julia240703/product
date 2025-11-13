@@ -70,7 +70,12 @@
 
                   <div class="acc-price mb-2">
                     <span>Harga</span>
-                    <strong>Rp {{ number_format($acc->display_price, 0, ',', '.') }}</strong>
+
+                    @if(is_null($acc->display_price) || $acc->display_price == 0)
+                      <strong class="acc-price-call">Hubungi dealer</strong>
+                    @else
+                      <strong>Rp {{ number_format($acc->display_price, 0, ',', '.') }}</strong>
+                    @endif
                   </div>
 
                   <a href="{{ route('accessories.general.detail', $acc->id) }}"

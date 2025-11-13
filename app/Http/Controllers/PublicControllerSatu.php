@@ -705,7 +705,7 @@ class PublicControllerSatu extends Controller
                 ->map(function ($g) {
                     $src = $g->cover_image ?: optional($g->images->first())->image;
                     $g->image_url     = $this->imgUrl($src);
-                    $g->display_price = $g->price ?? 0;
+                    $g->display_price = $g->price;
                     return $g;
                 });
         } elseif (ctype_digit((string) $activeKey)) {
@@ -728,7 +728,7 @@ class PublicControllerSatu extends Controller
                     ->map(function ($g) {
                         $src = $g->cover_image ?: optional($g->images->first())->image;
                         $g->image_url     = $this->imgUrl($src);
-                        $g->display_price = $g->price ?? 0;
+                        $g->display_price = $g->price;
                         return $g;
                     });
             } else {
@@ -781,10 +781,11 @@ class PublicControllerSatu extends Controller
         }
 
         $accessories = $motor->accessories->map(function ($acc) {
-            $acc->image_url     = $this->imgUrl($acc->image ?? null);
-            $acc->display_price = $acc->price ?? 0;
-            return $acc;
-        });
+    $acc->image_url     = $this->imgUrl($acc->image ?? null);
+    // biarkan apa adanya: null kalau belum diisi
+    $acc->display_price = $acc->price;
+    return $acc;
+});
 
         return view('pages.public.accessoriesMotorDetail', compact(
             'motor', 'stageImage', 'hotspots', 'accessories'
@@ -932,7 +933,7 @@ public function accessoryDetail($id)
                     $src = $a->cover_image ?: $a->image ?: optional($a->images->first())->image;
                     $a->display_name  = $a->name_apparel ?? '-';
                     $a->image_url     = $src ? $this->imgUrl($src) : asset('placeholder.png');
-                    $a->display_price = $a->price ?? 0;
+                    $a->display_price = $a->price;
                     $a->is_new        = (bool)($a->is_new ?? false);
                     return $a;
                 });

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str; // <— TAMBAHKAN
 
 class Motor extends Model
 {
@@ -14,11 +15,11 @@ class Motor extends Model
         'motor_code_otr',
         'motor_code_credit',
         'wms_code',
-        'price',                
+        'price',
         'category_id',
         'type_id',
         'description',
-        'motor_url', 
+        'motor_url',
         'thumbnail',
         'accessory_thumbnail',
         'accessory_url',
@@ -39,7 +40,18 @@ class Motor extends Model
 
     public function getPartsPdfUrlAttribute(): ?string
     {
-        return $this->parts_pdf ? asset('storage/'.$this->parts_pdf) : null;
+        if (!$this->parts_pdf) return null;
+
+        // normalisasi
+        $p = ltrim($this->parts_pdf, '/');
+
+        // DATA LAMA: sudah berawalan "storage/"
+        if (Str::startsWith($p, 'storage/')) {
+            return asset($p); // -> /storage/...
+        }
+
+        // DATA BARU: hanya "pdf/xxx.pdf" (relatif disk public)
+        return asset('storage/'.$p);
     }
 
     public function getHasSpinAttribute(): bool
@@ -47,9 +59,6 @@ class Motor extends Model
         return !empty($this->spin_gif);
     }
 
-    /**
-     * URL thumbnail prioritas.
-     */
     public function getThumbUrlAttribute(): string
     {
         if (!empty($this->thumbnail)) {
@@ -62,12 +71,9 @@ class Motor extends Model
         return asset('placeholder.png');
     }
 
-    /**
-     * Teks harga OTR terformat (fallback 0 jika null).
-     */
     public function getPriceTextAttribute(): string
     {
-        $price = $this->price ?? 0; // <-- sekarang pakai kolom 'price'
+        $price = $this->price ?? 0;
         return 'Rp '.number_format($price, 0, ',', '.');
     }
 
@@ -119,13 +125,11 @@ class Motor extends Model
         return $this->hasMany(MotorAccessory::class);
     }
 
-    // — Kredit (matrix) —
     public function creditHeaders()
     {
-        return $this->hasMany(CreditHeader::class); // App\Models\CreditHeader
+        return $this->hasMany(CreditHeader::class);
     }
 
-    // header terbaru (berdasarkan valid_from), useful buat frontend simulasi
     public function latestCreditHeader()
     {
         return $this->hasOne(CreditHeader::class)->latestOfMany('valid_from');

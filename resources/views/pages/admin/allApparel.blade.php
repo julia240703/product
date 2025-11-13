@@ -101,6 +101,11 @@
                 <input type="text" class="form-control" name="part_number">
               </div>
               <div class="col-md-6">
+                <label class="form-label">Harga (Rp)</label>
+                <input type="number" min="0" step="1" class="form-control" name="price" id="price" placeholder="Contoh: 150000">
+                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Link URL Apparel</label>
                 <input type="url" class="form-control" name="apparel_url" placeholder="https://contoh.com/produk/helm-xxl">
               </div>
@@ -207,6 +212,11 @@
               <div class="col-md-6">
                 <label class="form-label">Nomor Part</label>
                 <input type="text" class="form-control" name="part_number" id="part_number_edit">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Harga (Rp)</label>
+                <input type="number" min="0" step="1" class="form-control" name="price" id="price_edit" placeholder="Contoh: 150000">
+                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Link URL Apparel</label>
@@ -373,6 +383,7 @@ $(document).ready(function () {
       $('#color_edit').val(res.color || '');
       $('#size_edit').val(res.size || '');
       $('#part_number_edit').val(res.part_number || '');
+      $('#price_edit').val(res.price != null ? parsePriceToInt(res.price) : '');
       $('#apparel_url_edit').val(res.apparel_url || '');
       $('#stock_edit').val(res.stock ?? 0);
 
@@ -493,6 +504,36 @@ $(document).ready(function () {
     $('#current-cover-box').html('<span class="text-muted small">Tidak ada cover</span>');
     $('#current-gallery').empty();
   });
+
+  // === Parser harga ===
+function parsePriceToInt(v) {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'number') return String(Math.round(v));
+  let s = String(v).trim();
+  if (s === '') return '';
+  s = s.replace(/\s+/g, '');
+  const hasComma = s.includes(',');
+  const hasDot = s.includes('.');
+  if (hasComma && hasDot) { s = s.replace(/\./g, ''); s = s.replace(/,/g, '.'); }
+  else if (hasComma)      { s = s.replace(/\./g, ''); s = s.replace(/,/g, '.'); }
+  else                    { s = s.replace(/\./g, ''); }
+  const num = parseFloat(s);
+  if (isNaN(num)) return '';
+  return String(Math.round(num));
+}
+
+$('#price, #price_edit').on('input', function () {
+  this.value = this.value.replace(/[^\d]/g, '');
+});
+
+$('#addForm').on('submit', function () {
+  const $p = $('#price');
+  $p.val(parsePriceToInt($p.val()));
+});
+$('#editForm').on('submit', function () {
+  const $p = $('#price_edit');
+  $p.val(parsePriceToInt($p.val()));
+});
 });
 </script>
 @endsection

@@ -60,6 +60,9 @@
               src="{{ $viewerUrl }}"
               title="Katalog Part {{ $motor->name }}"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+
+      {{-- Tombol Fullscreen overlay (toggle) --}}
+      <button type="button" id="pdfFsBtn" class="pdfjs-fs-btn" aria-label="Fullscreen">⛶</button>
     </div>
   @endif
 
@@ -70,7 +73,7 @@
 <div id="osk-backdrop" class="osk-backdrop" hidden></div>
 <div id="osk" class="osk" hidden aria-hidden="true" role="dialog" aria-label="Keyboard">
   <div class="osk-head">
-    <span class="osk-title">Keyboard</span>
+    <span class="osk-title">Cari (Find)</span>
     <button type="button" class="osk-close" aria-label="Tutup">×</button>
   </div>
   <div class="osk-keys" aria-live="polite"></div>
@@ -81,6 +84,15 @@
   const frame  = document.getElementById('pdfJsFrame');
   if(!frame) return;
   const child  = () => frame.contentWindow;
+
+  // ===== Interceptor: Ctrl/⌘+F =====
+  window.addEventListener('keydown', (e)=>{
+    const isMac = /Mac/i.test(navigator.platform);
+    if ((isMac ? e.metaKey : e.ctrlKey) && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      try { child().postMessage({ type: 'PDF_FIND_OPEN' }, '*'); } catch {}
+    }
+  }, { capture:true });
 
   // ===== OSK DOM =====
   const osk    = document.getElementById('osk');
@@ -105,6 +117,9 @@
   ];
   const spans = { '⌫':2,'Caps':2,'Clear':2,'Space':5,'Enter':3 };
 
+  // --- flag untuk menahan PREVIEW_END setelah commit
+  let suppressPreviewEnd = false;
+
   function build(layout){
     keysEl.innerHTML='';
     layout.forEach(row=>{
@@ -119,7 +134,13 @@
     });
   }
   function show(){ osk.hidden=false; backd.hidden=false; osk.setAttribute('aria-hidden','false'); document.body.classList.add('osk-open'); }
-  function hide(){ osk.hidden=true;  backd.hidden=true;  osk.setAttribute('aria-hidden','true');  document.body.classList.remove('osk-open'); }
+  function hide(){
+    osk.hidden=true;  backd.hidden=true;  osk.setAttribute('aria-hidden','true');  document.body.classList.remove('osk-open');
+    // >>> setelah commit angka, jangan kirim PREVIEW_END (menghindari override nilai)
+    if (!suppressPreviewEnd) {
+      send('PDF_PAGE_PREVIEW_END');
+    }
+  }
 
   function openText(){
     mode='text'; buffer=''; caps=false; title.textContent='Cari (Find)';
@@ -129,6 +150,8 @@
     mode='num'; buffer=String(current||'').replace(/\D+/g,''); maxPage=Number(max||0)||0; caps=false;
     title.textContent = maxPage ? `Loncat Halaman (1–${maxPage})` : 'Loncat Halaman';
     build(rowsNum); show();
+    // >>> preview awal agar kolom page di viewer langsung sinkron
+    send('PDF_PAGE_PREVIEW', { draft: buffer });
   }
 
   function send(type, payload){ try{ child().postMessage({type, payload}, '*'); }catch{} }
@@ -145,25 +168,49 @@
     const k=key.dataset.key;
 
     if(k==='Caps'){ caps=!caps; key.classList.toggle('muted',caps); return; }
-    if(k==='Clear'){ buffer=''; if(mode==='text') debounceFind(); return; }
-    if(k==='⌫'){ buffer=buffer.slice(0,-1); if(mode==='text') debounceFind(); return; }
+
+    if(k==='Clear'){
+      buffer='';
+      if(mode==='text'){ debounceFind(); }
+      else{ send('PDF_PAGE_PREVIEW', { draft: buffer }); }
+      return;
+    }
+
+    if(k==='⌫'){
+      buffer=buffer.slice(0,-1);
+      if(mode==='text'){ debounceFind(); }
+      else{ send('PDF_PAGE_PREVIEW', { draft: buffer }); }
+      return;
+    }
+
     if(k==='Space' && mode==='text'){ buffer+=' '; debounceFind(); return; }
+
     if(k==='Enter'){
-      if(mode==='text') send('PDF_FIND_COMMIT', { term: buffer });
-      else send('PDF_PAGE_COMMIT', { page: clampPage(buffer||'1') });
-      hide(); return;
+      if(mode==='text'){
+        send('PDF_FIND_COMMIT', { term: buffer });
+        hide();
+      } else {
+        // angka: tahan PREVIEW_END agar tidak menimpa hasil commit
+        suppressPreviewEnd = true;
+        send('PDF_PAGE_COMMIT', { page: clampPage(buffer||'1') });
+        hide();
+        setTimeout(()=> suppressPreviewEnd = false, 0);
+      }
+      return;
     }
 
     const char=(mode==='text')?(caps?k.toUpperCase():k):(/\d/.test(k)?k:'');
     if(!char) return;
     buffer+=char;
-    if(mode==='text') debounceFind();
+
+    if(mode==='text'){ debounceFind(); }
+    else{ send('PDF_PAGE_PREVIEW', { draft: buffer }); } // live preview angka
   });
 
   backd.addEventListener('click', hide);
   btnX.addEventListener('click', hide);
 
-  // ====== Terima event dari viewer (anak)
+  // ====== Pesan dari viewer (iframe)
   window.addEventListener('message', (e)=>{
     const {type, payload} = e.data || {};
     switch(type){
@@ -174,10 +221,42 @@
         if(!osk.hidden && mode==='text') title.textContent=`Cari ( ${cur}/${total} )`;
         break;
       }
-      case 'PDF_FIND_CLOSE':
-        if(!osk.hidden && mode==='text') hide();
-        break;
+      case 'PDF_FIND_CLOSE': if(!osk.hidden && mode==='text') hide(); break;
+      case 'PDF_REQUEST_FULLSCREEN': enterFullscreen(); break;
+      case 'PDF_EXIT_FULLSCREEN':    exitFullscreen();  break;
     }
+  });
+
+  // ====== Fullscreen host (wrapper kartu)
+  const fsHost = document.getElementById('pdfJsCard');
+  const fsBtn  = document.getElementById('pdfFsBtn');
+
+  function inFs(){ return (document.fullscreenElement||document.webkitFullscreenElement) === fsHost; }
+
+  function enterFullscreen(){
+    if(!fsHost || inFs()) return;
+    const fn = fsHost.requestFullscreen || fsHost.webkitRequestFullscreen;
+    fn && fn.call(fsHost);
+  }
+  function exitFullscreen(){
+    if(!inFs()) return;
+    const fn = document.exitFullscreen || document.webkitExitFullscreen;
+    fn && fn.call(document);
+  }
+
+  fsBtn && fsBtn.addEventListener('click', (e)=>{
+    e.preventDefault();
+    inFs() ? exitFullscreen() : enterFullscreen();
+  });
+
+  function moveOskInto(el){ if(!el) return; el.appendChild(osk); el.appendChild(backd); osk.classList.add('in-fs'); backd.classList.add('in-fs'); }
+  function moveOskBack(){ document.body.appendChild(osk); document.body.appendChild(backd); osk.classList.remove('in-fs'); backd.classList.remove('in-fs'); }
+
+  document.addEventListener('fullscreenchange', ()=>{
+    const active = inFs();
+    if (active) moveOskInto(fsHost); else moveOskBack();
+    try{ child().postMessage({ type:'PDF_FULLSCREEN_STATE', payload:{ active } }, '*'); }catch{}
+    fsBtn && fsBtn.classList.toggle('is-fs', active);
   });
 })();
 </script>

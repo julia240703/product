@@ -68,7 +68,12 @@
           <h3 class="accd-title">{{ $acc->name }}</h3>
           <div class="accd-price">
             <span>Harga</span>
-            <strong>Rp {{ number_format($acc->display_price, 0, ',', '.') }}</strong>
+
+            @if(is_null($acc->display_price) || $acc->display_price == 0)
+              <strong class="accd-price-call">Hubungi dealer</strong>
+            @else
+              <strong>Rp {{ number_format($acc->display_price, 0, ',', '.') }}</strong>
+            @endif
           </div>
           <a href="{{ route('accessory.detail', $acc->id) }}" class="accd-cta">
             <span>Detail</span>

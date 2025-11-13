@@ -60,7 +60,7 @@
           @php
             $name  = $ap->display_name ?? ($ap->name_apparel ?? '-');
             $img   = $ap->image_url ?? asset('placeholder.png');
-            $price = $ap->display_price ?? ($ap->price ?? 0);
+            $price = $ap->display_price ?? $ap->price;   // bisa null
           @endphp
 
           <div class="col-md-6 mb-4 product-col">
@@ -80,7 +80,12 @@
 
                 <div class="acc-price mb-2">
                   <span>Harga</span>
-                  <strong>Rp {{ number_format($price, 0, ',', '.') }}</strong>
+
+                  @if(is_null($price) || $price == 0)
+                    <strong class="acc-price-call">Hubungi dealer</strong>
+                  @else
+                    <strong>Rp {{ number_format($price, 0, ',', '.') }}</strong>
+                  @endif
                 </div>
 
                 <a href="{{ route('apparel.detail', $ap->id) }}" class="apr-cta acc-cta acc-motor-cta">

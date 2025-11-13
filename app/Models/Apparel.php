@@ -22,11 +22,13 @@ class Apparel extends Model
         'part_number',
         'apparel_url',
         'stock',
+        'price',
         'is_new',
     ];
 
     protected $casts = [
         'is_new' => 'boolean', 
+        'price'  => 'integer',
     ];
 
     /**

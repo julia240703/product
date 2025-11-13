@@ -6,7 +6,7 @@
   <title>PDF Viewer</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pdfjs-dist@4/web/pdf_viewer.css">
-  <link rel="stylesheet" href="./custom-viewer.css?v=5">
+  <link rel="stylesheet" href="./custom-viewer.css?v=7">
 </head>
 <body>
   <div class="topbar">
@@ -34,12 +34,13 @@
 
   <div class="viewer" id="viewer"></div>
 
-  <!-- PDF.js UMD lokal -->
   <script src="../build/pdf.js"></script>
   <script> pdfjsLib.GlobalWorkerOptions.workerSrc = '../build/pdf.worker.js'; </script>
 
   <script>
-    /* ===== State & util ===== */
+    // jangan restore scroll; selalu mulai dari halaman 1
+    if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+
     const viewer   = document.getElementById('viewer');
     const pageBox  = document.getElementById('pageNumber');
     const pageCnt  = document.getElementById('pageCount');
@@ -55,6 +56,13 @@
     let pageEls=[], pageTexts=[], renderTasks={}, pageSize={w:800,h:1100};
     let results=[], activeIndex=-1;
 
+    // tahan observer saat init
+    let suppressIO = true;
+    // kunci saat OSK angka aktif agar IO tidak menimpa preview
+    let pageLock = false;
+    // abaikan PREVIEW_END yang datang setelah commit selama jeda singkat
+    let ignorePreviewEndUntil = 0;
+
     const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
     const debounced=(fn,ms=100)=>{ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),ms); }; };
     const sendToParent = (type, payload)=>{ try{ parent.postMessage({type, payload}, '*'); }catch{} };
@@ -64,10 +72,8 @@
       viewer.innerHTML = `<div class="msg error">Gagal memuat PDF.<br><small>${(err && err.message) || err}</small></div>`;
     };
 
-    /* ===== Render halaman on-demand ===== */
     async function renderPage(p){
       if (renderTasks[p] && !renderTasks[p]._cancelled) return;
-
       const page = await pdf.getPage(p);
       if (p===1){
         const vp0 = page.getViewport({scale:1, rotation:(page.rotate||0)});
@@ -104,7 +110,6 @@
       return wrap;
     }
 
-    /* ===== Virtualization ===== */
     function inRange(cur,p){ return Math.abs(p-cur) <= VBUF; }
     async function ensureVisiblePages(cur){
       for (let p=Math.max(1,cur-VBUF); p<=Math.min(numPages,cur+VBUF); p++){
@@ -125,6 +130,7 @@
     }
 
     const io = new IntersectionObserver(entries=>{
+      if (suppressIO || pageLock) return;  // tahan update saat preview angka
       let top=null, topY=Infinity;
       entries.forEach(e=>{
         if(!e.isIntersecting) return;
@@ -134,15 +140,14 @@
       if(top){
         const cur = parseInt(top.dataset.page,10)||1;
         pageBox.value = cur;
+        pageBox.classList.remove('invalid');
         ensureVisiblePages(cur);
       }
     }, { root: viewer, rootMargin: '1000px 0px', threshold: [0,0.01,0.1] });
     const attachObserver = ()=> pageEls.forEach(el=>{ if(el) io.observe(el); });
 
-    /* ===== Text layer (on-demand) ===== */
     async function ensureTextLayer(p, viewport){
       const wrap = pageEls[p]; if (!wrap) return null;
-
       let tLayer = wrap.querySelector('.textLayer');
       if (tLayer) return tLayer;
 
@@ -201,7 +206,6 @@
       return marks;
     }
 
-    /* ===== Find ===== */
     async function doSearch(term){
       clearSearch();
       const query=(term||'').trim(); if(!query) return;
@@ -252,7 +256,6 @@
       updateCounter();
     }
 
-    /* ===== Load dokumen ===== */
     function setPageBoxBounds(){ pageBox.min=1; pageBox.max=numPages||1; }
 
     async function renderPDF(){
@@ -280,12 +283,16 @@
         wrap.style.minHeight='600px';
         pageEls[p]=wrap; viewer.appendChild(wrap);
       }
-      attachObserver();
+
+      // mulai dari halaman 1
+      viewer.scrollTop = 0;
       pageBox.value = 1;
-      ensureVisiblePages(1);
+      await ensureVisiblePages(1);
+
+      suppressIO = false;
+      attachObserver();
     }
 
-    /* ===== Zoom / Fit / FS ===== */
     const rerenderDebounced = debounced(()=>{
       Object.values(renderTasks).forEach(t=>{ try{ t.cancel(); }catch{} });
       renderTasks = {};
@@ -305,15 +312,6 @@
       rerenderDebounced();
     });
 
-    document.getElementById('fsBtn').addEventListener('click', ()=>{
-      const doc=document, el=doc.documentElement;
-      const inFs=doc.fullscreenElement||doc.webkitFullscreenElement||doc.msFullscreenElement||doc.mozFullScreenElement;
-      if(!inFs){ (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen||el.mozRequestFullScreen).call(el); }
-      else{ (doc.exitFullscreen||doc.webkitExitFullscreen||doc.msExitFullscreen||doc.mozCancelFullScreen).call(doc); }
-      setTimeout(()=>rerenderDebounced(), 200);
-    });
-
-    /* ===== Page number ===== */
     function jumpToPage(n){
       let num = parseInt(n,10); if (Number.isNaN(num)) num = 1;
       const clamped = clamp(num, 1, numPages);
@@ -323,13 +321,9 @@
       pageBox.value=num;
     }
     pageBox.addEventListener('keydown', (e)=>{ if (e.key === 'Enter') { e.preventDefault(); jumpToPage(pageBox.value); pageBox.blur(); }});
+    pageBox.addEventListener('focus', ()=> sendToParent('PDF_OSK_OPEN_NUM', { current: pageBox.value, max: numPages }));
+    pageBox.addEventListener('click',  ()=> sendToParent('PDF_OSK_OPEN_NUM', { current: pageBox.value, max: numPages }));
 
-    // minta OSK numerik saat fokus/klik
-    const askParentNumpad = ()=> sendToParent('PDF_OSK_OPEN_NUM', { current: pageBox.value, max: numPages });
-    pageBox.addEventListener('focus', askParentNumpad);
-    pageBox.addEventListener('click', askParentNumpad);
-
-    /* ===== Find UI ===== */
     const openFindBar = ()=>{ findbar.classList.remove('hidden'); setTimeout(()=> findInput.focus(), 50); };
     document.getElementById('findPrev').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex-1); });
     document.getElementById('findNext').addEventListener('click', ()=>{ if(results.length) goTo(activeIndex+1); });
@@ -339,7 +333,6 @@
       e.preventDefault(); openFindBar(); sendToParent('PDF_OSK_OPEN_TEXT');
     });
 
-    // Enter di kolom Find → commit
     findInput.addEventListener('keydown', (e)=>{
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -347,12 +340,9 @@
         if (term) doSearch(term);
       }
     });
-    // saat fokus/klik minta OSK teks
-    const askParentText = ()=> sendToParent('PDF_OSK_OPEN_TEXT');
-    findInput.addEventListener('focus', askParentText);
-    findInput.addEventListener('click', askParentText);
+    findInput.addEventListener('focus', ()=> sendToParent('PDF_OSK_OPEN_TEXT'));
+    findInput.addEventListener('click',  ()=> sendToParent('PDF_OSK_OPEN_TEXT'));
 
-    // Shortcut
     window.addEventListener('keydown', (e)=>{
       const isMac=/Mac/i.test(navigator.platform);
       if((isMac?e.metaKey:e.ctrlKey) && e.key.toLowerCase()==='f'){
@@ -363,26 +353,69 @@
       }
     });
 
-    /* ===== Pesan dari parent (OSK) ===== */
+    // helper: set isi kolom cari & taruh kursor di akhir
+    function setFindValue(v){
+      findbar.classList.remove('hidden');
+      findInput.value = v;
+      try{ const L = v.length; findInput.setSelectionRange(L, L); }catch{}
+    }
+
     window.addEventListener('message', (e)=>{
       const data = e.data || {};
       switch (data.type) {
         case 'PDF_FIND_OPEN':
           openFindBar();
           break;
-        case 'PDF_FIND_EXECUTE': {        // live typing dari OSK
-          findbar.classList.remove('hidden');
-          doSearch((data.payload?.term ?? '').trim());
+
+        case 'PDF_FIND_EXECUTE': {
+          const term = (data.payload?.term ?? '');
+          setFindValue(term);
+          const t = term.trim();
+          if (t) doSearch(t); else clearSearch();
           break;
         }
-        case 'PDF_FIND_COMMIT': {         // enter di OSK
+
+        case 'PDF_FIND_COMMIT': {
           const term = (data.payload?.term ?? '').trim();
-          if (term) doSearch(term);
+          setFindValue(term);
+          if (term) doSearch(term); else clearSearch();
           break;
         }
-        case 'PDF_FIND_NEXT': if (results.length) goTo(activeIndex+1); break;
-        case 'PDF_FIND_PREV': if (results.length) goTo(activeIndex-1); break;
-        case 'PDF_PAGE_COMMIT': jumpToPage(data.payload?.page ?? pageBox.value); break;
+
+        // PREVIEW: tampilkan angka yg sedang diketik & kunci IO
+        case 'PDF_PAGE_PREVIEW': {
+          pageLock = true;
+          const d = String(data.payload?.draft ?? '');
+          pageBox.value = d;
+          const v = parseInt(d, 10);
+          const bad = !(Number.isFinite(v) && v >= 1 && v <= numPages);
+          pageBox.classList.toggle('invalid', bad && d !== '');
+          break;
+        }
+
+        // END PREVIEW tanpa lompat (diabaikan bila baru saja commit)
+        case 'PDF_PAGE_PREVIEW_END': {
+          if (Date.now() < ignorePreviewEndUntil) break;
+          pageLock = false;
+          const cur = [...viewer.querySelectorAll('.pageWrap')].find(el=>{
+            const r=el.getBoundingClientRect(); return r.top>=0 && r.bottom>0;
+          });
+          if (cur) pageBox.value = cur.dataset.page || pageBox.value;
+          pageBox.classList.remove('invalid');
+          break;
+        }
+
+        // COMMIT: benar-benar lompat & buka kunci + set window ignore
+        case 'PDF_PAGE_COMMIT': {
+          pageLock = false;
+          ignorePreviewEndUntil = Date.now() + 300; // 300ms cukup untuk menyerap PREVIEW_END yang telat
+          jumpToPage(data.payload?.page ?? pageBox.value);
+          break;
+        }
+
+        case 'PDF_FULLSCREEN_STATE':
+          document.body.classList.toggle('fs-active', !!data.payload?.active);
+          break;
       }
     });
 
@@ -390,6 +423,30 @@
     setVH(); addEventListener('resize', setVH);
 
     renderPDF().catch(showErr);
+  </script>
+
+  <script>
+  (function(){
+    function askToggleFS(){
+      const active = document.body.classList.contains('fs-active');
+      parent.postMessage({ type: active ? 'PDF_EXIT_FULLSCREEN' : 'PDF_REQUEST_FULLSCREEN' }, '*');
+    }
+    document.addEventListener('click', function(e){
+      const btn = e.target.closest(
+        '#fsBtn, #presentationMode, .toolbarButton.presentationMode, .toolbarButton.fullscreen, [data-l10n-id="presentation_mode"], [title*="Full"], [aria-label*="Full"]'
+      );
+      if(!btn) return;
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      askToggleFS();
+    }, true);
+
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.();
+        parent.postMessage({ type: 'PDF_REQUEST_FULLSCREEN' }, '*');
+      }
+    });
+  })();
   </script>
 </body>
 </html>

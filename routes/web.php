@@ -251,6 +251,35 @@ Route::get('/branches', [PublicControllerSatu::class, 'branches'])->name('branch
 Route::get('/price-list', [PublicControllerSatu::class, 'priceList'])->name('price.list');
 Route::get('/simulasi-kredit', [PublicControllerSatu::class, 'creditSimulator'])->name('credit.sim');
 
+/* ====== DEBUG SEMENTARA: CEK EXT PHP DI SAPI WEB ====== */
+Route::get('/debug/php-ext', fn() => response()->json([
+    'sapi'            => php_sapi_name(),
+    'has_imagick'     => extension_loaded('imagick'),
+    'imagick_version' => class_exists(\Imagick::class) ? \Imagick::getVersion() : null,
+]));
+
+/* (Opsional) DEBUG SEMENTARA: CEK GS DARI WEB */
+Route::get('/debug/gs', function () {
+    $out = [];
+    @exec('gswin64c.exe -version', $out);
+    return response()->json(['gs_cli' => $out]);
+});
+
+Route::get('/debug/php-ini', function () {
+    return response()->json([
+        'sapi'        => php_sapi_name(),
+        'php_version' => PHP_VERSION,
+        'loaded_ini'  => php_ini_loaded_file(),
+        'scanned_ini' => php_ini_scanned_files(),
+        'extension_dir' => ini_get('extension_dir'),
+        'has_imagick' => extension_loaded('imagick'),
+        'loaded_exts' => get_loaded_extensions(), // biar kelihatan daftar extensinya
+    ]);
+});
+
+// opsional: full phpinfo
+Route::get('/debug/phpinfo', fn() => phpinfo());
+
 /*
 |--------------------------------------------------------------------------
 | SSO ENTRY (public)

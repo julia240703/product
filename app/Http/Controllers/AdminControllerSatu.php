@@ -49,7 +49,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-
+use App\Services\PdfCompressorService;
 
 class AdminControllerSatu extends Controller
 {
@@ -389,16 +389,20 @@ public function accessoriesIndex(Request $request, $motorId)
         return DataTables::of($data)
             ->addIndexColumn()
             ->editColumn('image', function($row) {
-                return $row->image 
-                    ? asset('storage/' . $row->image) 
+                return $row->image
+                    ? asset('storage/' . $row->image)
                     : null;
             })
             ->addColumn('position', function($row) {
-                // tampilkan "x,y" kalau ada
                 if (!is_null($row->x_percent) && !is_null($row->y_percent)) {
                     return $row->x_percent . ',' . $row->y_percent;
                 }
                 return null;
+            })
+            // >>> kirim price_raw khusus untuk form edit
+            ->addColumn('price_raw', function($row) {
+                $raw = $row->getRawOriginal('price');
+                return $raw !== null ? (int) $raw : null; // "375000.00" -> 375000
             })
             ->rawColumns(['image', 'position'])
             ->make(true);
@@ -417,6 +421,7 @@ public function accessoriesStore(Request $request, $motorId)
         'part_number'  => 'nullable|string|max:255',
         'dimension'    => 'nullable|string|max:255',
         'weight'       => 'nullable|numeric',
+        'price'        => 'nullable|numeric',       // <— NEW
         'description'  => 'nullable|string',
         'color'        => 'nullable|string|max:100',
         'material'     => 'nullable|string|max:100',
@@ -424,6 +429,11 @@ public function accessoriesStore(Request $request, $motorId)
         'x_percent'    => 'nullable|numeric|between:0,100',
         'y_percent'    => 'nullable|numeric|between:0,100',
     ]);
+
+    // Normalisasi harga: ambil digit saja → integer polos
+    $data['price'] = $request->filled('price')
+        ? (int) preg_replace('/\D/', '', (string) $request->price)
+        : null;
 
     $data['motor_id'] = $motorId;
     $data['image']    = $this->uploadFile($request, 'image', 'motor_accessories');
@@ -443,6 +453,7 @@ public function accessoriesUpdate(Request $request, $motorId, $id)
         'part_number'  => 'nullable|string|max:255',
         'dimension'    => 'nullable|string|max:255',
         'weight'       => 'nullable|numeric',
+        'price'        => 'nullable|numeric',       // <— NEW
         'description'  => 'nullable|string',
         'color'        => 'nullable|string|max:100',
         'material'     => 'nullable|string|max:100',
@@ -450,6 +461,11 @@ public function accessoriesUpdate(Request $request, $motorId, $id)
         'x_percent'    => 'nullable|numeric|between:0,100',
         'y_percent'    => 'nullable|numeric|between:0,100',
     ]);
+
+    // Normalisasi harga
+    $data['price'] = $request->filled('price')
+        ? (int) preg_replace('/\D/', '', (string) $request->price)
+        : null;
 
     $data['image'] = $this->uploadFile($request, 'image', 'motor_accessories', $accessory->image);
 
@@ -535,11 +551,17 @@ public function accessoriesGeneralStore(Request $r)
     return back()->with('success', 'Aksesoris (General) berhasil ditambahkan.');
 }
 
-// EDIT (JSON utk modal)
 public function accessoriesGeneralEdit($id)
 {
-    $acc = GeneralAccessory::with('images')->findOrFail($id);
-    return response()->json($acc);
+    $acc  = GeneralAccessory::with('images')->findOrFail($id);
+    $data = $acc->toArray();
+
+    // harga di DB misalnya "101000.00" → kirim ke frontend sebagai 101000
+    $data['price'] = $acc->getRawOriginal('price') !== null
+        ? (int) $acc->getRawOriginal('price')
+        : null;
+
+    return response()->json($data);
 }
 
 // UPDATE
@@ -703,19 +725,39 @@ public function sparepartsStore(Request $request, $motorId)
 {
     $motor = Motor::findOrFail($motorId);
 
-    $request->validate([
-        'parts_pdf' => 'required|file|mimes:pdf|max:51200', // 50MB
+    $data = $request->validate([
+        'parts_pdf' => 'required|file|mimes:pdf|max:51200',
     ]);
 
-    // Simpan/replace file PDF. Helper uploadFile milikmu sudah dipakai di tempat lain.
-    // Arg ke-4 = oldPath untuk dihapus otomatis (kalau helper-mu memang handle).
-    $path = $this->uploadFile($request, 'parts_pdf', 'motor_catalogs', $motor->parts_pdf);
+    $uploaded  = $data['parts_pdf'];
+    $origBytes = (int) $uploaded->getSize();
+    $origMB    = round($origBytes / 1048576, 2);
 
-    $motor->update([
-        'parts_pdf' => $path,
-    ]);
+    try {
+        $svc          = new PdfCompressorService();
+        // Opsi custom (opsional): ['target_bytes' => 3*1024*1024, 'color_dpi'=>96, 'jpeg_q'=>50]
+        $relativePath = $svc->compress($uploaded);
+    } catch (\Throwable $e) {
+        \Log::error('PDF compression failed', ['error' => $e->getMessage()]);
+        $stored       = $uploaded->store('public/pdf');
+        $relativePath = str_replace('public/', '', $stored);
+    }
 
-    return back()->with('success', 'Katalog PDF berhasil diunggah.');
+    $finalAbs = storage_path('app/public/'.$relativePath);
+    $finalMB  = file_exists($finalAbs) ? round(filesize($finalAbs)/1048576, 2) : null;
+
+    $oldPath = $motor->parts_pdf;
+    $motor->update(['parts_pdf' => $relativePath]);
+
+    if (!empty($oldPath) && $oldPath !== $relativePath) {
+        Storage::disk('public')->delete($oldPath);
+    }
+
+    $sizeInfo = $finalMB !== null ? "Ukuran: {$origMB} MB → {$finalMB} MB" : "Ukuran asli: {$origMB} MB";
+
+    return back()
+        ->with('success_parts', 'PDF berhasil diunggah & diproses.')
+        ->with('pdf_size', $sizeInfo);
 }
 
 /**
@@ -1309,13 +1351,12 @@ public function apparelsStore(Request $request)
         'color'        => 'nullable|string',
         'size'         => 'nullable|string',
         'part_number'  => 'nullable|string',
+        'price'        => 'nullable|numeric|min:0',
         'apparel_url'  => 'nullable|url|max:255',
         'stock'        => 'nullable|integer|min:0',
-        // file
         'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         'gallery.*'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-        // NEW
         'is_new'       => 'nullable|boolean',
     ]);
 
@@ -1337,11 +1378,12 @@ public function apparelsStore(Request $request)
         'color'        => $request->color,
         'size'         => $request->size,
         'part_number'  => $request->part_number,
-        'apparel_url'  => $request->apparel_url, 
+        'price'        => $request->filled('price') ? (int) preg_replace('/\D/', '', $request->price) : null,
+        'apparel_url'  => $request->apparel_url,
         'stock'        => $request->stock,
         'cover_image'  => $coverPath,
-        'image'        => $singlePath, // fallback/legacy
-        'is_new'       => $request->boolean('is_new'), // <-- simpan flag NEW
+        'image'        => $singlePath,
+        'is_new'       => $request->boolean('is_new'),
     ]);
 
     if ($request->hasFile('gallery')) {
@@ -1358,11 +1400,12 @@ public function apparelsStore(Request $request)
     return back()->with('success', 'Apparel berhasil ditambahkan!');
 }
 
-// JSON untuk modal edit
 public function apparelsEdit($id)
 {
     $apparel = Apparel::with('images')->findOrFail($id);
-    return response()->json($apparel);
+    $data = $apparel->toArray();
+    $data['price'] = (int) $apparel->getRawOriginal('price');
+    return response()->json($data);
 }
 
 public function apparelsUpdate(Request $request, $id)
@@ -1379,17 +1422,15 @@ public function apparelsUpdate(Request $request, $id)
         'color'        => 'nullable|string',
         'size'         => 'nullable|string',
         'part_number'  => 'nullable|string',
+        'price'        => 'nullable|numeric|min:0',
         'apparel_url'  => 'nullable|url|max:255',
         'stock'        => 'nullable|integer|min:0',
-        // file
         'cover_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
         'gallery.*'    => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-        // NEW
         'is_new'       => 'nullable|boolean',
     ]);
 
-    // cover (replace file lama bila ada)
     if ($request->hasFile('cover_image')) {
         if ($apparel->cover_image && Storage::disk('public')->exists($apparel->cover_image)) {
             Storage::disk('public')->delete($apparel->cover_image);
@@ -1397,7 +1438,6 @@ public function apparelsUpdate(Request $request, $id)
         $apparel->cover_image = $request->file('cover_image')->store('apparels/cover', 'public');
     }
 
-    // single image (legacy)
     if ($request->hasFile('image')) {
         if ($apparel->image && Storage::disk('public')->exists($apparel->image)) {
             Storage::disk('public')->delete($apparel->image);
@@ -1415,12 +1455,12 @@ public function apparelsUpdate(Request $request, $id)
         'color'        => $request->color,
         'size'         => $request->size,
         'part_number'  => $request->part_number,
+        'price'        => $request->filled('price') ? (int) preg_replace('/\D/', '', $request->price) : null,
         'apparel_url'  => $request->apparel_url,
         'stock'        => $request->stock,
-        'is_new'       => $request->boolean('is_new'), // <-- update flag NEW
+        'is_new'       => $request->boolean('is_new'),
     ]);
 
-    // Tambah gallery baru (append)
     if ($request->hasFile('gallery')) {
         $start = ($apparel->images()->max('sort') ?? 0) + 1;
         foreach ($request->file('gallery') as $k => $file) {

@@ -66,6 +66,13 @@
                 <input type="number" step="0.01" class="form-control" id="weight" name="weight">
               </div>
 
+              {{-- HARGA: angka polos --}}
+              <div class="col-md-6">
+                <label for="price" class="form-label">Harga (Rp)</label>
+                <input type="number" min="0" step="1" class="form-control" id="price" name="price" placeholder="Contoh: 101000">
+                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+              </div>
+
               <div class="col-md-6">
                 <label for="color" class="form-label">Warna</label>
                 <input type="text" class="form-control" id="color" name="color">
@@ -154,6 +161,13 @@
                 <input type="number" step="0.01" class="form-control" id="weight_edit" name="weight">
               </div>
 
+              {{-- HARGA: angka polos --}}
+              <div class="col-md-6">
+                <label class="form-label" for="price_edit">Harga (Rp)</label>
+                <input type="number" min="0" step="1" class="form-control" id="price_edit" name="price" placeholder="Contoh: 101000">
+                <div class="form-text">Masukkan angka tanpa titik/koma.</div>
+              </div>
+
               <div class="col-md-6">
                 <label class="form-label" for="color_edit">Warna</label>
                 <input type="text" class="form-control" id="color_edit" name="color">
@@ -174,7 +188,6 @@
                 <small class="text-muted">Bisa URL penuh (http/https) atau path internal.</small>
               </div>
 
-              {{-- Varian: teks panjang --}}
               <div class="col-12">
                 <label class="form-label" for="variant_edit">Varian (teks)</label>
                 <textarea class="form-control" id="variant_edit" name="variant"></textarea>
@@ -274,6 +287,34 @@
       // CSRF untuk AJAX
       $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } });
 
+      // === Parser harga: normalisasi "101.000,00" -> "101000" ===
+      function parsePriceToInt(v) {
+        if (v === null || v === undefined) return '';
+        if (typeof v === 'number') return String(Math.round(v));
+        let s = String(v).trim();
+        if (s === '') return '';
+        s = s.replace(/\s+/g, '');
+        const hasComma = s.includes(',');
+        const hasDot   = s.includes('.');
+        if (hasComma && hasDot) {
+          s = s.replace(/\./g, '');  // hapus ribuan
+          s = s.replace(/,/g, '.');  // koma -> desimal
+        } else if (hasComma) {
+          s = s.replace(/\./g, '');
+          s = s.replace(/,/g, '.');
+        } else {
+          s = s.replace(/\./g, '');  // hanya titik = ribuan
+        }
+        const num = parseFloat(s);
+        if (isNaN(num)) return '';
+        return String(Math.round(num)); // rupiah tanpa sen
+      }
+
+      // Saat mengetik di field harga: tetap angka polos
+      $('#price, #price_edit').on('input', function () {
+        this.value = this.value.replace(/[^\d]/g, '');
+      });
+
       // ================== DATATABLE ==================
       var dataTable = $('#accessory-table').DataTable({
         responsive: true,
@@ -339,12 +380,14 @@
           $('#part_number_edit').val(res.part_number ?? '');
           $('#dimension_edit').val(res.dimension ?? '');
           $('#weight_edit').val(res.weight ?? '');
+          // harga tampil sebagai angka polos
+          $('#price_edit').val(res.price != null ? parsePriceToInt(res.price) : '');
           $('#color_edit').val(res.color ?? '');
           $('#material_edit').val(res.material ?? '');
           $('#stock_edit').val(res.stock ?? 0);
           $('#description_edit').val(res.description ?? '');
           $('#variant_edit').val(res.variant ?? '');
-          $('#link_url_edit').val(res.link_url ?? ''); // <-- isi Link URL
+          $('#link_url_edit').val(res.link_url ?? '');
 
           // cover saat ini
           if (res.cover_image) {
@@ -356,7 +399,7 @@
             $('#current-cover').empty();
           }
 
-          // gallery saat ini (dengan tombol hapus)
+          // gallery saat ini
           $('#current-gallery').empty();
           const delUrlTpl = "{{ route('admin.accessories.general.images.delete', ':id') }}";
 
@@ -442,6 +485,16 @@
         $('#modalImage').attr('src', $(this).data('image'));
         $('#imageTitle').text($(this).data('title'));
         $('#viewImageModal').modal('show');
+      });
+
+      // ================== SANITASI HARGA (sebelum submit) ==================
+      $('#addAccessoryForm').on('submit', function () {
+        const $p = $('#price');
+        $p.val(parsePriceToInt($p.val()));
+      });
+      $('#editAccessoryForm').on('submit', function () {
+        const $p = $('#price_edit');
+        $p.val(parsePriceToInt($p.val()));
       });
 
       // ================== RESET FORM (scoped!) ==================
