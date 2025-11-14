@@ -16,6 +16,7 @@ use App\Http\Controllers\ManagerDashboardController;
 use App\Http\Controllers\AdminControllerSatu;
 use App\Http\Controllers\PublicControllerSatu;
 use App\Http\Controllers\SsoAcceptController;
+use App\Http\Controllers\AdminCenterTokenTestController;
 
 
 /*
@@ -287,6 +288,13 @@ Route::get('/debug/phpinfo', fn() => phpinfo());
 | Admin Center akan redirect ke endpoint ini dengan ?token=JWT
 */
 Route::get('/sso/login', [SsoAcceptController::class, 'login'])->name('sso.login');
+
+/*
+|-------------------------------------------------------------------------- 
+| ADMIN CENTER TOKEN TEST (public, dipanggil hanya dari Admin Center)
+|-------------------------------------------------------------------------- 
+*/
+Route::post('/admin-center/test-token', [AdminCenterTokenTestController::class, 'handle']);
 
 /*
 |--------------------------------------------------------------------------
