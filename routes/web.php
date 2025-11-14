@@ -294,7 +294,7 @@ Route::get('/sso/login', [SsoAcceptController::class, 'login'])->name('sso.login
 | ADMIN CENTER TOKEN TEST (public, dipanggil hanya dari Admin Center)
 |-------------------------------------------------------------------------- 
 */
-Route::post('/admin-center/test-token', [AdminCenterTokenTestController::class, 'handle']);
+Route::post('/admin-center/test-token', [AdminCenterTokenTestController::class, 'handle'])->name('admin-center.test-token');
 
 /*
 |--------------------------------------------------------------------------
